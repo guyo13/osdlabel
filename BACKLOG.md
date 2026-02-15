@@ -27,6 +27,29 @@ When the browser window is resized (especially rapidly), the Fabric annotation o
 
 ---
 
+### BL-002: Sample image selector in demo app
+
+**Severity:** Low (developer experience)
+**Observed in:** Dev environment
+**Status:** Deferred
+
+**Description:**
+The demo application currently hardcodes a single DZI image (`highsmith`). To facilitate testing with various image types, aspect ratios, and edge cases, a dropdown selector should be added to the header to allow switching between multiple sample images.
+
+**Context:**
+- Current implementation in `dev/App.tsx` has a hardcoded source.
+- Adding more variety will help ensure the overlay system (Fabric.js + OpenSeadragon) is robust across different image dimensions and tile sets.
+
+**Proposed Tasks:**
+1. Define a list of DZI sources (id, url, label) in `dev/App.tsx`.
+2. Add a dropdown selector in the header using a SolidJS signal.
+3. Include additional DZI URLs such as:
+   - Duomo: `https://openseadragon.github.io/example-images/duomo/duomo.dzi`
+   - Grand Canyon: `https://openseadragon.github.io/example-images/grand-canyon/grand-canyon.dzi`
+   - Currier: `https://openseadragon.github.io/example-images/currier/currier.dzi`
+
+---
+
 ## Resolved
 
 _(None yet)_
