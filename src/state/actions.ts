@@ -42,17 +42,14 @@ export function createActions(
   }
 
   function setActiveTool(tool: AnnotationType | 'select' | null): void {
-    // @ts-ignore - readonly override
     setUIState('activeTool', tool);
   }
 
   function setActiveCell(cellIndex: number): void {
-    // @ts-ignore - readonly override
     setUIState('activeCellIndex', cellIndex);
   }
 
   function setSelectedAnnotation(id: AnnotationId | null): void {
-    // @ts-ignore - readonly override
     setUIState('selectedAnnotationId', id);
   }
 
@@ -62,20 +59,16 @@ export function createActions(
 
   function setGridDimensions(columns: number, rows: number): void {
     setUIState(produce((state) => {
-      // @ts-ignore - readonly override
       state.gridColumns = columns;
-      // @ts-ignore - readonly override
       state.gridRows = rows;
     }));
   }
 
   function setContexts(contexts: AnnotationContext[]): void {
-    // @ts-ignore - readonly override
     setContextState('contexts', contexts);
   }
 
   function setActiveContext(contextId: AnnotationContextId | null): void {
-    // @ts-ignore - readonly override
     setContextState('activeContextId', contextId);
   }
 
