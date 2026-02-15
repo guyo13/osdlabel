@@ -1,14 +1,18 @@
-import { onMount, onCleanup, createEffect, on } from 'solid-js';
+import { onMount, onCleanup, createEffect, on, createSignal } from 'solid-js';
 import type { Component } from 'solid-js';
 import OpenSeadragon from 'openseadragon';
+import { FabricObject } from 'fabric';
 import { FabricOverlay } from '../overlay/fabric-overlay.js';
 import type { OverlayMode } from '../overlay/fabric-overlay.js';
 import type { ImageSource } from '../core/types.js';
+import { useAnnotationTool } from '../hooks/useAnnotationTool.js';
+import { annotationState } from '../state/store.js';
+import { createFabricObjectFromAnnotation, updateFabricObjectFromAnnotation } from '../core/fabric-utils.js';
 
 export interface ViewerCellProps {
   readonly imageSource: ImageSource | undefined;
   readonly isActive: boolean;
-  readonly mode?: OverlayMode;
+  readonly mode?: OverlayMode; // Deprecated, controlled by tool state
   readonly onActivate: () => void;
   readonly onOverlayReady?: (overlay: FabricOverlay) => void;
 }
@@ -16,7 +20,7 @@ export interface ViewerCellProps {
 const ViewerCell: Component<ViewerCellProps> = (props) => {
   let containerRef: HTMLDivElement | undefined;
   let viewer: OpenSeadragon.Viewer | undefined;
-  let overlay: FabricOverlay | undefined;
+  const [overlay, setOverlay] = createSignal<FabricOverlay>();
 
   onMount(() => {
     if (!containerRef) return;
@@ -33,11 +37,11 @@ const ViewerCell: Component<ViewerCellProps> = (props) => {
     });
 
     viewer.addHandler('open', () => {
-      if (!viewer || overlay) return;
-      overlay = new FabricOverlay(viewer);
-      // Apply current mode
-      overlay.setMode(props.mode ?? 'navigation');
-      props.onOverlayReady?.(overlay);
+      if (!viewer || overlay()) return;
+      const ov = new FabricOverlay(viewer);
+      setOverlay(ov);
+      // Initial mode set by useAnnotationTool effect
+      props.onOverlayReady?.(ov);
     });
 
     // Open initial image if provided
@@ -47,8 +51,9 @@ const ViewerCell: Component<ViewerCellProps> = (props) => {
   });
 
   onCleanup(() => {
-    overlay?.destroy();
-    overlay = undefined;
+    const ov = overlay();
+    ov?.destroy();
+    setOverlay(undefined);
     viewer?.destroy();
     viewer = undefined;
   });
@@ -67,10 +72,68 @@ const ViewerCell: Component<ViewerCellProps> = (props) => {
     { defer: true },
   ));
 
-  // Watch for mode changes
+  // Use annotation tool hook
+  useAnnotationTool(
+      overlay,
+      () => props.imageSource?.id,
+      () => props.isActive
+  );
+
+  // Sync annotations from state to canvas
   createEffect(() => {
-    const mode = props.mode ?? 'navigation';
-    overlay?.setMode(mode);
+      const ov = overlay();
+      const imageId = props.imageSource?.id;
+      if (!ov || !imageId) return;
+
+      const imageAnns = annotationState.byImage[imageId] || {};
+      const canvas = ov.canvas;
+
+      // Map existing objects by annotationId
+      const currentObjects = new Map<string, FabricObject>();
+      const objectsToRemove: FabricObject[] = [];
+
+      canvas.getObjects().forEach((obj: any) => {
+          if (obj.annotationId) {
+              currentObjects.set(obj.annotationId, obj);
+          }
+      });
+
+      const activeIds = new Set<string>();
+
+      // Update or create objects
+      for (const ann of Object.values(imageAnns)) {
+          activeIds.add(ann.id);
+          const obj = currentObjects.get(ann.id);
+
+          if (!obj) {
+              // Create
+              const newObj = createFabricObjectFromAnnotation(ann);
+              if (newObj) {
+                  (newObj as any).updatedAt = ann.updatedAt;
+                  canvas.add(newObj);
+              }
+          } else {
+              // Update if changed
+              if ((obj as any).updatedAt !== ann.updatedAt) {
+                   updateFabricObjectFromAnnotation(obj, ann);
+                   (obj as any).updatedAt = ann.updatedAt;
+                   obj.setCoords();
+              }
+          }
+      }
+
+      // Remove deleted objects
+      for (const [id, obj] of currentObjects) {
+          if (!activeIds.has(id)) {
+              objectsToRemove.push(obj);
+          }
+      }
+
+      if (objectsToRemove.length > 0) {
+          canvas.remove(...objectsToRemove);
+      }
+
+      canvas.requestRenderAll();
   });
 
   return (
