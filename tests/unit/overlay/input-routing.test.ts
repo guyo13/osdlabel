@@ -1,23 +1,38 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
-import type { FabricOverlay, OverlayMode } from '../../../src/overlay/fabric-overlay.js';
+import { describe, it, expect, beforeEach } from 'vitest';
+import type { OverlayMode } from '../../../src/overlay/fabric-overlay.js';
 
 /**
  * Since FabricOverlay requires real DOM + OSD + Fabric, we test the mode
  * logic by creating a lightweight mock that mirrors the setMode behavior.
  * This verifies the routing contract without needing canvas support in jsdom.
+ *
+ * The overlay uses an OSD MouseTracker to route events:
+ * - navigation: tracker disabled, OSD handles all input
+ * - annotation: tracker enabled, all events forwarded to Fabric,
+ *   objects are selectable/evented, Ctrl+drag or middle-mouse pans OSD
  */
 
 interface MockState {
-  pointerEvents: string;
+  /** Whether the OSD MouseTracker is actively tracking events */
+  overlayTrackerTracking: boolean;
+  /** Whether Fabric's group-selection box is enabled */
   fabricSelection: boolean;
+  /** Whether OSD pan/zoom via mouse is enabled */
   osdMouseNavEnabled: boolean;
+  /** Whether Fabric objects are selectable */
   objectsSelectable: boolean;
+  /** Whether Fabric objects receive pointer events */
   objectsEvented: boolean;
 }
 
-function createMockOverlay(): { overlay: Pick<FabricOverlay, 'setMode' | 'getMode'>; state: MockState } {
+interface MockOverlay {
+  setMode(mode: OverlayMode): void;
+  getMode(): OverlayMode;
+}
+
+function createMockOverlay(): { overlay: MockOverlay; state: MockState } {
   const state: MockState = {
-    pointerEvents: 'none',
+    overlayTrackerTracking: false,
     fabricSelection: false,
     osdMouseNavEnabled: true,
     objectsSelectable: false,
@@ -31,7 +46,7 @@ function createMockOverlay(): { overlay: Pick<FabricOverlay, 'setMode' | 'getMod
 
     switch (mode) {
       case 'navigation':
-        state.pointerEvents = 'none';
+        state.overlayTrackerTracking = false;
         state.fabricSelection = false;
         state.objectsSelectable = false;
         state.objectsEvented = false;
@@ -39,15 +54,7 @@ function createMockOverlay(): { overlay: Pick<FabricOverlay, 'setMode' | 'getMod
         break;
 
       case 'annotation':
-        state.pointerEvents = 'auto';
-        state.fabricSelection = false;
-        state.objectsSelectable = false;
-        state.objectsEvented = false;
-        state.osdMouseNavEnabled = false;
-        break;
-
-      case 'selection':
-        state.pointerEvents = 'auto';
+        state.overlayTrackerTracking = true;
         state.fabricSelection = true;
         state.objectsSelectable = true;
         state.objectsEvented = true;
@@ -64,7 +71,7 @@ function createMockOverlay(): { overlay: Pick<FabricOverlay, 'setMode' | 'getMod
 }
 
 describe('Input routing — setMode', () => {
-  let overlay: Pick<FabricOverlay, 'setMode' | 'getMode'>;
+  let overlay: MockOverlay;
   let state: MockState;
 
   beforeEach(() => {
@@ -74,9 +81,9 @@ describe('Input routing — setMode', () => {
   });
 
   describe('navigation mode', () => {
-    it('disables Fabric pointer events', () => {
+    it('disables overlay tracker (events fall through to OSD)', () => {
       overlay.setMode('navigation');
-      expect(state.pointerEvents).toBe('none');
+      expect(state.overlayTrackerTracking).toBe(false);
     });
 
     it('disables Fabric selection', () => {
@@ -102,23 +109,23 @@ describe('Input routing — setMode', () => {
   });
 
   describe('annotation mode', () => {
-    it('enables Fabric pointer events', () => {
+    it('enables overlay tracker (intercepts events for Fabric)', () => {
       overlay.setMode('annotation');
-      expect(state.pointerEvents).toBe('auto');
+      expect(state.overlayTrackerTracking).toBe(true);
     });
 
-    it('disables Fabric selection (drawing mode, not object selection)', () => {
+    it('enables Fabric selection (allows rubber-band and object selection)', () => {
       overlay.setMode('annotation');
-      expect(state.fabricSelection).toBe(false);
+      expect(state.fabricSelection).toBe(true);
     });
 
-    it('makes objects non-selectable and non-evented', () => {
+    it('makes objects selectable and evented', () => {
       overlay.setMode('annotation');
-      expect(state.objectsSelectable).toBe(false);
-      expect(state.objectsEvented).toBe(false);
+      expect(state.objectsSelectable).toBe(true);
+      expect(state.objectsEvented).toBe(true);
     });
 
-    it('disables OSD mouse navigation', () => {
+    it('disables OSD mouse navigation (Ctrl+drag or middle-mouse for pan)', () => {
       overlay.setMode('annotation');
       expect(state.osdMouseNavEnabled).toBe(false);
     });
@@ -129,64 +136,30 @@ describe('Input routing — setMode', () => {
     });
   });
 
-  describe('selection mode', () => {
-    it('enables Fabric pointer events', () => {
-      overlay.setMode('selection');
-      expect(state.pointerEvents).toBe('auto');
-    });
-
-    it('enables Fabric selection', () => {
-      overlay.setMode('selection');
-      expect(state.fabricSelection).toBe(true);
-    });
-
-    it('makes objects selectable and evented', () => {
-      overlay.setMode('selection');
-      expect(state.objectsSelectable).toBe(true);
-      expect(state.objectsEvented).toBe(true);
-    });
-
-    it('disables OSD mouse navigation', () => {
-      overlay.setMode('selection');
-      expect(state.osdMouseNavEnabled).toBe(false);
-    });
-
-    it('reports correct mode', () => {
-      overlay.setMode('selection');
-      expect(overlay.getMode()).toBe('selection');
-    });
-  });
-
   describe('mode transitions', () => {
     it('correctly transitions from annotation to navigation', () => {
       overlay.setMode('annotation');
       expect(state.osdMouseNavEnabled).toBe(false);
-      expect(state.pointerEvents).toBe('auto');
+      expect(state.overlayTrackerTracking).toBe(true);
+      expect(state.objectsSelectable).toBe(true);
 
       overlay.setMode('navigation');
       expect(state.osdMouseNavEnabled).toBe(true);
-      expect(state.pointerEvents).toBe('none');
-    });
-
-    it('correctly transitions from selection to annotation', () => {
-      overlay.setMode('selection');
-      expect(state.fabricSelection).toBe(true);
-      expect(state.objectsSelectable).toBe(true);
-
-      overlay.setMode('annotation');
-      expect(state.fabricSelection).toBe(false);
+      expect(state.overlayTrackerTracking).toBe(false);
       expect(state.objectsSelectable).toBe(false);
     });
 
-    it('correctly transitions from navigation to selection', () => {
+    it('correctly transitions from navigation to annotation', () => {
       overlay.setMode('navigation');
-      expect(state.pointerEvents).toBe('none');
+      expect(state.overlayTrackerTracking).toBe(false);
       expect(state.osdMouseNavEnabled).toBe(true);
 
-      overlay.setMode('selection');
-      expect(state.pointerEvents).toBe('auto');
+      overlay.setMode('annotation');
+      expect(state.overlayTrackerTracking).toBe(true);
       expect(state.osdMouseNavEnabled).toBe(false);
       expect(state.fabricSelection).toBe(true);
+      expect(state.objectsSelectable).toBe(true);
+      expect(state.objectsEvented).toBe(true);
     });
 
     it('handles repeated same-mode calls idempotently', () => {
@@ -194,6 +167,20 @@ describe('Input routing — setMode', () => {
       const snapshot = { ...state };
       overlay.setMode('annotation');
       expect(state).toEqual(snapshot);
+    });
+
+    it('handles rapid mode switching without inconsistency', () => {
+      overlay.setMode('annotation');
+      overlay.setMode('navigation');
+      overlay.setMode('annotation');
+      overlay.setMode('navigation');
+
+      expect(state.overlayTrackerTracking).toBe(false);
+      expect(state.fabricSelection).toBe(false);
+      expect(state.osdMouseNavEnabled).toBe(true);
+      expect(state.objectsSelectable).toBe(false);
+      expect(state.objectsEvented).toBe(false);
+      expect(overlay.getMode()).toBe('navigation');
     });
   });
 });

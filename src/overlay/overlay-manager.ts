@@ -1,6 +1,6 @@
 import type OpenSeadragon from 'openseadragon';
-import type { FabricOverlay, OverlayOptions } from './fabric-overlay.js';
-import { createFabricOverlay } from './fabric-overlay.js';
+import { FabricOverlay } from './fabric-overlay.js';
+import type { OverlayOptions } from './fabric-overlay.js';
 
 /** Registry tracking active FabricOverlay instances by cell index */
 export interface OverlayManager {
@@ -32,7 +32,7 @@ export function createOverlayManager(): OverlayManager {
       existing.destroy();
     }
 
-    const overlay = createFabricOverlay(viewer, options);
+    const overlay = new FabricOverlay(viewer, options);
     overlays.set(cellIndex, overlay);
     return overlay;
   }

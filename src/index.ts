@@ -35,5 +35,5 @@ export {
 } from './core/constants.js';
 
 // Overlay
-export type { FabricOverlay, OverlayOptions, OverlayMode, OverlayManager } from './overlay/index.js';
-export { createFabricOverlay, computeViewportTransform, createOverlayManager } from './overlay/index.js';
+export { FabricOverlay, computeViewportTransform, createOverlayManager } from './overlay/index.js';
+export type { OverlayOptions, OverlayMode, OverlayManager } from './overlay/index.js';

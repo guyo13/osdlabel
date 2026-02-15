@@ -4,39 +4,12 @@ import type { TMat2D } from 'fabric';
 import type { Point } from '../core/types.js';
 
 /** Overlay interaction modes */
-export type OverlayMode = 'navigation' | 'annotation' | 'selection';
+export type OverlayMode = 'navigation' | 'annotation';
 
 /** Options for creating a FabricOverlay */
 export interface OverlayOptions {
   /** Initial interactive state (default: false) */
   readonly interactive?: boolean;
-}
-
-/** A Fabric.js canvas overlay synchronized with an OpenSeaDragon viewer */
-export interface FabricOverlay {
-  /** The Fabric.js Canvas instance */
-  readonly canvas: FabricCanvas;
-
-  /** Force a re-sync of the overlay transform with the current OSD viewport */
-  sync(): void;
-
-  /** Enable/disable annotation interaction on this overlay */
-  setInteractive(enabled: boolean): void;
-
-  /** Set the overlay interaction mode */
-  setMode(mode: OverlayMode): void;
-
-  /** Get the current overlay interaction mode */
-  getMode(): OverlayMode;
-
-  /** Convert a point from screen-space to image-space */
-  screenToImage(screenPoint: Point): Point;
-
-  /** Convert a point from image-space to screen-space */
-  imageToScreen(imagePoint: Point): Point;
-
-  /** Clean up all event listeners and DOM elements */
-  destroy(): void;
 }
 
 /**
@@ -62,209 +35,379 @@ export function computeViewportTransform(viewer: OpenSeadragon.Viewer): TMat2D {
   return [dx, dy, -dy, dx, screenOrigin.x, screenOrigin.y] as TMat2D;
 }
 
-/** Creates and attaches a Fabric.js overlay to an OpenSeaDragon viewer */
-export function createFabricOverlay(
-  viewer: OpenSeadragon.Viewer,
-  options?: OverlayOptions,
-): FabricOverlay {
-  // ── Create canvas DOM element ──────────────────────────────────────
-  const canvasEl = document.createElement('canvas');
-  canvasEl.style.position = 'absolute';
-  canvasEl.style.top = '0';
-  canvasEl.style.left = '0';
-  canvasEl.style.pointerEvents = 'none';
+/**
+ * A Fabric.js canvas overlay synchronized with an OpenSeaDragon viewer.
+ *
+ * Handles event routing between OSD and Fabric using an OSD MouseTracker
+ * attached to Fabric's container element. Events are forwarded to Fabric
+ * as synthetic PointerEvents with a re-entrancy guard to prevent infinite
+ * recursion (dispatched events bubble back to the tracker's element).
+ *
+ * Two interaction modes:
+ * - **navigation**: OSD handles all input, Fabric is display-only.
+ * - **annotation**: Fabric handles all input (select, move, draw).
+ *   Ctrl+drag or middle-mouse drag pans OSD within annotation mode.
+ */
+export class FabricOverlay {
+  // ── Core references ──────────────────────────────────────────────
+  private readonly _viewer: OpenSeadragon.Viewer;
+  private readonly _fabricCanvas: FabricCanvas;
+  private readonly _canvasEl: HTMLCanvasElement;
+  private readonly _overlayTracker: OpenSeadragon.MouseTracker;
+  private readonly _fabricContainer: HTMLElement;
 
-  // Insert on top of OSD's canvas element
-  const osdCanvas = viewer.canvas;
-  osdCanvas.appendChild(canvasEl);
+  // ── State ────────────────────────────────────────────────────────
+  private _mode: OverlayMode = 'navigation';
 
-  // Match initial dimensions
-  const containerSize = viewer.viewport.getContainerSize();
-  canvasEl.width = containerSize.x;
-  canvasEl.height = containerSize.y;
+  /**
+   * Re-entrancy guard for forwardToFabric. When true, the synthetic
+   * PointerEvent is currently being dispatched — handlers must not
+   * process the bubbled-back event.
+   */
+  private _forwarding = false;
 
-  // ── Create Fabric canvas ───────────────────────────────────────────
-  const fabricCanvas = new FabricCanvas(canvasEl, {
-    selection: false,
-    renderOnAddRemove: false,
-    skipOffscreen: true,
-  });
+  /**
+   * When true, the current gesture is a pan-passthrough (Ctrl+drag or
+   * middle-mouse drag) and events should NOT be forwarded to Fabric.
+   */
+  private _panGestureActive = false;
 
-  fabricCanvas.setDimensions({
-    width: containerSize.x,
-    height: containerSize.y,
-  });
-
-  // ── Current mode tracking ──────────────────────────────────────────
-  let currentMode: OverlayMode = 'navigation';
-
-  // ── Sync function ──────────────────────────────────────────────────
-  // Uses synchronous renderAll() because this runs inside OSD's own
-  // requestAnimationFrame callback. Using the async requestRenderAll()
-  // would defer the Fabric paint to the *next* frame, causing a visible
-  // 1-frame lag where the image has moved but annotations haven't.
-  function sync(): void {
-    const vpt = computeViewportTransform(viewer);
-    fabricCanvas.setViewportTransform(vpt);
-    fabricCanvas.renderAll();
-  }
-
-  // ── OSD event handlers ─────────────────────────────────────────────
-  const onAnimation = (): void => {
-    sync();
+  // ── Bound OSD event handlers (for add/removeHandler) ─────────────
+  private readonly _onAnimation = (): void => { this.sync(); };
+  private readonly _onAnimationFinish = (): void => { this.sync(); };
+  private readonly _onOpen = (): void => { this.sync(); };
+  private readonly _onResize = (): void => {
+    const size = this._viewer.viewport.getContainerSize();
+    this._fabricCanvas.setDimensions({ width: size.x, height: size.y });
+    this.sync();
   };
 
-  const onAnimationFinish = (): void => {
-    // Final sync to ensure annotations are perfectly aligned after
-    // the spring animation settles.
-    sync();
-  };
+  constructor(viewer: OpenSeadragon.Viewer, options?: OverlayOptions) {
+    this._viewer = viewer;
 
-  const onResize = (): void => {
-    const size = viewer.viewport.getContainerSize();
-    fabricCanvas.setDimensions({
-      width: size.x,
-      height: size.y,
+    // ── Create canvas DOM element ────────────────────────────────
+    this._canvasEl = document.createElement('canvas');
+    this._canvasEl.style.position = 'absolute';
+    this._canvasEl.style.top = '0';
+    this._canvasEl.style.left = '0';
+    // CSS pointer-events stays 'none' — event routing is handled
+    // entirely by the OSD MouseTracker, not CSS hit-testing.
+    this._canvasEl.style.pointerEvents = 'none';
+
+    // Insert on top of OSD's canvas element
+    const osdCanvas = viewer.canvas;
+    osdCanvas.appendChild(this._canvasEl);
+
+    // Match initial dimensions
+    const containerSize = viewer.viewport.getContainerSize();
+    this._canvasEl.width = containerSize.x;
+    this._canvasEl.height = containerSize.y;
+
+    // ── Create Fabric canvas ─────────────────────────────────────
+    this._fabricCanvas = new FabricCanvas(this._canvasEl, {
+      selection: false,
+      renderOnAddRemove: false,
+      skipOffscreen: true,
+      enablePointerEvents: true,
     });
-    sync();
-  };
 
-  const onOpen = (): void => {
-    sync();
-  };
-
-  viewer.addHandler('animation', onAnimation);
-  viewer.addHandler('animation-finish', onAnimationFinish);
-  viewer.addHandler('resize', onResize);
-  viewer.addHandler('open', onOpen);
-
-  // Initial sync if the viewer is already open
-  if (viewer.isOpen()) {
-    sync();
-  }
-
-  // ── Interactive state ──────────────────────────────────────────────
-  function setInteractive(enabled: boolean): void {
-    canvasEl.style.pointerEvents = enabled ? 'auto' : 'none';
-    fabricCanvas.selection = enabled;
-    fabricCanvas.forEachObject((obj) => {
-      obj.selectable = enabled;
-      obj.evented = enabled;
+    this._fabricCanvas.setDimensions({
+      width: containerSize.x,
+      height: containerSize.y,
     });
-    fabricCanvas.renderAll();
+
+    // ── Resolve Fabric's container div ───────────────────────────
+    const container = this._fabricCanvas.getSelectionElement().parentElement;
+    if (!container) {
+      throw new Error('Fabric canvas container not found');
+    }
+    this._fabricContainer = container;
+
+    // ── Create OSD MouseTracker on Fabric's container ────────────
+    this._overlayTracker = this._createMouseTracker();
+
+    // ── Attach OSD event handlers ────────────────────────────────
+    viewer.addHandler('animation', this._onAnimation);
+    viewer.addHandler('animation-finish', this._onAnimationFinish);
+    viewer.addHandler('resize', this._onResize);
+    viewer.addHandler('open', this._onOpen);
+
+    // Initial sync if the viewer is already open
+    if (viewer.isOpen()) {
+      this.sync();
+    }
+
+    // Apply initial mode (or interactive shortcut)
+    if (options?.interactive) {
+      this.setMode('annotation');
+    }
   }
 
-  if (options?.interactive) {
-    setInteractive(true);
+  // ── Public API ──────────────────────────────────────────────────
+
+  /** The Fabric.js Canvas instance */
+  get canvas(): FabricCanvas {
+    return this._fabricCanvas;
   }
 
-  // ── Selection mode: pass-through clicks on empty canvas to OSD ─────
-  // In selection mode, clicks that don't hit a Fabric object should
-  // let OSD handle the gesture (panning). We temporarily re-enable
-  // OSD mouse nav and disable it again on mouse:up.
-  let selectionPassThrough = false;
+  /**
+   * Force a re-sync of the overlay transform with the current OSD viewport.
+   *
+   * Uses synchronous renderAll() because this runs inside OSD's own
+   * requestAnimationFrame callback. Using the async requestRenderAll()
+   * would defer the Fabric paint to the *next* frame, causing a visible
+   * 1-frame lag where the image has moved but annotations haven't.
+   */
+  sync(): void {
+    const vpt = computeViewportTransform(this._viewer);
+    this._fabricCanvas.setViewportTransform(vpt);
+    this._fabricCanvas.renderAll();
+  }
 
-  fabricCanvas.on('mouse:down', (e) => {
-    if (currentMode !== 'selection') return;
-    console.log('mouse:down', e.target);
-    if (!e.target) {
-      // Click on empty area — let OSD handle this gesture
-      viewer.setMouseNavEnabled(true);
-      selectionPassThrough = true;
-    }
-  });
-
-  fabricCanvas.on('mouse:up', () => {
-    console.log('mouse:up');
-    if (selectionPassThrough) {
-      // Re-disable OSD nav after the gesture completes
-      console.log('mouse:up - re-disable OSD nav');
-      viewer.setMouseNavEnabled(false);
-      selectionPassThrough = false;
-    }
-  });
-
-  // ── Mode management ────────────────────────────────────────────────
-  function setMode(mode: OverlayMode): void {
-    currentMode = mode;
-    selectionPassThrough = false;
+  /** Set the overlay interaction mode */
+  setMode(mode: OverlayMode): void {
+    this._mode = mode;
+    this._panGestureActive = false;
 
     switch (mode) {
       case 'navigation':
         // Fabric non-interactive, OSD handles all input
-        canvasEl.style.pointerEvents = 'none';
-        fabricCanvas.selection = false;
-        fabricCanvas.forEachObject((obj) => {
+        this._overlayTracker.setTracking(false);
+        this._fabricCanvas.selection = false;
+        this._fabricCanvas.forEachObject((obj) => {
           obj.selectable = false;
           obj.evented = false;
         });
-        viewer.setMouseNavEnabled(true);
+        // Deselect any active Fabric selection so controls disappear
+        this._fabricCanvas.discardActiveObject();
+        this._viewer.setMouseNavEnabled(true);
         break;
 
       case 'annotation':
-        // Fabric interactive for drawing, OSD nav disabled
-        canvasEl.style.pointerEvents = 'auto';
-        fabricCanvas.selection = false;
-        fabricCanvas.forEachObject((obj) => {
-          obj.selectable = false;
-          obj.evented = false;
-        });
-        viewer.setMouseNavEnabled(false);
-        break;
-
-      case 'selection':
-        // Fabric interactive for selecting existing objects
-        // Clicks on empty areas pass through to OSD (via mouse:down handler)
-        canvasEl.style.pointerEvents = 'auto';
-        fabricCanvas.selection = true;
-        fabricCanvas.forEachObject((obj) => {
+        // Fabric interactive: selection, moving, and drawing.
+        // OSD mouse nav is disabled (Ctrl+drag / middle-mouse for pan).
+        this._overlayTracker.setTracking(true);
+        this._fabricCanvas.selection = true;
+        this._fabricCanvas.forEachObject((obj) => {
           obj.selectable = true;
           obj.evented = true;
         });
-        viewer.setMouseNavEnabled(false);
+        this._viewer.setMouseNavEnabled(false);
         break;
     }
 
-    fabricCanvas.renderAll();
+    this._fabricCanvas.renderAll();
   }
 
-  function getMode(): OverlayMode {
-    return currentMode;
+  /** Get the current overlay interaction mode */
+  getMode(): OverlayMode {
+    return this._mode;
   }
 
-  // ── Coordinate conversion ──────────────────────────────────────────
-  function screenToImage(screenPoint: Point): Point {
-    const osdPoint = viewer.viewport.viewerElementToImageCoordinates(
+  /** Convert a point from screen-space to image-space */
+  screenToImage(screenPoint: Point): Point {
+    const osdPoint = this._viewer.viewport.viewerElementToImageCoordinates(
       new OpenSeadragon.Point(screenPoint.x, screenPoint.y),
     );
     return { x: osdPoint.x, y: osdPoint.y };
   }
 
-  function imageToScreen(imagePoint: Point): Point {
-    const osdPoint = viewer.viewport.imageToViewerElementCoordinates(
+  /** Convert a point from image-space to screen-space */
+  imageToScreen(imagePoint: Point): Point {
+    const osdPoint = this._viewer.viewport.imageToViewerElementCoordinates(
       new OpenSeadragon.Point(imagePoint.x, imagePoint.y),
     );
     return { x: osdPoint.x, y: osdPoint.y };
   }
 
-  // ── Destroy ────────────────────────────────────────────────────────
-  function destroy(): void {
-    viewer.removeHandler('animation', onAnimation);
-    viewer.removeHandler('animation-finish', onAnimationFinish);
-    viewer.removeHandler('resize', onResize);
-    viewer.removeHandler('open', onOpen);
-    fabricCanvas.dispose();
-    canvasEl.remove();
+  /** Clean up all event listeners and DOM elements */
+  destroy(): void {
+    this._overlayTracker.destroy();
+    this._viewer.removeHandler('animation', this._onAnimation);
+    this._viewer.removeHandler('animation-finish', this._onAnimationFinish);
+    this._viewer.removeHandler('resize', this._onResize);
+    this._viewer.removeHandler('open', this._onOpen);
+    this._fabricCanvas.dispose();
+    this._canvasEl.remove();
   }
 
-  return {
-    canvas: fabricCanvas,
-    sync,
-    setInteractive,
-    setMode,
-    getMode,
-    screenToImage,
-    imageToScreen,
-    destroy,
-  };
+  // ── Private: Event forwarding ──────────────────────────────────
+
+  /**
+   * Dispatch a synthetic PointerEvent on Fabric's upper canvas so that
+   * Fabric's internal event handling processes it normally.
+   *
+   * Fabric's getPointer() reads clientX/clientY from the event, so
+   * we forward those directly from the original DOM event.
+   *
+   * A re-entrancy guard (`_forwarding`) prevents infinite recursion:
+   * the synthetic event bubbles from upperCanvasEl up to the Fabric
+   * container div, where the OSD MouseTracker would re-intercept it.
+   */
+  private _forwardToFabric(
+    type: string,
+    originalEvent: PointerEvent,
+  ): void {
+    if (this._forwarding) return;
+    this._forwarding = true;
+    try {
+      const upperCanvas = this._fabricCanvas.upperCanvasEl;
+      const syntheticEvent = new PointerEvent(type, {
+        clientX: originalEvent.clientX,
+        clientY: originalEvent.clientY,
+        screenX: originalEvent.screenX,
+        screenY: originalEvent.screenY,
+        button: originalEvent.button,
+        buttons: originalEvent.buttons,
+        bubbles: true,
+        cancelable: true,
+        pointerId: originalEvent.pointerId,
+        pointerType: originalEvent.pointerType,
+        isPrimary: originalEvent.isPrimary,
+        ctrlKey: originalEvent.ctrlKey,
+        shiftKey: originalEvent.shiftKey,
+        altKey: originalEvent.altKey,
+        metaKey: originalEvent.metaKey,
+      });
+      upperCanvas.dispatchEvent(syntheticEvent);
+    } finally {
+      this._forwarding = false;
+    }
+  }
+
+
+  /**
+   * Determine whether a pointerdown event should trigger an OSD pan
+   * pass-through (Ctrl/Cmd+click).
+   */
+  private _isPanTrigger(event: PointerEvent): boolean {
+    // Ctrl+left-click (or Cmd on macOS)
+    if ((event.ctrlKey || event.metaKey) && event.button === 0) return true;
+    return false;
+  }
+
+  // ── Private: MouseTracker factory ──────────────────────────────
+
+  /**
+   * Create the OSD MouseTracker attached to Fabric's container element.
+   *
+   * OSD's innerTracker captures ALL pointer events on viewer.canvas via
+   * addEventListener. Because OSD processes trackers in DOM order (child
+   * before parent), our tracker fires before OSD's innerTracker. We can:
+   *   1. Forward the event to Fabric as a synthetic PointerEvent
+   *   2. Stop propagation to prevent OSD from also processing it
+   *
+   * In navigation mode the tracker is disabled (setTracking(false)),
+   * so events fall through to OSD normally.
+   */
+  private _createMouseTracker(): OpenSeadragon.MouseTracker {
+    return new OpenSeadragon.MouseTracker({
+      element: this._fabricContainer,
+      startDisabled: true, // Starts disabled (navigation mode)
+
+      preProcessEventHandler: (eventInfo: OpenSeadragon.EventProcessInfo) => {
+        // Re-entrancy guard: if we're dispatching a synthetic event,
+        // don't process the bubbled-back copy.
+        if (this._forwarding) return;
+
+        if (this._mode === 'navigation') {
+          // Should not happen (tracker is disabled), but just in case
+          return;
+        }
+
+        // ── Annotation mode ──
+        const eventType = eventInfo.eventType;
+        const domEvent = eventInfo.originalEvent as PointerEvent;
+
+        if (eventType === 'pointerdown') {
+          // Check for pan passthrough triggers (Ctrl+drag, middle mouse)
+          if (this._isPanTrigger(domEvent)) {
+            this._panGestureActive = true;
+            // Let event propagate to OSD — don't stop it.
+            // Temporarily enable OSD nav for this gesture.
+            this._viewer.setMouseNavEnabled(true);
+            return;
+          }
+
+          // Normal annotation/selection click — Fabric owns it
+          this._panGestureActive = false;
+          eventInfo.stopPropagation = true;
+          eventInfo.preventDefault = true;
+          return;
+        }
+
+        if (eventType === 'pointermove') {
+          if (this._panGestureActive) {
+            // Part of an OSD pan gesture — let it through
+            return;
+          }
+          eventInfo.stopPropagation = true;
+          eventInfo.preventDefault = true;
+          return;
+        }
+
+        if (eventType === 'pointerup' || eventType === 'pointercancel') {
+          if (this._panGestureActive) {
+            // End of OSD pan gesture
+            this._panGestureActive = false;
+            this._viewer.setMouseNavEnabled(false);
+            return;
+          }
+          eventInfo.stopPropagation = true;
+          eventInfo.preventDefault = true;
+          return;
+        }
+      },
+
+      pressHandler: (event: OpenSeadragon.MouseTrackerEvent) => {
+        if (this._forwarding || this._mode === 'navigation') return;
+        if (this._panGestureActive) return;
+
+        const originalEvent = event.originalEvent as PointerEvent;
+        this._forwardToFabric('pointerdown', originalEvent);
+      },
+
+      moveHandler: (event: OpenSeadragon.MouseTrackerEvent) => {
+        if (this._forwarding || this._mode === 'navigation') return;
+        if (this._panGestureActive) return;
+
+        const originalEvent = event.originalEvent as PointerEvent;
+        this._forwardToFabric('pointermove', originalEvent);
+      },
+
+      releaseHandler: (event: OpenSeadragon.MouseTrackerEvent) => {
+        if (this._forwarding || this._mode === 'navigation') return;
+        if (this._panGestureActive) return;
+
+        const originalEvent = event.originalEvent as PointerEvent;
+        this._forwardToFabric('pointerup', originalEvent);
+      },
+
+      scrollHandler: (event: OpenSeadragon.MouseTrackerEvent) => {
+        if (this._mode !== 'annotation') return;
+
+        const domEvent = event.originalEvent as WheelEvent;
+
+        // Always prevent page scrolling while in annotation mode
+        const scrollEvt = event as OpenSeadragon.MouseTrackerEvent & { preventDefault: boolean };
+        scrollEvt.preventDefault = true;
+
+        if (domEvent.ctrlKey || domEvent.metaKey) {
+          // Ctrl/Cmd+scroll → manually zoom OSD.
+          // OSD's own scroll-zoom is disabled (setMouseNavEnabled(false)),
+          // so we call viewport.zoomBy() directly.
+          const delta = -domEvent.deltaY;
+          const zoomFactor = Math.pow(1.2, delta > 0 ? 1 : -1);
+
+          // Zoom around the pointer position (in viewport coordinates)
+          const viewerPos = this._viewer.viewport.pointFromPixel(
+            new OpenSeadragon.Point(domEvent.clientX, domEvent.clientY),
+            true, // current = true (use current animated position)
+          );
+          this._viewer.viewport.zoomBy(zoomFactor, viewerPos);
+          this._viewer.viewport.applyConstraints();
+        }
+      },
+    });
+  }
 }
