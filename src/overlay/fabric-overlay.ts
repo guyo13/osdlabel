@@ -87,14 +87,24 @@ export function createFabricOverlay(
   });
 
   // ── Sync function ──────────────────────────────────────────────────
+  // Uses synchronous renderAll() because this runs inside OSD's own
+  // requestAnimationFrame callback. Using the async requestRenderAll()
+  // would defer the Fabric paint to the *next* frame, causing a visible
+  // 1-frame lag where the image has moved but annotations haven't.
   function sync(): void {
     const vpt = computeViewportTransform(viewer);
     fabricCanvas.setViewportTransform(vpt);
-    fabricCanvas.requestRenderAll();
+    fabricCanvas.renderAll();
   }
 
   // ── OSD event handlers ─────────────────────────────────────────────
   const onAnimation = (): void => {
+    sync();
+  };
+
+  const onAnimationFinish = (): void => {
+    // Final sync to ensure annotations are perfectly aligned after
+    // the spring animation settles.
     sync();
   };
 
@@ -112,6 +122,7 @@ export function createFabricOverlay(
   };
 
   viewer.addHandler('animation', onAnimation);
+  viewer.addHandler('animation-finish', onAnimationFinish);
   viewer.addHandler('resize', onResize);
   viewer.addHandler('open', onOpen);
 
@@ -153,6 +164,7 @@ export function createFabricOverlay(
   // ── Destroy ────────────────────────────────────────────────────────
   function destroy(): void {
     viewer.removeHandler('animation', onAnimation);
+    viewer.removeHandler('animation-finish', onAnimationFinish);
     viewer.removeHandler('resize', onResize);
     viewer.removeHandler('open', onOpen);
     fabricCanvas.dispose();
