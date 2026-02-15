@@ -116,20 +116,30 @@ export interface ImageSource {
 }
 
 // ── State Types ──────────────────────────────────────────────────────────
+// Note: State container types intentionally omit `readonly` — SolidJS store
+// proxies enforce immutability at runtime, and `readonly` here would conflict
+// with SolidJS's `SetStoreFunction` path-based API. Data model types above
+// (Annotation, Geometry, etc.) remain fully `readonly`.
 
 /** Root state for the annotation system */
 export interface AnnotationState {
-  readonly byImage: Record<ImageId, Record<AnnotationId, Annotation>>;
+  byImage: Record<ImageId, Record<AnnotationId, Annotation>>;
 }
 
 /** UI state */
 export interface UIState {
-  readonly activeTool: AnnotationType | 'select' | null;
-  readonly activeCellIndex: number;
-  readonly gridColumns: number;
-  readonly gridRows: number;
-  readonly gridAssignments: Record<number, ImageId>;
-  readonly selectedAnnotationId: AnnotationId | null;
+  activeTool: AnnotationType | 'select' | null;
+  activeCellIndex: number;
+  gridColumns: number;
+  gridRows: number;
+  gridAssignments: Record<number, ImageId>;
+  selectedAnnotationId: AnnotationId | null;
+}
+
+/** Context state */
+export interface ContextState {
+  contexts: AnnotationContext[];
+  activeContextId: AnnotationContextId | null;
 }
 
 // ── Constraint Status ────────────────────────────────────────────────────

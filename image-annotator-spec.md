@@ -473,6 +473,12 @@ interface UIState {
 }
 ```
 
+> **Implementation note:** The `readonly` modifiers on state container interfaces
+> (`AnnotationState`, `UIState`, `ContextState`) are omitted in the actual implementation.
+> SolidJS store proxies enforce immutability at runtime, and `readonly` conflicts with
+> SolidJS's `SetStoreFunction` path-based setter API. Data model types (`Annotation`,
+> `Geometry`, etc.) retain `readonly` for compile-time safety.
+
 ### 7.3 Mutation Functions
 
 All state mutations go through named action functions that use `setStore` with `produce` for immutable update semantics:

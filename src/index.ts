@@ -15,6 +15,7 @@ export type {
   ImageSource,
   AnnotationState,
   UIState,
+  ContextState,
   ConstraintStatus,
   KeyboardShortcutMap,
 } from './core/types.js';
@@ -37,3 +38,14 @@ export {
 // Overlay
 export { FabricOverlay, computeViewportTransform, createOverlayManager } from './overlay/index.js';
 export type { OverlayOptions, OverlayMode, OverlayManager } from './overlay/index.js';
+
+// State
+export {
+  createAnnotationStore,
+  createUIStore,
+  createContextStore,
+  createActions,
+  AnnotatorProvider,
+  useAnnotator,
+  createConstraintStatus,
+} from './state/index.js';

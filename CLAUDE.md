@@ -9,7 +9,7 @@ This is `@guyo13/osdlabel`, a DZI image annotation library built with SolidJS, F
 ### TypeScript
 - **Never use `any`.** Use `unknown` with type guards, or a specific type. If you find yourself reaching for `any`, stop and define a proper type.
 - Always use `const` assertions for literal types: `as const`.
-- Prefer `readonly` properties on interfaces. All annotation data types must be immutable.
+- Prefer `readonly` properties on interfaces. All annotation data types must be immutable. **Exception:** SolidJS store shape interfaces (`AnnotationState`, `UIState`, `ContextState`) omit `readonly` because SolidJS enforces immutability at runtime via store proxies, and `readonly` conflicts with SolidJS's `SetStoreFunction` path-based API.
 - Use branded types for IDs (`AnnotationId`, `ImageId`, `AnnotationContextId`) — never pass raw strings where branded types are expected.
 - Use discriminated unions (not type assertions) for geometry types. Always check `geometry.type` before accessing geometry-specific fields.
 - Run `pnpm typecheck` after every file change. Fix all type errors before proceeding.
