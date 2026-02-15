@@ -297,26 +297,36 @@ The Fabric canvas `viewportTransform` is a 6-element affine matrix `[a, b, c, d,
 
 ### 5.3 Input Routing
 
-A critical challenge is that both OSD and Fabric.js listen for pointer/mouse events on overlapping elements. The overlay manager routes input as follows:
+A critical challenge is that both OSD and Fabric.js listen for pointer/mouse events on overlapping elements. The overlay uses an OSD `MouseTracker` attached to Fabric's container element to intercept events before OSD's inner tracker processes them. A re-entrancy guard prevents infinite recursion from synthetic events bubbling back up.
 
-- **Navigation mode** (no annotation tool active): Pointer events pass through the Fabric canvas to OSD for pan/zoom. The Fabric canvas has `pointer-events: none` or its event handling is disabled.
-- **Annotation mode** (a drawing tool is active): The Fabric canvas intercepts pointer events for drawing. OSD navigation is disabled (`viewer.setMouseNavEnabled(false)`). Zoom is still available via keyboard shortcuts or explicit UI controls.
-- **Selection mode** (select tool active): Fabric handles click/drag on existing annotations. Clicks on empty canvas areas pass through to OSD for panning.
+Two interaction modes:
 
-This is managed by toggling the Fabric canvas's interactivity and OSD's mouse navigation based on the active tool state.
+- **Navigation mode** (default — no annotation tool active): The overlay's `MouseTracker` is disabled (`setTracking(false)`), so all pointer events fall through to OSD for pan/zoom. Fabric objects are non-interactive (`selectable = false`, `evented = false`).
+- **Annotation mode** (a tool is active, or the user is selecting/editing annotations): The overlay's `MouseTracker` intercepts all pointer events, forwarding them to Fabric as synthetic `PointerEvent`s. OSD mouse navigation is disabled (`viewer.setMouseNavEnabled(false)`). Fabric handles both drawing new annotations and selecting/moving existing ones.
+  - **Pan passthrough:** `Ctrl+drag` (or `Cmd+drag` on macOS) temporarily re-enables OSD mouse navigation for that gesture, allowing the user to pan without switching modes.
+  - **Zoom passthrough:** `Ctrl+scroll` (or `Cmd+scroll` on macOS) manually invokes `viewport.zoomBy()` to zoom around the pointer position. Plain scroll is blocked to prevent page scrolling.
+
+This is managed by the `setMode()` method, which toggles the tracker, Fabric interactivity, and OSD mouse navigation.
 
 ### 5.4 Module Interface
 
 ```typescript
-interface FabricOverlay {
+type OverlayMode = 'navigation' | 'annotation';
+
+class FabricOverlay {
   /** The Fabric.js Canvas instance */
   readonly canvas: fabric.Canvas;
+
+  constructor(viewer: OpenSeadragon.Viewer, options?: OverlayOptions);
 
   /** Force a re-sync of the overlay transform with the current OSD viewport */
   sync(): void;
 
-  /** Enable/disable annotation interaction on this overlay */
-  setInteractive(enabled: boolean): void;
+  /** Set the overlay interaction mode */
+  setMode(mode: OverlayMode): void;
+
+  /** Get the current overlay interaction mode */
+  getMode(): OverlayMode;
 
   /** Convert a point from screen-space to image-space */
   screenToImage(screenPoint: Point): Point;
@@ -327,9 +337,6 @@ interface FabricOverlay {
   /** Clean up all event listeners and DOM elements */
   destroy(): void;
 }
-
-/** Factory function — creates and attaches a Fabric overlay to an OSD viewer */
-function createFabricOverlay(viewer: OpenSeadragon.Viewer, options?: OverlayOptions): FabricOverlay;
 ```
 
 ---
