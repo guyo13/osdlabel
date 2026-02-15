@@ -1,8 +1,8 @@
 import { onMount, onCleanup, createEffect, on } from 'solid-js';
 import type { Component } from 'solid-js';
 import OpenSeadragon from 'openseadragon';
-import { createFabricOverlay } from '../overlay/fabric-overlay.js';
-import type { FabricOverlay, OverlayMode } from '../overlay/fabric-overlay.js';
+import { FabricOverlay } from '../overlay/fabric-overlay.js';
+import type { OverlayMode } from '../overlay/fabric-overlay.js';
 import type { ImageSource } from '../core/types.js';
 
 export interface ViewerCellProps {
@@ -34,7 +34,7 @@ const ViewerCell: Component<ViewerCellProps> = (props) => {
 
     viewer.addHandler('open', () => {
       if (!viewer || overlay) return;
-      overlay = createFabricOverlay(viewer);
+      overlay = new FabricOverlay(viewer);
       // Apply current mode
       overlay.setMode(props.mode ?? 'navigation');
       props.onOverlayReady?.(overlay);

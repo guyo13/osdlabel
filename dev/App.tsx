@@ -3,7 +3,8 @@ import { createSignal } from 'solid-js';
 import { Rect, Circle, Line, Polyline } from 'fabric';
 import ViewerCell from '../src/components/ViewerCell.js';
 import { createImageId } from '../src/core/types.js';
-import type { FabricOverlay, OverlayMode } from '../src/overlay/fabric-overlay.js';
+import type { FabricOverlay } from '../src/overlay/fabric-overlay.js';
+import type { OverlayMode } from '../src/overlay/fabric-overlay.js';
 
 function addSampleAnnotations(overlay: FabricOverlay): void {
   const canvas = overlay.canvas;
@@ -69,7 +70,20 @@ function addSampleAnnotations(overlay: FabricOverlay): void {
 
   // Debug: log mouse events on the Fabric canvas
   canvas.on('mouse:down', (e) => {
-    console.log('[Fabric] mouse:down — target:', e.target ? 'object' : 'empty canvas');
+    console.log('[Fabric] mouse:down — target:', e.target ? `object (${e.target.type})` : 'empty canvas');
+  });
+  canvas.on('mouse:up', () => {
+    console.log('[Fabric] mouse:up');
+  });
+  canvas.on('mouse:move', () => {
+    // Uncomment for verbose move logging:
+    // console.log('[Fabric] mouse:move');
+  });
+  canvas.on('selection:created', (e) => {
+    console.log('[Fabric] selection:created —', e.selected?.length, 'objects');
+  });
+  canvas.on('selection:cleared', () => {
+    console.log('[Fabric] selection:cleared');
   });
 }
 
@@ -116,21 +130,8 @@ function App() {
         >
           Annotation
         </button>
-        <button
-          onClick={() => setMode('selection')}
-          style={{
-            padding: '4px 12px',
-            border: 'none',
-            'border-radius': '4px',
-            cursor: 'pointer',
-            background: mode() === 'selection' ? '#4CAF50' : '#333',
-            color: '#fff',
-          }}
-        >
-          Selection
-        </button>
         <span style={{ 'margin-left': '16px', opacity: '0.5', 'font-size': '12px' }}>
-          Current: {mode()}
+          Current: {mode()} {mode() === 'annotation' ? '(Ctrl+drag or middle-click to pan)' : ''}
         </span>
       </div>
       <div style={{ flex: '1', 'min-height': '0' }}>
