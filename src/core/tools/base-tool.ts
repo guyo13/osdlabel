@@ -1,14 +1,31 @@
 import { Rect, Circle, Line, Polyline, util, FabricObject } from 'fabric';
 import type { FabricOverlay } from '../../overlay/fabric-overlay.js';
-import { Annotation, AnnotationType, Point, Geometry, AnnotationStyle, ImageId, AnnotationContextId, createAnnotationId } from '../types.js';
+import { Annotation, AnnotationType, Point, Geometry, AnnotationStyle, ImageId, AnnotationContextId, AnnotationId, ToolConstraint, createAnnotationId } from '../types.js';
 import { generateId } from '../../utils/id.js';
+
+/** Framework-agnostic callbacks that tools use to interact with application state */
+export interface ToolCallbacks {
+  readonly getActiveContextId: () => AnnotationContextId | null;
+  readonly getToolConstraint: (type: AnnotationType) => ToolConstraint | undefined;
+  readonly addAnnotation: (annotation: Omit<Annotation, 'createdAt' | 'updatedAt'>) => void;
+  readonly updateAnnotation: (id: AnnotationId, imageId: ImageId, patch: Partial<Omit<Annotation, 'id' | 'imageId' | 'createdAt' | 'updatedAt'>>) => void;
+  readonly deleteAnnotation: (id: AnnotationId, imageId: ImageId) => void;
+  readonly setSelectedAnnotation: (id: AnnotationId | null) => void;
+  readonly getAnnotation: (id: AnnotationId, imageId: ImageId) => Annotation | undefined;
+}
+
+/** A Fabric object that may be associated with an annotation */
+export interface AnnotatedFabricObject extends FabricObject {
+  annotationId?: AnnotationId;
+  updatedAt?: string;
+}
 
 export interface AnnotationTool {
   /** Tool identifier */
   readonly type: AnnotationType | 'select';
 
   /** Called when the tool becomes active */
-  activate(overlay: FabricOverlay, imageId: ImageId): void;
+  activate(overlay: FabricOverlay, imageId: ImageId, callbacks: ToolCallbacks): void;
 
   /** Called when the tool is deactivated */
   deactivate(): void;
@@ -33,21 +50,24 @@ export abstract class BaseTool implements AnnotationTool {
   abstract readonly type: AnnotationType | 'select';
   protected overlay: FabricOverlay | null = null;
   protected imageId: ImageId | null = null;
+  protected callbacks: ToolCallbacks | null = null;
 
-  activate(overlay: FabricOverlay, imageId: ImageId): void {
+  activate(overlay: FabricOverlay, imageId: ImageId, callbacks: ToolCallbacks): void {
     this.overlay = overlay;
     this.imageId = imageId;
+    this.callbacks = callbacks;
   }
 
   deactivate(): void {
     this.overlay = null;
     this.imageId = null;
+    this.callbacks = null;
   }
 
   abstract onPointerDown(event: PointerEvent, imagePoint: Point): void;
   abstract onPointerMove(event: PointerEvent, imagePoint: Point): void;
   abstract onPointerUp(event: PointerEvent, imagePoint: Point): void;
-  onKeyDown(_event: KeyboardEvent): void {} // Optional implementation
+  onKeyDown(_event: KeyboardEvent): void {}
   abstract cancel(): void;
 }
 
@@ -57,39 +77,26 @@ export function createAnnotationFromFabricObject(
   contextId: AnnotationContextId,
   style: AnnotationStyle,
   type: AnnotationType
-): Annotation | null {
+): Omit<Annotation, 'createdAt' | 'updatedAt'> | null {
   const geometry = getGeometryFromFabricObject(obj, type);
   if (!geometry) return null;
 
-  const now = new Date().toISOString();
   return {
     id: createAnnotationId(generateId()),
     imageId,
     contextId,
     geometry,
     style,
-    createdAt: now,
-    updatedAt: now,
   };
 }
 
 function getGeometryFromFabricObject(obj: FabricObject, type: AnnotationType): Geometry | null {
   if (type === 'rectangle' && obj instanceof Rect) {
-    // Fabric's width/height are pre-scaling. We need effective width/height.
-    // Also handle negative scaling (flipping).
     const width = obj.width * obj.scaleX;
     const height = obj.height * obj.scaleY;
     const left = obj.left;
     const top = obj.top;
 
-    // Normalize if scale is negative
-    // But usually we just store as is or normalize?
-    // Let's assume positive width/height for now or normalize.
-    // Standard geometry usually expects positive width/height.
-
-    // transformPoint logic for rotation?
-    // The spec says: origin: Point, width, height, rotation.
-    // origin is top-left.
     return {
       type: 'rectangle',
       origin: { x: left, y: top },
@@ -100,7 +107,6 @@ function getGeometryFromFabricObject(obj: FabricObject, type: AnnotationType): G
   }
 
   if (type === 'circle' && obj instanceof Circle) {
-      // Fabric circle radius is unscaled.
       const radius = obj.radius * Math.max(Math.abs(obj.scaleX), Math.abs(obj.scaleY));
       const center = obj.getCenterPoint();
       return {
@@ -143,10 +149,9 @@ function getGeometryFromFabricObject(obj: FabricObject, type: AnnotationType): G
           return {
               type: 'path',
               points: points,
-              closed: false, // Polyline is open usually. Polygon is closed.
+              closed: false,
           };
       }
-       // Handle Path if needed, but spec mentions Polyline for path tool
   }
 
   return null;

@@ -1,6 +1,5 @@
 import { Line } from 'fabric';
 import { BaseTool, createAnnotationFromFabricObject } from './base-tool.js';
-import { actions, contextState } from '../../state/store.js';
 import { AnnotationType, Point, AnnotationStyle } from '../types.js';
 import { DEFAULT_ANNOTATION_STYLE } from '../constants.js';
 
@@ -14,8 +13,6 @@ export class LineTool extends BaseTool {
 
     this.startPoint = imagePoint;
 
-    // Create preview line
-    // Fabric Line takes [x1, y1, x2, y2]
     this.preview = new Line([imagePoint.x, imagePoint.y, imagePoint.x, imagePoint.y], {
       fill: 'transparent',
       stroke: 'rgba(0,0,0,0.5)',
@@ -43,20 +40,19 @@ export class LineTool extends BaseTool {
   }
 
   onPointerUp(_event: PointerEvent, _imagePoint: Point): void {
-    if (!this.overlay || !this.preview || !this.startPoint || !this.imageId) {
+    if (!this.overlay || !this.preview || !this.startPoint || !this.imageId || !this.callbacks) {
         this.cancel();
         return;
     }
 
-    const activeContextId = contextState.activeContextId;
+    const activeContextId = this.callbacks.getActiveContextId();
     if (!activeContextId) {
         console.warn('No active context, cannot create annotation');
         this.cancel();
         return;
     }
 
-    const activeContext = contextState.contexts.find(c => c.id === activeContextId);
-    const toolConstraint = activeContext?.tools.find(t => t.type === this.type);
+    const toolConstraint = this.callbacks.getToolConstraint(this.type);
 
     const style: AnnotationStyle = {
         ...DEFAULT_ANNOTATION_STYLE,
@@ -77,7 +73,7 @@ export class LineTool extends BaseTool {
     this.overlay.canvas.requestRenderAll();
 
     if (annotation) {
-      actions.addAnnotation(annotation);
+      this.callbacks.addAnnotation(annotation);
     }
   }
 

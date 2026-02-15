@@ -1,14 +1,16 @@
 import { render } from 'solid-js/web';
 import ViewerCell from '../src/components/ViewerCell.js';
 import { createImageId, createAnnotationContextId, AnnotationType } from '../src/core/types.js';
-import { actions, uiState, annotationState, contextState } from '../src/state/store.js';
+import { AnnotatorProvider, useAnnotator } from '../src/state/annotator-context.js';
 
-// Setup contexts
 const CONTEXT_ID = createAnnotationContextId('default');
 const IMAGE_ID = createImageId('highsmith');
 
-// Initialize store with context
-actions.setContexts([{
+function AppContent() {
+  const { uiState, annotationState, actions } = useAnnotator();
+
+  // Initialize context (runs once since SolidJS components execute once)
+  actions.setContexts([{
     id: CONTEXT_ID,
     label: 'Default Context',
     tools: [
@@ -18,10 +20,9 @@ actions.setContexts([{
         { type: 'point' },
         { type: 'path' },
     ]
-}]);
-actions.setActiveContext(CONTEXT_ID);
+  }]);
+  actions.setActiveContext(CONTEXT_ID);
 
-function App() {
   const tools: (AnnotationType | 'select' | null)[] = [
       null, 'select', 'rectangle', 'circle', 'line', 'point', 'path'
   ];
@@ -76,6 +77,14 @@ function App() {
         />
       </div>
     </div>
+  );
+}
+
+function App() {
+  return (
+    <AnnotatorProvider>
+      <AppContent />
+    </AnnotatorProvider>
   );
 }
 

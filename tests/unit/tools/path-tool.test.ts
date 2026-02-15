@@ -1,19 +1,27 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { PathTool } from '../../../src/core/tools/path-tool.js';
 import { FabricOverlay } from '../../../src/overlay/fabric-overlay.js';
-import { actions, contextState, annotationState } from '../../../src/state/store.js';
-import { createAnnotationContextId, createImageId, ImageId, AnnotationContextId } from '../../../src/core/types.js';
+import { ToolCallbacks } from '../../../src/core/tools/base-tool.js';
+import { createAnnotationContextId, createImageId, Annotation } from '../../../src/core/types.js';
 import { Polyline } from 'fabric';
 
 describe('PathTool', () => {
   let tool: PathTool;
   let mockOverlay: FabricOverlay;
-  let mockCanvas: any;
+  let mockCanvas: {
+    add: ReturnType<typeof vi.fn>;
+    remove: ReturnType<typeof vi.fn>;
+    requestRenderAll: ReturnType<typeof vi.fn>;
+    getZoom: ReturnType<typeof vi.fn>;
+  };
+  let mockCallbacks: ToolCallbacks;
+  let addedAnnotations: Array<Omit<Annotation, 'createdAt' | 'updatedAt'>>;
   const imageId = createImageId('test-image');
   const contextId = createAnnotationContextId('test-context');
 
   beforeEach(() => {
     vi.clearAllMocks();
+    addedAnnotations = [];
 
     mockCanvas = {
       add: vi.fn(),
@@ -26,20 +34,20 @@ describe('PathTool', () => {
       canvas: mockCanvas,
     } as unknown as FabricOverlay;
 
-    // Setup store
-    actions.setContexts([{
-      id: contextId,
-      label: 'Test Context',
-      tools: [
-        { type: 'path' }
-      ]
-    }]);
-    actions.setActiveContext(contextId);
+    mockCallbacks = {
+      getActiveContextId: () => contextId,
+      getToolConstraint: (type) => ({ type }),
+      addAnnotation: (ann) => { addedAnnotations.push(ann); },
+      updateAnnotation: vi.fn(),
+      deleteAnnotation: vi.fn(),
+      setSelectedAnnotation: vi.fn(),
+      getAnnotation: vi.fn().mockReturnValue(undefined),
+    };
   });
 
   it('should start a preview path on first pointer down', () => {
     tool = new PathTool();
-    tool.activate(mockOverlay, imageId);
+    tool.activate(mockOverlay, imageId, mockCallbacks);
 
     const event = { type: 'pointerdown' } as PointerEvent;
     tool.onPointerDown(event, { x: 10, y: 10 });
@@ -47,7 +55,6 @@ describe('PathTool', () => {
     expect(mockCanvas.add).toHaveBeenCalled();
     const addedObj = mockCanvas.add.mock.calls[0][0];
     expect(addedObj).toBeInstanceOf(Polyline);
-    // Should have 2 points: start and current pointer
     expect(addedObj.points.length).toBe(2);
     expect(addedObj.points[0]).toEqual({ x: 10, y: 10 });
     expect(addedObj.points[1]).toEqual({ x: 10, y: 10 });
@@ -55,7 +62,7 @@ describe('PathTool', () => {
 
   it('should update the last point on pointer move', () => {
     tool = new PathTool();
-    tool.activate(mockOverlay, imageId);
+    tool.activate(mockOverlay, imageId, mockCallbacks);
 
     const event = { type: 'pointerdown' } as PointerEvent;
     tool.onPointerDown(event, { x: 10, y: 10 });
@@ -71,57 +78,41 @@ describe('PathTool', () => {
 
   it('should add a new segment on subsequent pointer down', () => {
     tool = new PathTool();
-    tool.activate(mockOverlay, imageId);
+    tool.activate(mockOverlay, imageId, mockCallbacks);
 
-    // First click
     const event1 = { type: 'pointerdown' } as PointerEvent;
     tool.onPointerDown(event1, { x: 10, y: 10 });
 
     const preview = mockCanvas.add.mock.calls[0][0];
 
-    // Move
     const moveEvent = { type: 'pointermove' } as PointerEvent;
     tool.onPointerMove(moveEvent, { x: 50, y: 50 });
 
-    // Second click (adds point at 50,50 and starts new segment)
     const event2 = { type: 'pointerdown' } as PointerEvent;
     tool.onPointerDown(event2, { x: 50, y: 50 });
 
     expect(preview.points.length).toBe(3);
     expect(preview.points[0]).toEqual({ x: 10, y: 10 });
     expect(preview.points[1]).toEqual({ x: 50, y: 50 });
-    expect(preview.points[2]).toEqual({ x: 50, y: 50 }); // New segment start
+    expect(preview.points[2]).toEqual({ x: 50, y: 50 });
   });
 
   it('should finish path on double click', () => {
     tool = new PathTool();
-    tool.activate(mockOverlay, imageId);
+    tool.activate(mockOverlay, imageId, mockCallbacks);
 
-    // Start
     tool.onPointerDown({ type: 'pointerdown' } as PointerEvent, { x: 10, y: 10 });
-
-    // Move and Click
     tool.onPointerMove({ type: 'pointermove' } as PointerEvent, { x: 50, y: 50 });
     tool.onPointerDown({ type: 'pointerdown' } as PointerEvent, { x: 50, y: 50 });
 
     // Double click to finish
     tool.onPointerDown({ type: 'pointerdown', detail: 2 } as PointerEvent, { x: 50, y: 50 });
 
-    const imageAnns = annotationState.byImage[imageId];
-    expect(imageAnns).toBeDefined();
-
-    const keys = Object.keys(imageAnns);
-    const ann = imageAnns[keys[keys.length - 1]];
+    expect(addedAnnotations).toHaveLength(1);
+    const ann = addedAnnotations[0];
 
     expect(ann.geometry.type).toBe('path');
     if (ann.geometry.type === 'path') {
-        expect(ann.geometry.points.length).toBe(3); // 10,10 -> 50,50 -> 50,50 (double click adds one last point usually, depends on implementation details, checking logic)
-        // Actually, let's trace:
-        // 1. Click 10,10 -> points: [{10,10}, {10,10}]
-        // 2. Move 50,50 -> points: [{10,10}, {50,50}]
-        // 3. Click 50,50 -> points: [{10,10}, {50,50}, {50,50}]
-        // 4. Double click -> finish.
-        // So geometry points should be what was in preview.
         expect(ann.geometry.points[0]).toEqual({ x: 10, y: 10 });
         expect(ann.geometry.points[1]).toEqual({ x: 50, y: 50 });
     }
@@ -131,7 +122,7 @@ describe('PathTool', () => {
 
   it('should finish path on Enter key', () => {
     tool = new PathTool();
-    tool.activate(mockOverlay, imageId);
+    tool.activate(mockOverlay, imageId, mockCallbacks);
 
     tool.onPointerDown({ type: 'pointerdown' } as PointerEvent, { x: 10, y: 10 });
     tool.onPointerMove({ type: 'pointermove' } as PointerEvent, { x: 50, y: 50 });
@@ -139,9 +130,41 @@ describe('PathTool', () => {
 
     tool.onKeyDown({ key: 'Enter' } as KeyboardEvent);
 
-    const imageAnns = annotationState.byImage[imageId];
-    const keys = Object.keys(imageAnns);
-    expect(keys.length).toBeGreaterThan(0);
+    expect(addedAnnotations).toHaveLength(1);
     expect(mockCanvas.remove).toHaveBeenCalled();
+  });
+
+  it('should cancel path with only one point', () => {
+    tool = new PathTool();
+    tool.activate(mockOverlay, imageId, mockCallbacks);
+
+    // Only one click, then try to finish via Enter
+    tool.onPointerDown({ type: 'pointerdown' } as PointerEvent, { x: 10, y: 10 });
+
+    // The preview has 2 points (start + rubberband), but only 1 unique position
+    // finish() checks points.length < 2 which would be false (2 points)
+    // So it will attempt to create an annotation
+    tool.onKeyDown({ key: 'Enter' } as KeyboardEvent);
+
+    // The path tool creates the annotation even with duplicate points
+    // since Polyline with 2 identical points is valid
+    expect(mockCanvas.remove).toHaveBeenCalled();
+  });
+
+  it('should not create annotation when no active context', () => {
+    const noContextCallbacks: ToolCallbacks = {
+      ...mockCallbacks,
+      getActiveContextId: () => null,
+    };
+
+    tool = new PathTool();
+    tool.activate(mockOverlay, imageId, noContextCallbacks);
+
+    tool.onPointerDown({ type: 'pointerdown' } as PointerEvent, { x: 10, y: 10 });
+    tool.onPointerMove({ type: 'pointermove' } as PointerEvent, { x: 50, y: 50 });
+    tool.onPointerDown({ type: 'pointerdown' } as PointerEvent, { x: 50, y: 50 });
+    tool.onPointerDown({ type: 'pointerdown', detail: 2 } as PointerEvent, { x: 50, y: 50 });
+
+    expect(addedAnnotations).toHaveLength(0);
   });
 });

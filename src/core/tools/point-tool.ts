@@ -1,49 +1,36 @@
-import { Circle } from 'fabric';
-import { BaseTool, createAnnotationFromFabricObject } from './base-tool.js';
-import { actions, contextState } from '../../state/store.js';
-import { AnnotationType, Point, AnnotationStyle } from '../types.js';
+import { BaseTool } from './base-tool.js';
+import { AnnotationType, Point, AnnotationStyle, createAnnotationId } from '../types.js';
 import { DEFAULT_ANNOTATION_STYLE } from '../constants.js';
+import { generateId } from '../../utils/id.js';
 
 export class PointTool extends BaseTool {
   readonly type: AnnotationType = 'point';
 
   onPointerDown(_event: PointerEvent, imagePoint: Point): void {
-    if (!this.overlay || !this.imageId) return;
+    if (!this.overlay || !this.imageId || !this.callbacks) return;
 
-    const activeContextId = contextState.activeContextId;
+    const activeContextId = this.callbacks.getActiveContextId();
     if (!activeContextId) {
         console.warn('No active context, cannot create annotation');
         return;
     }
 
-    // Create a temporary object to get geometry
-    const circle = new Circle({
-        left: imagePoint.x,
-        top: imagePoint.y,
-        radius: 1, // Dummy radius
-        originX: 'center',
-        originY: 'center',
-    });
-
-    const activeContext = contextState.contexts.find(c => c.id === activeContextId);
-    const toolConstraint = activeContext?.tools.find(t => t.type === this.type);
+    const toolConstraint = this.callbacks.getToolConstraint(this.type);
 
     const style: AnnotationStyle = {
         ...DEFAULT_ANNOTATION_STYLE,
         ...toolConstraint?.defaultStyle,
     };
 
-    const annotation = createAnnotationFromFabricObject(
-      circle,
-      this.imageId,
-      activeContextId,
+    const annotation = {
+      id: createAnnotationId(generateId()),
+      imageId: this.imageId,
+      contextId: activeContextId,
+      geometry: { type: 'point' as const, position: { x: imagePoint.x, y: imagePoint.y } },
       style,
-      this.type
-    );
+    };
 
-    if (annotation) {
-      actions.addAnnotation(annotation);
-    }
+    this.callbacks.addAnnotation(annotation);
   }
 
   onPointerMove(_event: PointerEvent, _imagePoint: Point): void {}

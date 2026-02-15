@@ -49,3 +49,6 @@ export {
   useAnnotator,
   createConstraintStatus,
 } from './state/index.js';
+
+// Tools
+export type { ToolCallbacks, AnnotatedFabricObject } from './core/tools/base-tool.js';

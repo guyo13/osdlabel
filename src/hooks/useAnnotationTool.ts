@@ -1,24 +1,32 @@
 import { createEffect, onCleanup } from 'solid-js';
 import type { FabricOverlay } from '../overlay/fabric-overlay.js';
-import { AnnotationTool } from '../core/tools/base-tool.js';
+import { AnnotationTool, ToolCallbacks } from '../core/tools/base-tool.js';
 import { RectangleTool } from '../core/tools/rectangle-tool.js';
 import { CircleTool } from '../core/tools/circle-tool.js';
 import { LineTool } from '../core/tools/line-tool.js';
 import { PointTool } from '../core/tools/point-tool.js';
 import { PathTool } from '../core/tools/path-tool.js';
 import { SelectTool } from '../core/tools/select-tool.js';
-import { uiState } from '../state/store.js';
+import { useAnnotator } from '../state/annotator-context.js';
 import { ImageId, Point } from '../core/types.js';
+
+interface FabricPointerEvent {
+  readonly e: MouseEvent | PointerEvent | TouchEvent;
+  readonly scenePoint?: { readonly x: number; readonly y: number };
+  readonly absolutePointer?: { readonly x: number; readonly y: number };
+}
 
 export function useAnnotationTool(
   overlay: () => FabricOverlay | undefined,
   imageId: () => ImageId | undefined,
   isActive: () => boolean
 ) {
+  const { uiState, contextState, annotationState, actions } = useAnnotator();
+
   createEffect(() => {
     const ov = overlay();
     const active = isActive();
-    const type = uiState.activeTool; // Read from store
+    const type = uiState.activeTool;
     const imgId = imageId();
 
     if (!ov || !imgId) {
@@ -47,27 +55,46 @@ export function useAnnotationTool(
         return;
     }
 
+    // Construct callbacks from context
+    const callbacks: ToolCallbacks = {
+      getActiveContextId: () => contextState.activeContextId,
+      getToolConstraint: (toolType) => {
+        const activeContextId = contextState.activeContextId;
+        if (!activeContextId) return undefined;
+        const activeContext = contextState.contexts.find(c => c.id === activeContextId);
+        return activeContext?.tools.find(t => t.type === toolType);
+      },
+      addAnnotation: (annotation) => actions.addAnnotation(annotation),
+      updateAnnotation: (id, imageIdArg, patch) => actions.updateAnnotation(id, imageIdArg, patch),
+      deleteAnnotation: (id, imageIdArg) => actions.deleteAnnotation(id, imageIdArg),
+      setSelectedAnnotation: (id) => actions.setSelectedAnnotation(id),
+      getAnnotation: (id, imageIdArg) => {
+        const imageAnns = annotationState.byImage[imageIdArg];
+        return imageAnns?.[id];
+      },
+    };
+
     // Activate tool
     ov.setMode('annotation');
-    tool.activate(ov, imgId);
+    tool.activate(ov, imgId, callbacks);
 
     // Handlers
-    const handleDown = (opt: any) => {
+    const handleDown = (opt: FabricPointerEvent) => {
         if (!tool) return;
         const p = getScenePoint(ov, opt);
-        tool.onPointerDown(opt.e, p);
+        tool.onPointerDown(opt.e as PointerEvent, p);
     };
 
-    const handleMove = (opt: any) => {
+    const handleMove = (opt: FabricPointerEvent) => {
         if (!tool) return;
         const p = getScenePoint(ov, opt);
-        tool.onPointerMove(opt.e, p);
+        tool.onPointerMove(opt.e as PointerEvent, p);
     };
 
-    const handleUp = (opt: any) => {
+    const handleUp = (opt: FabricPointerEvent) => {
         if (!tool) return;
         const p = getScenePoint(ov, opt);
-        tool.onPointerUp(opt.e, p);
+        tool.onPointerUp(opt.e as PointerEvent, p);
     };
 
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -80,7 +107,6 @@ export function useAnnotationTool(
     ov.canvas.on('mouse:move', handleMove);
     ov.canvas.on('mouse:up', handleUp);
 
-    // Attach keydown to window (or verify if we need to scope it)
     window.addEventListener('keydown', handleKeyDown);
 
     onCleanup(() => {
@@ -95,27 +121,13 @@ export function useAnnotationTool(
   });
 }
 
-function getScenePoint(overlay: FabricOverlay, opt: any): Point {
-    // Fabric v6+ provides scenePoint (absolutePointer in image coordinates if viewportTransform is set)
+function getScenePoint(overlay: FabricOverlay, opt: FabricPointerEvent): Point {
     if (opt.scenePoint) {
         return opt.scenePoint;
     }
-    // Fallback if scenePoint is missing (older fabric or different event)
-    // opt.absolutePointer usually holds the point in scene coordinates (transformed by viewportTransform)
     if (opt.absolutePointer) {
         return opt.absolutePointer;
     }
-
-    // Final fallback: use overlay.screenToImage with clientX/Y
-    // But we need coordinate relative to viewer element.
-    // Fabric event has e.offsetX/Y which are relative to canvas.
-    // Since canvas matches viewer element, offsetX/Y are viewer element coordinates.
-    // screenToImage expects viewer element coordinates?
-    // FabricOverlay.screenToImage expects "screenPoint".
-    // "screenToImage(screenPoint: Point): Point { ... viewerElementToImageCoordinates ... }"
-    // OSD `viewerElementToImageCoordinates` expects coordinates relative to the viewer element.
-    // So if we pass {x: opt.e.offsetX, y: opt.e.offsetY}, it should work.
-    // Unless Fabric uses different offsets.
-
-    return overlay.screenToImage({ x: opt.e.offsetX, y: opt.e.offsetY });
+    const mouseEvent = opt.e as MouseEvent;
+    return overlay.screenToImage({ x: mouseEvent.offsetX, y: mouseEvent.offsetY });
 }

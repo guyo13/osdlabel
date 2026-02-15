@@ -1,6 +1,5 @@
 import { Polyline } from 'fabric';
 import { BaseTool, createAnnotationFromFabricObject } from './base-tool.js';
-import { actions, contextState } from '../../state/store.js';
 import { AnnotationType, Point, AnnotationStyle } from '../types.js';
 import { DEFAULT_ANNOTATION_STYLE } from '../constants.js';
 
@@ -18,8 +17,6 @@ export class PathTool extends BaseTool {
     }
 
     if (!this.preview) {
-        // Start new path
-        // First point is the start. Second point is the rubber band end (initially same as start).
         this.preview = new Polyline([imagePoint, { ...imagePoint }], {
             fill: 'transparent',
             stroke: 'rgba(0,0,0,0.5)',
@@ -31,13 +28,8 @@ export class PathTool extends BaseTool {
         });
         this.overlay.canvas.add(this.preview);
     } else {
-        // Add point
-        // The last point in current points array is the one being moved by onPointerMove.
-        // We want to "commit" that position and add a NEW last point for the next segment.
         const points = this.preview.points || [];
         points.push({ ...imagePoint });
-
-        // Force update points
         this.preview.set({ points: [...points] });
     }
 
@@ -50,7 +42,6 @@ export class PathTool extends BaseTool {
     const points = this.preview.points;
     if (!points || points.length === 0) return;
 
-    // Update last point (rubber band end)
     const lastPoint = points[points.length - 1];
     if (lastPoint) {
       lastPoint.x = imagePoint.x;
@@ -74,7 +65,7 @@ export class PathTool extends BaseTool {
   }
 
   private finish() {
-      if (!this.overlay || !this.preview || !this.imageId) {
+      if (!this.overlay || !this.preview || !this.imageId || !this.callbacks) {
           this.cancel();
           return;
       }
@@ -85,15 +76,14 @@ export class PathTool extends BaseTool {
           return;
       }
 
-      const activeContextId = contextState.activeContextId;
+      const activeContextId = this.callbacks.getActiveContextId();
       if (!activeContextId) {
         console.warn('No active context, cannot create annotation');
         this.cancel();
         return;
       }
 
-      const activeContext = contextState.contexts.find(c => c.id === activeContextId);
-      const toolConstraint = activeContext?.tools.find(t => t.type === this.type);
+      const toolConstraint = this.callbacks.getToolConstraint(this.type);
 
       const style: AnnotationStyle = {
         ...DEFAULT_ANNOTATION_STYLE,
@@ -113,7 +103,7 @@ export class PathTool extends BaseTool {
       this.overlay.canvas.requestRenderAll();
 
       if (annotation) {
-        actions.addAnnotation(annotation);
+        this.callbacks.addAnnotation(annotation);
       }
   }
 

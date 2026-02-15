@@ -6,18 +6,20 @@ import { FabricOverlay } from '../overlay/fabric-overlay.js';
 import type { OverlayMode } from '../overlay/fabric-overlay.js';
 import type { ImageSource } from '../core/types.js';
 import { useAnnotationTool } from '../hooks/useAnnotationTool.js';
-import { annotationState } from '../state/store.js';
+import { useAnnotator } from '../state/annotator-context.js';
+import { AnnotatedFabricObject } from '../core/tools/base-tool.js';
 import { createFabricObjectFromAnnotation, updateFabricObjectFromAnnotation } from '../core/fabric-utils.js';
 
 export interface ViewerCellProps {
   readonly imageSource: ImageSource | undefined;
   readonly isActive: boolean;
-  readonly mode?: OverlayMode; // Deprecated, controlled by tool state
+  readonly mode?: OverlayMode;
   readonly onActivate: () => void;
   readonly onOverlayReady?: (overlay: FabricOverlay) => void;
 }
 
 const ViewerCell: Component<ViewerCellProps> = (props) => {
+  const { annotationState } = useAnnotator();
   let containerRef: HTMLDivElement | undefined;
   let viewer: OpenSeadragon.Viewer | undefined;
   const [overlay, setOverlay] = createSignal<FabricOverlay>();
@@ -40,7 +42,6 @@ const ViewerCell: Component<ViewerCellProps> = (props) => {
       if (!viewer || overlay()) return;
       const ov = new FabricOverlay(viewer);
       setOverlay(ov);
-      // Initial mode set by useAnnotationTool effect
       props.onOverlayReady?.(ov);
     });
 
@@ -92,11 +93,12 @@ const ViewerCell: Component<ViewerCellProps> = (props) => {
       const currentObjects = new Map<string, FabricObject>();
       const objectsToRemove: FabricObject[] = [];
 
-      canvas.getObjects().forEach((obj: any) => {
-          if (obj.annotationId) {
-              currentObjects.set(obj.annotationId, obj);
+      for (const obj of canvas.getObjects()) {
+          const annotatedObj = obj as AnnotatedFabricObject;
+          if (annotatedObj.annotationId) {
+              currentObjects.set(annotatedObj.annotationId, obj);
           }
-      });
+      }
 
       const activeIds = new Set<string>();
 
@@ -109,14 +111,14 @@ const ViewerCell: Component<ViewerCellProps> = (props) => {
               // Create
               const newObj = createFabricObjectFromAnnotation(ann);
               if (newObj) {
-                  (newObj as any).updatedAt = ann.updatedAt;
+                  (newObj as AnnotatedFabricObject).updatedAt = ann.updatedAt;
                   canvas.add(newObj);
               }
           } else {
               // Update if changed
-              if ((obj as any).updatedAt !== ann.updatedAt) {
+              if ((obj as AnnotatedFabricObject).updatedAt !== ann.updatedAt) {
                    updateFabricObjectFromAnnotation(obj, ann);
-                   (obj as any).updatedAt = ann.updatedAt;
+                   (obj as AnnotatedFabricObject).updatedAt = ann.updatedAt;
                    obj.setCoords();
               }
           }
@@ -153,7 +155,6 @@ const ViewerCell: Component<ViewerCellProps> = (props) => {
 
 function openImage(viewer: OpenSeadragon.Viewer, source: ImageSource): void {
   const url = source.dziUrl;
-  // If URL ends with .dzi, use it directly; otherwise use type: 'image'
   if (url.endsWith('.dzi')) {
     viewer.open(url);
   } else {

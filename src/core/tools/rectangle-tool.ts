@@ -1,6 +1,5 @@
 import { Rect } from 'fabric';
 import { BaseTool, createAnnotationFromFabricObject } from './base-tool.js';
-import { actions, contextState } from '../../state/store.js';
 import { AnnotationType, Point, AnnotationStyle } from '../types.js';
 import { DEFAULT_ANNOTATION_STYLE } from '../constants.js';
 
@@ -14,7 +13,6 @@ export class RectangleTool extends BaseTool {
 
     this.startPoint = imagePoint;
 
-    // Create preview rect
     this.preview = new Rect({
       left: imagePoint.x,
       top: imagePoint.y,
@@ -22,11 +20,11 @@ export class RectangleTool extends BaseTool {
       height: 0,
       fill: 'transparent',
       stroke: 'rgba(0,0,0,0.5)',
-      strokeWidth: 2 / this.overlay.canvas.getZoom(), // Keep stroke thin on screen
+      strokeWidth: 2 / this.overlay.canvas.getZoom(),
       strokeDashArray: [5 / this.overlay.canvas.getZoom(), 5 / this.overlay.canvas.getZoom()],
       selectable: false,
       evented: false,
-      strokeUniform: true // Fabric feature to keep stroke width constant? No, that's SVG.
+      strokeUniform: true,
     });
 
     this.overlay.canvas.add(this.preview);
@@ -50,20 +48,19 @@ export class RectangleTool extends BaseTool {
   }
 
   onPointerUp(_event: PointerEvent, _imagePoint: Point): void {
-    if (!this.overlay || !this.preview || !this.startPoint || !this.imageId) {
+    if (!this.overlay || !this.preview || !this.startPoint || !this.imageId || !this.callbacks) {
         this.cancel();
         return;
     }
 
-    const activeContextId = contextState.activeContextId;
+    const activeContextId = this.callbacks.getActiveContextId();
     if (!activeContextId) {
         console.warn('No active context, cannot create annotation');
         this.cancel();
         return;
     }
 
-    const activeContext = contextState.contexts.find(c => c.id === activeContextId);
-    const toolConstraint = activeContext?.tools.find(t => t.type === this.type);
+    const toolConstraint = this.callbacks.getToolConstraint(this.type);
 
     const style: AnnotationStyle = {
         ...DEFAULT_ANNOTATION_STYLE,
@@ -78,14 +75,13 @@ export class RectangleTool extends BaseTool {
       this.type
     );
 
-    // Remove preview
     this.overlay.canvas.remove(this.preview);
     this.preview = null;
     this.startPoint = null;
     this.overlay.canvas.requestRenderAll();
 
     if (annotation) {
-      actions.addAnnotation(annotation);
+      this.callbacks.addAnnotation(annotation);
     }
   }
 
