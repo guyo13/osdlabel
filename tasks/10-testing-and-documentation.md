@@ -84,7 +84,7 @@ Dedicated documentation for the constraint system:
 ### 7. Write `README.md`
 
 - Project description and purpose.
-- Installation instructions (`pnpm add @scope/image-annotator solid-js`).
+- Installation instructions (`pnpm add @guyo13/osdlabel solid-js`).
 - Quick start example (minimal code to render the annotator).
 - Link to full API docs.
 - Development setup instructions.
@@ -134,7 +134,7 @@ pnpm build
 Verify:
 - `dist/` contains `.js` and `.d.ts` files.
 - No `src/` paths leak into the declarations.
-- A consumer project can `import { Annotator } from '@scope/image-annotator'` and get full type information.
+- A consumer project can `import { Annotator } from '@guyo13/osdlabel'` and get full type information.
 
 ## Verification
 

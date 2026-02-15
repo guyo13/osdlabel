@@ -15,7 +15,7 @@ Set up the project from scratch with all tooling configured and working, then de
 pnpm init
 ```
 
-Set `"type": "module"` in `package.json`. Set the package name to `@scope/image-annotator`.
+Set `"type": "module"` in `package.json`. Set the package name to `@guyo13/osdlabel`.
 
 ### 2. Install dependencies (exact versions)
 
