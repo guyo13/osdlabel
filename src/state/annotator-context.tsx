@@ -1,9 +1,9 @@
 import { createContext, useContext, JSX, Accessor } from 'solid-js';
-import { AnnotationState, UIState, ConstraintStatus } from '../core/types';
-import { createAnnotationStore } from './annotation-store';
-import { createUIStore } from './ui-store';
-import { createContextStore, createConstraintStatus, ContextState } from './context-store';
-import { createActions } from './actions';
+import { AnnotationState, UIState, ConstraintStatus, ContextState } from '../core/types.js';
+import { createAnnotationStore } from './annotation-store.js';
+import { createUIStore } from './ui-store.js';
+import { createContextStore, createConstraintStatus } from './context-store.js';
+import { createActions } from './actions.js';
 
 interface AnnotatorContextValue {
   annotationState: AnnotationState;

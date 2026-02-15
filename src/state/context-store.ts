@@ -1,11 +1,6 @@
 import { createStore } from 'solid-js/store';
 import { createMemo } from 'solid-js';
-import { AnnotationContext, AnnotationContextId, AnnotationState, ConstraintStatus, AnnotationType } from '../core/types';
-
-export interface ContextState {
-  contexts: AnnotationContext[];
-  activeContextId: AnnotationContextId | null;
-}
+import { ContextState, AnnotationContextId, AnnotationState, ConstraintStatus, AnnotationType } from '../core/types.js';
 
 export function createContextStore() {
   const [state, setState] = createStore<ContextState>({

@@ -132,6 +132,12 @@ export interface UIState {
   readonly selectedAnnotationId: AnnotationId | null;
 }
 
+/** Context state */
+export interface ContextState {
+  readonly contexts: readonly AnnotationContext[];
+  readonly activeContextId: AnnotationContextId | null;
+}
+
 // ── Constraint Status ────────────────────────────────────────────────────
 
 /** Derived state showing which tools are enabled/disabled for the active context */

@@ -1,5 +1,5 @@
 import { createStore } from 'solid-js/store';
-import { UIState } from '../core/types';
+import { UIState } from '../core/types.js';
 
 export function createUIStore() {
   const [state, setState] = createStore<UIState>({

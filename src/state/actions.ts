@@ -1,34 +1,27 @@
 import { SetStoreFunction, produce } from 'solid-js/store';
-import { Annotation, AnnotationId, ImageId, AnnotationType, AnnotationState, UIState, AnnotationContext, AnnotationContextId } from '../core/types';
-import { ContextState } from './context-store';
-
-type Mutable<T> = {
-  -readonly [P in keyof T]: T[P];
-};
+import { Annotation, AnnotationId, ImageId, AnnotationType, AnnotationState, UIState, AnnotationContext, AnnotationContextId, ContextState } from '../core/types.js';
 
 export function createActions(
   setAnnotationState: SetStoreFunction<AnnotationState>,
   setUIState: SetStoreFunction<UIState>,
   setContextState: SetStoreFunction<ContextState>
 ) {
-  function addAnnotation(annotation: Annotation): void {
+  function addAnnotation(annotation: Omit<Annotation, 'createdAt' | 'updatedAt'>): void {
     setAnnotationState(produce((state) => {
-      const s = state as Mutable<AnnotationState>;
-      const imageAnns = s.byImage[annotation.imageId] ?? {};
+      const imageAnns = state.byImage[annotation.imageId] ?? {};
       const now = new Date().toISOString();
       imageAnns[annotation.id] = {
         ...annotation,
         createdAt: now,
         updatedAt: now,
       };
-      s.byImage[annotation.imageId] = imageAnns;
+      state.byImage[annotation.imageId] = imageAnns;
     }));
   }
 
-  function updateAnnotation(id: AnnotationId, imageId: ImageId, patch: Partial<Omit<Annotation, 'id' | 'imageId'>>): void {
+  function updateAnnotation(id: AnnotationId, imageId: ImageId, patch: Partial<Omit<Annotation, 'id' | 'imageId' | 'createdAt' | 'updatedAt'>>): void {
     setAnnotationState(produce((state) => {
-      const s = state as Mutable<AnnotationState>;
-      const imageAnns = s.byImage[imageId];
+      const imageAnns = state.byImage[imageId];
       if (imageAnns && imageAnns[id]) {
         imageAnns[id] = {
           ...imageAnns[id],
@@ -41,8 +34,7 @@ export function createActions(
 
   function deleteAnnotation(id: AnnotationId, imageId: ImageId): void {
     setAnnotationState(produce((state) => {
-      const s = state as Mutable<AnnotationState>;
-      const imageAnns = s.byImage[imageId];
+      const imageAnns = state.byImage[imageId];
       if (imageAnns) {
         delete imageAnns[id];
       }
@@ -50,47 +42,41 @@ export function createActions(
   }
 
   function setActiveTool(tool: AnnotationType | 'select' | null): void {
-    setUIState(produce((state) => {
-      (state as Mutable<UIState>).activeTool = tool;
-    }));
+    // @ts-ignore - readonly override
+    setUIState('activeTool', tool);
   }
 
   function setActiveCell(cellIndex: number): void {
-    setUIState(produce((state) => {
-      (state as Mutable<UIState>).activeCellIndex = cellIndex;
-    }));
+    // @ts-ignore - readonly override
+    setUIState('activeCellIndex', cellIndex);
   }
 
   function setSelectedAnnotation(id: AnnotationId | null): void {
-    setUIState(produce((state) => {
-      (state as Mutable<UIState>).selectedAnnotationId = id;
-    }));
+    // @ts-ignore - readonly override
+    setUIState('selectedAnnotationId', id);
   }
 
   function assignImageToCell(cellIndex: number, imageId: ImageId): void {
-    setUIState(produce((state) => {
-      (state as Mutable<UIState>).gridAssignments[cellIndex] = imageId;
-    }));
+    setUIState('gridAssignments', cellIndex, imageId);
   }
 
   function setGridDimensions(columns: number, rows: number): void {
     setUIState(produce((state) => {
-      const s = state as Mutable<UIState>;
-      s.gridColumns = columns;
-      s.gridRows = rows;
+      // @ts-ignore - readonly override
+      state.gridColumns = columns;
+      // @ts-ignore - readonly override
+      state.gridRows = rows;
     }));
   }
 
   function setContexts(contexts: AnnotationContext[]): void {
-    setContextState(produce((state) => {
-      state.contexts = contexts;
-    }));
+    // @ts-ignore - readonly override
+    setContextState('contexts', contexts);
   }
 
   function setActiveContext(contextId: AnnotationContextId | null): void {
-    setContextState(produce((state) => {
-      state.activeContextId = contextId;
-    }));
+    // @ts-ignore - readonly override
+    setContextState('activeContextId', contextId);
   }
 
   return {

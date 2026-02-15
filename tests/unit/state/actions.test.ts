@@ -9,7 +9,8 @@ import {
   createImageId,
   createAnnotationContextId,
   Annotation,
-  AnnotationContext
+  AnnotationContext,
+  AnnotationContextId
 } from '../../../src/core/types';
 
 describe('State Management', () => {
@@ -30,14 +31,12 @@ describe('State Management', () => {
   const dummyImageId = createImageId('img1');
   const dummyContextId = createAnnotationContextId('ctx1');
 
-  const dummyAnnotation: Annotation = {
+  const dummyAnnotation: Omit<Annotation, 'createdAt' | 'updatedAt'> = {
     id: dummyAnnotationId,
     imageId: dummyImageId,
     contextId: dummyContextId,
     geometry: { type: 'rectangle', origin: { x: 0, y: 0 }, width: 10, height: 10, rotation: 0 },
     style: { strokeColor: 'red', strokeWidth: 1, fillColor: 'none', fillOpacity: 0, opacity: 1 },
-    createdAt: '',
-    updatedAt: ''
   };
 
   it('addAnnotation adds to the correct image bucket and sets timestamps', () => {
@@ -132,4 +131,73 @@ describe('State Management', () => {
 
     dispose();
   });
+
+  it('setActiveCell updates active cell index', () => {
+    const { uiState, actions, dispose } = createTestStore();
+    actions.setActiveCell(1);
+    expect(uiState.activeCellIndex).toBe(1);
+    dispose();
+  });
+
+  it('assignImageToCell assigns image to cell', () => {
+    const { uiState, actions, dispose } = createTestStore();
+    actions.assignImageToCell(1, dummyImageId);
+    expect(uiState.gridAssignments[1]).toBe(dummyImageId);
+    dispose();
+  });
+
+  it('setGridDimensions updates grid dimensions', () => {
+    const { uiState, actions, dispose } = createTestStore();
+    actions.setGridDimensions(2, 2);
+    expect(uiState.gridColumns).toBe(2);
+    expect(uiState.gridRows).toBe(2);
+    dispose();
+  });
+
+  it('setSelectedAnnotation updates selected annotation ID', () => {
+    const { uiState, actions, dispose } = createTestStore();
+    actions.setSelectedAnnotation(dummyAnnotationId);
+    expect(uiState.selectedAnnotationId).toBe(dummyAnnotationId);
+    dispose();
+  });
+
+  it('setContexts updates context state', () => {
+    const { contextState, actions, dispose } = createTestStore();
+    const context: AnnotationContext = {
+      id: dummyContextId,
+      label: 'Test Context',
+      tools: []
+    };
+    actions.setContexts([context]);
+    expect(contextState.contexts).toHaveLength(1);
+    expect(contextState.contexts[0]).toEqual(context);
+    dispose();
+  });
+
+  it('updateAnnotation handles non-existent annotation gracefully', () => {
+    const { annotationState, actions, dispose } = createTestStore();
+    // No annotation added
+    actions.updateAnnotation(dummyAnnotationId, dummyImageId, { label: 'New Label' });
+    // Should not crash and state should remain unchanged (or empty bucket created if implemented that way)
+    expect(annotationState.byImage[dummyImageId]).toBeUndefined();
+    dispose();
+  });
+
+  it('deleteAnnotation handles non-existent annotation gracefully', () => {
+    const { annotationState, actions, dispose } = createTestStore();
+    actions.deleteAnnotation(dummyAnnotationId, dummyImageId);
+    expect(annotationState.byImage[dummyImageId]).toBeUndefined();
+    dispose();
+  });
+
+  it('Constraint status handles no active context', () => {
+    const { actions, constraintStatus, dispose } = createTestStore();
+    actions.setActiveContext(null);
+    const status = constraintStatus();
+    // All tools should be disabled
+    expect(status.rectangle.enabled).toBe(false);
+    expect(status.circle.enabled).toBe(false);
+    dispose();
+  });
+
 });
