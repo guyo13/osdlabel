@@ -1,188 +1,151 @@
 import { render } from 'solid-js/web';
-import { onMount, onCleanup } from 'solid-js';
-import OpenSeadragon from 'openseadragon';
+import { createSignal } from 'solid-js';
 import { Rect, Circle, Line, Polyline } from 'fabric';
-import { createFabricOverlay } from '../src/overlay/fabric-overlay.js';
-import type { FabricOverlay } from '../src/overlay/fabric-overlay.js';
+import ViewerCell from '../src/components/ViewerCell.js';
+import { createImageId } from '../src/core/types.js';
+import type { FabricOverlay, OverlayMode } from '../src/overlay/fabric-overlay.js';
+
+function addSampleAnnotations(overlay: FabricOverlay): void {
+  const canvas = overlay.canvas;
+
+  // Rectangles
+  canvas.add(new Rect({
+    left: 500, top: 400, width: 600, height: 400,
+    fill: 'rgba(255, 0, 0, 0.2)', stroke: '#ff0000', strokeWidth: 3,
+    selectable: true, evented: true,
+  }));
+  canvas.add(new Rect({
+    left: 2000, top: 1500, width: 1200, height: 800,
+    fill: 'rgba(0, 100, 255, 0.15)', stroke: '#0064ff', strokeWidth: 3,
+    selectable: true, evented: true,
+  }));
+  canvas.add(new Rect({
+    left: 4000, top: 500, width: 300, height: 200,
+    fill: 'rgba(255, 165, 0, 0.2)', stroke: '#ffa500', strokeWidth: 2,
+    selectable: true, evented: true,
+  }));
+
+  // Circles
+  canvas.add(new Circle({
+    left: 1500, top: 800, radius: 200,
+    fill: 'rgba(0, 200, 0, 0.15)', stroke: '#00c800', strokeWidth: 3,
+    selectable: true, evented: true,
+  }));
+  canvas.add(new Circle({
+    left: 3500, top: 2000, radius: 150,
+    fill: 'rgba(200, 0, 200, 0.15)', stroke: '#c800c8', strokeWidth: 2,
+    selectable: true, evented: true,
+  }));
+
+  // Lines
+  canvas.add(new Line([1000, 300, 2500, 1200], {
+    stroke: '#ff4444', strokeWidth: 3, selectable: true, evented: true,
+  }));
+  canvas.add(new Line([3000, 600, 4500, 2500], {
+    stroke: '#4444ff', strokeWidth: 2, selectable: true, evented: true,
+  }));
+
+  // Polyline
+  canvas.add(new Polyline(
+    [{ x: 200, y: 1500 }, { x: 600, y: 1200 }, { x: 1000, y: 1600 },
+     { x: 1400, y: 1300 }, { x: 1800, y: 1700 }],
+    { fill: 'transparent', stroke: '#00cccc', strokeWidth: 3,
+      selectable: true, evented: true },
+  ));
+
+  // Point markers
+  for (const pt of [
+    { x: 600, y: 600 }, { x: 1800, y: 400 }, { x: 3200, y: 1000 },
+    { x: 4200, y: 1800 }, { x: 2500, y: 2500 },
+  ]) {
+    canvas.add(new Circle({
+      left: pt.x - 15, top: pt.y - 15, radius: 15,
+      fill: 'rgba(255, 100, 0, 0.6)', stroke: '#ff6400', strokeWidth: 2,
+      selectable: true, evented: true,
+    }));
+  }
+
+  canvas.renderAll();
+
+  // Debug: log mouse events on the Fabric canvas
+  canvas.on('mouse:down', (e) => {
+    console.log('[Fabric] mouse:down — target:', e.target ? 'object' : 'empty canvas');
+  });
+}
 
 function App() {
-  let containerRef: HTMLDivElement | undefined;
-  let viewer: OpenSeadragon.Viewer | undefined;
-  let overlay: FabricOverlay | undefined;
-
-  onMount(() => {
-    if (!containerRef) return;
-
-    viewer = OpenSeadragon({
-      element: containerRef,
-      prefixUrl: '',
-      showNavigationControl: false,
-      animationTime: 0.3,
-      minZoomLevel: 0.5,
-      maxZoomLevel: 40,
-      visibilityRatio: 0.5,
-      constrainDuringPan: true,
-      tileSources: 'https://openseadragon.github.io/example-images/highsmith/highsmith.dzi',
-    });
-
-    viewer.addHandler('open', () => {
-      if (!viewer) return;
-
-      overlay = createFabricOverlay(viewer);
-
-      // ── Rectangle (top-left area) ──────────────────────────────────
-      const rect1 = new Rect({
-        left: 500,
-        top: 400,
-        width: 600,
-        height: 400,
-        fill: 'rgba(255, 0, 0, 0.2)',
-        stroke: '#ff0000',
-        strokeWidth: 3,
-        selectable: false,
-        evented: false,
-      });
-
-      // ── Large rectangle (center area) ─────────────────────────────
-      const rect2 = new Rect({
-        left: 2000,
-        top: 1500,
-        width: 1200,
-        height: 800,
-        fill: 'rgba(0, 100, 255, 0.15)',
-        stroke: '#0064ff',
-        strokeWidth: 3,
-        selectable: false,
-        evented: false,
-      });
-
-      // ── Small rectangle (detail annotation) ───────────────────────
-      const rect3 = new Rect({
-        left: 4000,
-        top: 500,
-        width: 300,
-        height: 200,
-        fill: 'rgba(255, 165, 0, 0.2)',
-        stroke: '#ffa500',
-        strokeWidth: 2,
-        selectable: false,
-        evented: false,
-      });
-
-      // ── Circle annotations ─────────────────────────────────────────
-      const circle1 = new Circle({
-        left: 1500,
-        top: 800,
-        radius: 200,
-        fill: 'rgba(0, 200, 0, 0.15)',
-        stroke: '#00c800',
-        strokeWidth: 3,
-        selectable: false,
-        evented: false,
-      });
-
-      const circle2 = new Circle({
-        left: 3500,
-        top: 2000,
-        radius: 150,
-        fill: 'rgba(200, 0, 200, 0.15)',
-        stroke: '#c800c8',
-        strokeWidth: 2,
-        selectable: false,
-        evented: false,
-      });
-
-      const circle3 = new Circle({
-        left: 800,
-        top: 2200,
-        radius: 100,
-        fill: 'rgba(255, 255, 0, 0.2)',
-        stroke: '#cccc00',
-        strokeWidth: 2,
-        selectable: false,
-        evented: false,
-      });
-
-      // ── Line annotations ───────────────────────────────────────────
-      const line1 = new Line([1000, 300, 2500, 1200], {
-        stroke: '#ff4444',
-        strokeWidth: 3,
-        selectable: false,
-        evented: false,
-      });
-
-      const line2 = new Line([3000, 600, 4500, 2500], {
-        stroke: '#4444ff',
-        strokeWidth: 2,
-        selectable: false,
-        evented: false,
-      });
-
-      // ── Polyline (open path) ───────────────────────────────────────
-      const polyline1 = new Polyline(
-        [
-          { x: 200, y: 1500 },
-          { x: 600, y: 1200 },
-          { x: 1000, y: 1600 },
-          { x: 1400, y: 1300 },
-          { x: 1800, y: 1700 },
-        ],
-        {
-          fill: 'transparent',
-          stroke: '#00cccc',
-          strokeWidth: 3,
-          selectable: false,
-          evented: false,
-        },
-      );
-
-      // ── Scattered small markers (simulating point-like annotations) ─
-      const markers = [
-        { x: 600, y: 600 },
-        { x: 1800, y: 400 },
-        { x: 3200, y: 1000 },
-        { x: 4200, y: 1800 },
-        { x: 2500, y: 2500 },
-        { x: 1000, y: 2800 },
-        { x: 3800, y: 300 },
-        { x: 700, y: 1800 },
-      ].map(
-        (pt) =>
-          new Circle({
-            left: pt.x - 15,
-            top: pt.y - 15,
-            radius: 15,
-            fill: 'rgba(255, 100, 0, 0.6)',
-            stroke: '#ff6400',
-            strokeWidth: 2,
-            selectable: false,
-            evented: false,
-          }),
-      );
-
-      // Add all annotations to canvas
-      overlay.canvas.add(
-        rect1, rect2, rect3,
-        circle1, circle2, circle3,
-        line1, line2,
-        polyline1,
-        ...markers,
-      );
-      overlay.canvas.requestRenderAll();
-    });
-  });
-
-  onCleanup(() => {
-    overlay?.destroy();
-    viewer?.destroy();
-  });
+  const [mode, setMode] = createSignal<OverlayMode>('navigation');
 
   return (
-    <div style={{ width: '100vw', height: '100vh', margin: '0', padding: '0' }}>
-      <div
-        ref={containerRef}
-        style={{ width: '100%', height: '100%', position: 'relative' }}
-      />
+    <div style={{ width: '100vw', height: '100vh', display: 'flex', 'flex-direction': 'column' }}>
+      <div style={{
+        padding: '8px 12px',
+        background: '#1a1a2e',
+        color: '#fff',
+        display: 'flex',
+        gap: '8px',
+        'align-items': 'center',
+        'font-family': 'system-ui, sans-serif',
+        'font-size': '14px',
+        'flex-shrink': '0',
+      }}>
+        <span style={{ 'margin-right': '8px', opacity: '0.7' }}>Mode:</span>
+        <button
+          onClick={() => setMode('navigation')}
+          style={{
+            padding: '4px 12px',
+            border: 'none',
+            'border-radius': '4px',
+            cursor: 'pointer',
+            background: mode() === 'navigation' ? '#2196F3' : '#333',
+            color: '#fff',
+          }}
+        >
+          Navigation
+        </button>
+        <button
+          onClick={() => setMode('annotation')}
+          style={{
+            padding: '4px 12px',
+            border: 'none',
+            'border-radius': '4px',
+            cursor: 'pointer',
+            background: mode() === 'annotation' ? '#f44336' : '#333',
+            color: '#fff',
+          }}
+        >
+          Annotation
+        </button>
+        <button
+          onClick={() => setMode('selection')}
+          style={{
+            padding: '4px 12px',
+            border: 'none',
+            'border-radius': '4px',
+            cursor: 'pointer',
+            background: mode() === 'selection' ? '#4CAF50' : '#333',
+            color: '#fff',
+          }}
+        >
+          Selection
+        </button>
+        <span style={{ 'margin-left': '16px', opacity: '0.5', 'font-size': '12px' }}>
+          Current: {mode()}
+        </span>
+      </div>
+      <div style={{ flex: '1', 'min-height': '0' }}>
+        <ViewerCell
+          imageSource={{
+            id: createImageId('highsmith'),
+            dziUrl: 'https://openseadragon.github.io/example-images/highsmith/highsmith.dzi',
+            label: 'Highsmith — Library of Congress',
+          }}
+          isActive={true}
+          mode={mode()}
+          onActivate={() => {}}
+          onOverlayReady={addSampleAnnotations}
+        />
+      </div>
     </div>
   );
 }

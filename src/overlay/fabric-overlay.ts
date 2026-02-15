@@ -3,6 +3,9 @@ import { Canvas as FabricCanvas } from 'fabric';
 import type { TMat2D } from 'fabric';
 import type { Point } from '../core/types.js';
 
+/** Overlay interaction modes */
+export type OverlayMode = 'navigation' | 'annotation' | 'selection';
+
 /** Options for creating a FabricOverlay */
 export interface OverlayOptions {
   /** Initial interactive state (default: false) */
@@ -19,6 +22,12 @@ export interface FabricOverlay {
 
   /** Enable/disable annotation interaction on this overlay */
   setInteractive(enabled: boolean): void;
+
+  /** Set the overlay interaction mode */
+  setMode(mode: OverlayMode): void;
+
+  /** Get the current overlay interaction mode */
+  getMode(): OverlayMode;
 
   /** Convert a point from screen-space to image-space */
   screenToImage(screenPoint: Point): Point;
@@ -86,6 +95,9 @@ export function createFabricOverlay(
     height: containerSize.y,
   });
 
+  // ── Current mode tracking ──────────────────────────────────────────
+  let currentMode: OverlayMode = 'navigation';
+
   // ── Sync function ──────────────────────────────────────────────────
   // Uses synchronous renderAll() because this runs inside OSD's own
   // requestAnimationFrame callback. Using the async requestRenderAll()
@@ -139,11 +151,85 @@ export function createFabricOverlay(
       obj.selectable = enabled;
       obj.evented = enabled;
     });
-    fabricCanvas.requestRenderAll();
+    fabricCanvas.renderAll();
   }
 
   if (options?.interactive) {
     setInteractive(true);
+  }
+
+  // ── Selection mode: pass-through clicks on empty canvas to OSD ─────
+  // In selection mode, clicks that don't hit a Fabric object should
+  // let OSD handle the gesture (panning). We temporarily re-enable
+  // OSD mouse nav and disable it again on mouse:up.
+  let selectionPassThrough = false;
+
+  fabricCanvas.on('mouse:down', (e) => {
+    if (currentMode !== 'selection') return;
+    console.log('mouse:down', e.target);
+    if (!e.target) {
+      // Click on empty area — let OSD handle this gesture
+      viewer.setMouseNavEnabled(true);
+      selectionPassThrough = true;
+    }
+  });
+
+  fabricCanvas.on('mouse:up', () => {
+    console.log('mouse:up');
+    if (selectionPassThrough) {
+      // Re-disable OSD nav after the gesture completes
+      console.log('mouse:up - re-disable OSD nav');
+      viewer.setMouseNavEnabled(false);
+      selectionPassThrough = false;
+    }
+  });
+
+  // ── Mode management ────────────────────────────────────────────────
+  function setMode(mode: OverlayMode): void {
+    currentMode = mode;
+    selectionPassThrough = false;
+
+    switch (mode) {
+      case 'navigation':
+        // Fabric non-interactive, OSD handles all input
+        canvasEl.style.pointerEvents = 'none';
+        fabricCanvas.selection = false;
+        fabricCanvas.forEachObject((obj) => {
+          obj.selectable = false;
+          obj.evented = false;
+        });
+        viewer.setMouseNavEnabled(true);
+        break;
+
+      case 'annotation':
+        // Fabric interactive for drawing, OSD nav disabled
+        canvasEl.style.pointerEvents = 'auto';
+        fabricCanvas.selection = false;
+        fabricCanvas.forEachObject((obj) => {
+          obj.selectable = false;
+          obj.evented = false;
+        });
+        viewer.setMouseNavEnabled(false);
+        break;
+
+      case 'selection':
+        // Fabric interactive for selecting existing objects
+        // Clicks on empty areas pass through to OSD (via mouse:down handler)
+        canvasEl.style.pointerEvents = 'auto';
+        fabricCanvas.selection = true;
+        fabricCanvas.forEachObject((obj) => {
+          obj.selectable = true;
+          obj.evented = true;
+        });
+        viewer.setMouseNavEnabled(false);
+        break;
+    }
+
+    fabricCanvas.renderAll();
+  }
+
+  function getMode(): OverlayMode {
+    return currentMode;
   }
 
   // ── Coordinate conversion ──────────────────────────────────────────
@@ -175,6 +261,8 @@ export function createFabricOverlay(
     canvas: fabricCanvas,
     sync,
     setInteractive,
+    setMode,
+    getMode,
     screenToImage,
     imageToScreen,
     destroy,
