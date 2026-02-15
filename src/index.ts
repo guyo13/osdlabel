@@ -33,3 +33,7 @@ export {
   MAX_GRID_SIZE,
   DEFAULT_KEYBOARD_SHORTCUTS,
 } from './core/constants.js';
+
+// Overlay
+export type { FabricOverlay, OverlayOptions, OverlayManager } from './overlay/index.js';
+export { createFabricOverlay, computeViewportTransform, createOverlayManager } from './overlay/index.js';
