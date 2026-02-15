@@ -131,7 +131,7 @@ function App() {
           Annotation
         </button>
         <span style={{ 'margin-left': '16px', opacity: '0.5', 'font-size': '12px' }}>
-          Current: {mode()} {mode() === 'annotation' ? '(Ctrl+drag or middle-click to pan)' : ''}
+          Current: {mode()} {mode() === 'annotation' ? '(Ctrl/Option+drag to pan and Ctrl/Option+scroll to zoom)' : ''}
         </span>
       </div>
       <div style={{ flex: '1', 'min-height': '0' }}>

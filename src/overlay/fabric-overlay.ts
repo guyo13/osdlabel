@@ -278,11 +278,9 @@ export class FabricOverlay {
 
   /**
    * Determine whether a pointerdown event should trigger an OSD pan
-   * pass-through (Ctrl+click or middle-mouse button).
+   * pass-through (Ctrl/Cmd+click).
    */
   private _isPanTrigger(event: PointerEvent): boolean {
-    // Middle mouse button (button === 1)
-    if (event.button === 1) return true;
     // Ctrl+left-click (or Cmd on macOS)
     if ((event.ctrlKey || event.metaKey) && event.button === 0) return true;
     return false;
@@ -385,10 +383,30 @@ export class FabricOverlay {
         this._forwardToFabric('pointerup', originalEvent);
       },
 
-      scrollHandler: (_event: OpenSeadragon.MouseTrackerEvent) => {
-        // Allow scroll-wheel zoom to pass through to OSD in all modes.
-        // In annotation mode, we still want the user to be able to zoom.
-        // No action needed — just don't prevent default.
+      scrollHandler: (event: OpenSeadragon.MouseTrackerEvent) => {
+        if (this._mode !== 'annotation') return;
+
+        const domEvent = event.originalEvent as WheelEvent;
+
+        // Always prevent page scrolling while in annotation mode
+        const scrollEvt = event as OpenSeadragon.MouseTrackerEvent & { preventDefault: boolean };
+        scrollEvt.preventDefault = true;
+
+        if (domEvent.ctrlKey || domEvent.metaKey) {
+          // Ctrl/Cmd+scroll → manually zoom OSD.
+          // OSD's own scroll-zoom is disabled (setMouseNavEnabled(false)),
+          // so we call viewport.zoomBy() directly.
+          const delta = -domEvent.deltaY;
+          const zoomFactor = Math.pow(1.2, delta > 0 ? 1 : -1);
+
+          // Zoom around the pointer position (in viewport coordinates)
+          const viewerPos = this._viewer.viewport.pointFromPixel(
+            new OpenSeadragon.Point(domEvent.clientX, domEvent.clientY),
+            true, // current = true (use current animated position)
+          );
+          this._viewer.viewport.zoomBy(zoomFactor, viewerPos);
+          this._viewer.viewport.applyConstraints();
+        }
       },
     });
   }
