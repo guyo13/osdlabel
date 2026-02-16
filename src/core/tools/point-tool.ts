@@ -15,6 +15,10 @@ export class PointTool extends BaseTool {
         return;
     }
 
+    if (!this.callbacks.canAddAnnotation(this.type)) {
+        return;
+    }
+
     const toolConstraint = this.callbacks.getToolConstraint(this.type);
 
     const style: AnnotationStyle = {

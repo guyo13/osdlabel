@@ -7,6 +7,7 @@ import { generateId } from '../../utils/id.js';
 export interface ToolCallbacks {
   readonly getActiveContextId: () => AnnotationContextId | null;
   readonly getToolConstraint: (type: AnnotationType) => ToolConstraint | undefined;
+  readonly canAddAnnotation: (type: AnnotationType) => boolean;
   readonly addAnnotation: (annotation: Omit<Annotation, 'createdAt' | 'updatedAt'>) => void;
   readonly updateAnnotation: (id: AnnotationId, imageId: ImageId, patch: Partial<Omit<Annotation, 'id' | 'imageId' | 'createdAt' | 'updatedAt'>>) => void;
   readonly deleteAnnotation: (id: AnnotationId, imageId: ImageId) => void;

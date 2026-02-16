@@ -52,3 +52,11 @@ export {
 
 // Tools
 export type { ToolCallbacks, AnnotatedFabricObject } from './core/tools/base-tool.js';
+
+// Components
+export { default as ViewerCell } from './components/ViewerCell.js';
+export { default as Toolbar } from './components/Toolbar.js';
+export { default as StatusBar } from './components/StatusBar.js';
+
+// Hooks
+export { useConstraints } from './hooks/useConstraints.js';

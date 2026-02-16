@@ -36,6 +36,7 @@ describe('PointTool', () => {
     mockCallbacks = {
       getActiveContextId: () => contextId,
       getToolConstraint: (type) => ({ type }),
+      canAddAnnotation: () => true,
       addAnnotation: (ann) => { addedAnnotations.push(ann); },
       updateAnnotation: vi.fn(),
       deleteAnnotation: vi.fn(),
