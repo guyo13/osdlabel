@@ -25,6 +25,7 @@ export class CircleTool extends BaseTool {
       strokeDashArray: [5 / this.overlay.canvas.getZoom(), 5 / this.overlay.canvas.getZoom()],
       selectable: false,
       evented: false,
+      strokeUniform: true,
     });
 
     this.overlay.canvas.add(this.preview);
