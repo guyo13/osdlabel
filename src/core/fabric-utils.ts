@@ -1,4 +1,4 @@
-import { Rect, Circle, Line, Polyline, FabricObject, Color } from 'fabric';
+import { Rect, Circle, Line, Polyline, Polygon, FabricObject, Color } from 'fabric';
 import { Annotation, AnnotationStyle } from './types.js';
 
 export function createFabricObjectFromAnnotation(annotation: Annotation): FabricObject | null {
@@ -45,18 +45,31 @@ export function createFabricObjectFromAnnotation(annotation: Annotation): Fabric
            originY: 'center',
        });
        break;
-    case 'path':
-       obj = new Polyline(geometry.points.map(p => ({ x: p.x, y: p.y })), {
+    case 'path': {
+       const pts = geometry.points.map(p => ({ x: p.x, y: p.y }));
+       if (geometry.closed) {
+         obj = new Polygon(pts, {
+           ...options,
+         });
+       } else {
+         obj = new Polyline(pts, {
            ...options,
            fill: 'transparent',
-       });
+         });
+       }
        break;
+    }
   }
 
   return obj;
 }
 
-export function updateFabricObjectFromAnnotation(obj: FabricObject, annotation: Annotation): void {
+/**
+ * Update a Fabric object's properties to match the annotation geometry.
+ * Returns true if the object was updated in-place, false if it needs
+ * to be replaced (e.g. path closed state changed).
+ */
+export function updateFabricObjectFromAnnotation(obj: FabricObject, annotation: Annotation): boolean {
     const { geometry, style } = annotation;
     const options = getFabricOptions(style, annotation.id);
 
@@ -78,17 +91,11 @@ export function updateFabricObjectFromAnnotation(obj: FabricObject, annotation: 
             break;
         case 'circle':
             if (obj instanceof Circle) {
-                 // Check if it's a point or circle annotation
-                 // Point is also represented as Circle in Fabric
-                 if (annotation.geometry.type === 'point') {
-                     // Handled below
-                 } else {
-                    obj.set({
-                        left: geometry.center.x,
-                        top: geometry.center.y,
-                        radius: geometry.radius,
-                    });
-                 }
+                obj.set({
+                    left: geometry.center.x,
+                    top: geometry.center.y,
+                    radius: geometry.radius,
+                });
             }
             break;
         case 'point':
@@ -109,19 +116,39 @@ export function updateFabricObjectFromAnnotation(obj: FabricObject, annotation: 
                 });
             }
             break;
-        case 'path':
+        case 'path': {
+            // Check if the closed state changed — if so, we need to replace
+            // the object (Polyline vs Polygon) rather than update in-place.
+            const isClosed = geometry.closed;
+            const isCurrentlyPolygon = obj instanceof Polygon;
+            if (isClosed !== isCurrentlyPolygon) {
+                // Signal that the object needs replacement
+                obj.setCoords();
+                return false;
+            }
+
             if (obj instanceof Polyline) {
-                // Update points
-                // Need to replace points array
+                // Reset transform to identity before setting new absolute points.
+                // This avoids the pathOffset mismatch that causes the
+                // "moving inside bounding box" visual glitch.
+                const pts = geometry.points.map(p => ({ x: p.x, y: p.y }));
                 obj.set({
-                    points: geometry.points.map(p => ({ x: p.x, y: p.y }))
+                    points: pts,
+                    scaleX: 1,
+                    scaleY: 1,
+                    angle: 0,
+                    skewX: 0,
+                    skewY: 0,
                 });
-                // Recalculate dimensions? Fabric usually handles it on set('points')
+                // Force Fabric to recalculate pathOffset and dimensions from the new points
+                obj.setBoundingBox(true);
             }
             break;
+        }
     }
 
     obj.setCoords();
+    return true;
 }
 
 function getFabricOptions(style: AnnotationStyle, id: string) {

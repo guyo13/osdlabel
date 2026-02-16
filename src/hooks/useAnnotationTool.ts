@@ -1,6 +1,7 @@
 import { createEffect, onCleanup } from 'solid-js';
+import type { FabricObject } from 'fabric';
 import type { FabricOverlay } from '../overlay/fabric-overlay.js';
-import { AnnotationTool, ToolCallbacks } from '../core/tools/base-tool.js';
+import { AnnotationTool, ToolCallbacks, AnnotatedFabricObject } from '../core/tools/base-tool.js';
 import { RectangleTool } from '../core/tools/rectangle-tool.js';
 import { CircleTool } from '../core/tools/circle-tool.js';
 import { LineTool } from '../core/tools/line-tool.js';
@@ -14,6 +15,7 @@ interface FabricPointerEvent {
   readonly e: MouseEvent | PointerEvent | TouchEvent;
   readonly scenePoint?: { readonly x: number; readonly y: number };
   readonly absolutePointer?: { readonly x: number; readonly y: number };
+  readonly target?: FabricObject | null;
 }
 
 export function useAnnotationTool(
@@ -78,21 +80,42 @@ export function useAnnotationTool(
     ov.setMode('annotation');
     tool.activate(ov, imgId, callbacks);
 
+    const isDrawingTool = type !== 'select';
+
+    // Track whether we suppressed mouse:down so we also suppress mouse:up
+    let suppressedDown = false;
+
     // Handlers
     const handleDown = (opt: FabricPointerEvent) => {
         if (!tool) return;
+
+        // For drawing tools, skip if the click landed on an existing annotation object.
+        // This allows Fabric's built-in selection/move to handle the interaction instead
+        // of accidentally starting a new drawing on top of an existing annotation.
+        if (isDrawingTool && opt.target) {
+            const annotatedTarget = opt.target as AnnotatedFabricObject;
+            if (annotatedTarget.annotationId) {
+                suppressedDown = true;
+                return;
+            }
+        }
+
+        suppressedDown = false;
         const p = getScenePoint(ov, opt);
         tool.onPointerDown(opt.e as PointerEvent, p);
     };
 
     const handleMove = (opt: FabricPointerEvent) => {
-        if (!tool) return;
+        if (!tool || suppressedDown) return;
         const p = getScenePoint(ov, opt);
         tool.onPointerMove(opt.e as PointerEvent, p);
     };
 
     const handleUp = (opt: FabricPointerEvent) => {
-        if (!tool) return;
+        if (!tool || suppressedDown) {
+            suppressedDown = false;
+            return;
+        }
         const p = getScenePoint(ov, opt);
         tool.onPointerUp(opt.e as PointerEvent, p);
     };

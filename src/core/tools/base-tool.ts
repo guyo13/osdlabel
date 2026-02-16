@@ -1,4 +1,4 @@
-import { Rect, Circle, Line, Polyline, util, FabricObject } from 'fabric';
+import { Rect, Circle, Line, Polyline, Polygon, util, FabricObject } from 'fabric';
 import type { FabricOverlay } from '../../overlay/fabric-overlay.js';
 import { Annotation, AnnotationType, Point, Geometry, AnnotationStyle, ImageId, AnnotationContextId, AnnotationId, ToolConstraint, createAnnotationId } from '../types.js';
 import { generateId } from '../../utils/id.js';
@@ -138,6 +138,7 @@ function getGeometryFromFabricObject(obj: FabricObject, type: AnnotationType): G
   }
 
   if (type === 'path') {
+      // Polygon extends Polyline in Fabric, so instanceof Polyline matches both
       if (obj instanceof Polyline) {
           const matrix = obj.calcTransformMatrix();
           const pathOffset = obj.pathOffset || { x: 0, y: 0 };
@@ -149,7 +150,7 @@ function getGeometryFromFabricObject(obj: FabricObject, type: AnnotationType): G
           return {
               type: 'path',
               points: points,
-              closed: false,
+              closed: obj instanceof Polygon,
           };
       }
   }

@@ -1,3 +1,4 @@
+import { createSignal } from 'solid-js';
 import { render } from 'solid-js/web';
 import ViewerCell from '../src/components/ViewerCell.js';
 import { createImageId, createAnnotationContextId, AnnotationType } from '../src/core/types.js';
@@ -8,6 +9,18 @@ const IMAGE_ID = createImageId('highsmith');
 
 function AppContent() {
   const { uiState, annotationState, actions } = useAnnotator();
+  const [copyLabel, setCopyLabel] = createSignal('Copy JSON');
+
+  const copyAnnotationsToClipboard = () => {
+    const json = JSON.stringify(annotationState.byImage, null, 2);
+    navigator.clipboard.writeText(json).then(() => {
+      setCopyLabel('Copied!');
+      setTimeout(() => setCopyLabel('Copy JSON'), 1500);
+    }).catch(() => {
+      setCopyLabel('Failed');
+      setTimeout(() => setCopyLabel('Copy JSON'), 1500);
+    });
+  };
 
   // Initialize context (runs once since SolidJS components execute once)
   actions.setContexts([{
@@ -59,9 +72,24 @@ function AppContent() {
         <span style={{ 'margin-left': '16px', opacity: '0.7', 'font-size': '12px', color: '#fff' }}>
           Count: {Object.keys(annotationState.byImage[IMAGE_ID] || {}).length}
         </span>
+        <button
+            onClick={copyAnnotationsToClipboard}
+            style={{
+                'margin-left': '8px',
+                padding: '4px 12px',
+                border: '1px solid #555',
+                'border-radius': '4px',
+                cursor: 'pointer',
+                background: '#2a2a3e',
+                color: '#fff',
+                'font-size': '12px',
+            }}
+        >
+            {copyLabel()}
+        </button>
         <span style={{ 'margin-left': 'auto', opacity: '0.5', 'font-size': '12px', color: '#fff' }}>
           {uiState.activeTool === 'select' ? 'Del/Backspace to delete' :
-           uiState.activeTool === 'path' ? 'Enter/DblClick to finish' :
+           uiState.activeTool === 'path' ? 'Enter/DblClick to finish, C to close polygon, click near start to close' :
            uiState.activeTool ? 'Drag to draw' : 'Drag to pan'}
         </span>
       </div>

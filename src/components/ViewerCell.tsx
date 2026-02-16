@@ -117,9 +117,19 @@ const ViewerCell: Component<ViewerCellProps> = (props) => {
           } else {
               // Update if changed
               if ((obj as AnnotatedFabricObject).updatedAt !== ann.updatedAt) {
-                   updateFabricObjectFromAnnotation(obj, ann);
-                   (obj as AnnotatedFabricObject).updatedAt = ann.updatedAt;
-                   obj.setCoords();
+                   const updatedInPlace = updateFabricObjectFromAnnotation(obj, ann);
+                   if (updatedInPlace) {
+                       (obj as AnnotatedFabricObject).updatedAt = ann.updatedAt;
+                       obj.setCoords();
+                   } else {
+                       // Object needs replacement (e.g. Polyline <-> Polygon switch)
+                       canvas.remove(obj);
+                       const newObj = createFabricObjectFromAnnotation(ann);
+                       if (newObj) {
+                           (newObj as AnnotatedFabricObject).updatedAt = ann.updatedAt;
+                           canvas.add(newObj);
+                       }
+                   }
               }
           }
       }

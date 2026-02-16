@@ -32,6 +32,7 @@ describe('PathTool', () => {
 
     mockOverlay = {
       canvas: mockCanvas,
+      imageToScreen: vi.fn((p: { x: number; y: number }) => p),
     } as unknown as FabricOverlay;
 
     mockCallbacks = {
@@ -60,7 +61,7 @@ describe('PathTool', () => {
     expect(addedObj.points[1]).toEqual({ x: 10, y: 10 });
   });
 
-  it('should update the last point on pointer move', () => {
+  it('should update the cursor point on pointer move', () => {
     tool = new PathTool();
     tool.activate(mockOverlay, imageId, mockCallbacks);
 
@@ -72,32 +73,31 @@ describe('PathTool', () => {
     const moveEvent = { type: 'pointermove' } as PointerEvent;
     tool.onPointerMove(moveEvent, { x: 50, y: 50 });
 
+    // Preview should have 2 points: committed vertex + cursor
+    expect(preview.points.length).toBe(2);
+    expect(preview.points[0]).toEqual({ x: 10, y: 10 });
     expect(preview.points[1]).toEqual({ x: 50, y: 50 });
     expect(mockCanvas.requestRenderAll).toHaveBeenCalled();
   });
 
-  it('should add a new segment on subsequent pointer down', () => {
+  it('should add a new vertex on subsequent pointer down', () => {
     tool = new PathTool();
     tool.activate(mockOverlay, imageId, mockCallbacks);
 
-    const event1 = { type: 'pointerdown' } as PointerEvent;
-    tool.onPointerDown(event1, { x: 10, y: 10 });
+    tool.onPointerDown({ type: 'pointerdown' } as PointerEvent, { x: 10, y: 10 });
+    tool.onPointerMove({ type: 'pointermove' } as PointerEvent, { x: 50, y: 50 });
+    tool.onPointerDown({ type: 'pointerdown' } as PointerEvent, { x: 50, y: 50 });
 
     const preview = mockCanvas.add.mock.calls[0][0];
 
-    const moveEvent = { type: 'pointermove' } as PointerEvent;
-    tool.onPointerMove(moveEvent, { x: 50, y: 50 });
-
-    const event2 = { type: 'pointerdown' } as PointerEvent;
-    tool.onPointerDown(event2, { x: 50, y: 50 });
-
+    // Preview should have 3 points: 2 committed vertices + cursor
     expect(preview.points.length).toBe(3);
     expect(preview.points[0]).toEqual({ x: 10, y: 10 });
     expect(preview.points[1]).toEqual({ x: 50, y: 50 });
     expect(preview.points[2]).toEqual({ x: 50, y: 50 });
   });
 
-  it('should finish path on double click', () => {
+  it('should finish open path on double click', () => {
     tool = new PathTool();
     tool.activate(mockOverlay, imageId, mockCallbacks);
 
@@ -109,10 +109,11 @@ describe('PathTool', () => {
     tool.onPointerDown({ type: 'pointerdown', detail: 2 } as PointerEvent, { x: 50, y: 50 });
 
     expect(addedAnnotations).toHaveLength(1);
-    const ann = addedAnnotations[0];
+    const ann = addedAnnotations[0]!;
 
     expect(ann.geometry.type).toBe('path');
     if (ann.geometry.type === 'path') {
+        expect(ann.geometry.closed).toBe(false);
         expect(ann.geometry.points[0]).toEqual({ x: 10, y: 10 });
         expect(ann.geometry.points[1]).toEqual({ x: 50, y: 50 });
     }
@@ -120,7 +121,7 @@ describe('PathTool', () => {
     expect(mockCanvas.remove).toHaveBeenCalled();
   });
 
-  it('should finish path on Enter key', () => {
+  it('should finish open path on Enter key', () => {
     tool = new PathTool();
     tool.activate(mockOverlay, imageId, mockCallbacks);
 
@@ -131,23 +132,73 @@ describe('PathTool', () => {
     tool.onKeyDown({ key: 'Enter' } as KeyboardEvent);
 
     expect(addedAnnotations).toHaveLength(1);
+    const ann = addedAnnotations[0]!;
+    if (ann.geometry.type === 'path') {
+        expect(ann.geometry.closed).toBe(false);
+    }
     expect(mockCanvas.remove).toHaveBeenCalled();
   });
 
-  it('should cancel path with only one point', () => {
+  it('should close polygon with C key when >= 3 vertices', () => {
     tool = new PathTool();
     tool.activate(mockOverlay, imageId, mockCallbacks);
 
-    // Only one click, then try to finish via Enter
     tool.onPointerDown({ type: 'pointerdown' } as PointerEvent, { x: 10, y: 10 });
+    tool.onPointerDown({ type: 'pointerdown' } as PointerEvent, { x: 50, y: 10 });
+    tool.onPointerDown({ type: 'pointerdown' } as PointerEvent, { x: 50, y: 50 });
 
-    // The preview has 2 points (start + rubberband), but only 1 unique position
-    // finish() checks points.length < 2 which would be false (2 points)
-    // So it will attempt to create an annotation
+    tool.onKeyDown({ key: 'c' } as KeyboardEvent);
+
+    expect(addedAnnotations).toHaveLength(1);
+    const ann = addedAnnotations[0]!;
+    expect(ann.geometry.type).toBe('path');
+    if (ann.geometry.type === 'path') {
+        expect(ann.geometry.closed).toBe(true);
+        expect(ann.geometry.points).toHaveLength(3);
+    }
+  });
+
+  it('should not close polygon with C key when < 3 vertices', () => {
+    tool = new PathTool();
+    tool.activate(mockOverlay, imageId, mockCallbacks);
+
+    tool.onPointerDown({ type: 'pointerdown' } as PointerEvent, { x: 10, y: 10 });
+    tool.onPointerDown({ type: 'pointerdown' } as PointerEvent, { x: 50, y: 10 });
+
+    tool.onKeyDown({ key: 'c' } as KeyboardEvent);
+
+    // Should not finish — need at least 3 points for a closed polygon
+    expect(addedAnnotations).toHaveLength(0);
+  });
+
+  it('should close polygon when clicking near first point', () => {
+    tool = new PathTool();
+    tool.activate(mockOverlay, imageId, mockCallbacks);
+
+    tool.onPointerDown({ type: 'pointerdown' } as PointerEvent, { x: 100, y: 100 });
+    tool.onPointerDown({ type: 'pointerdown' } as PointerEvent, { x: 200, y: 100 });
+    tool.onPointerDown({ type: 'pointerdown' } as PointerEvent, { x: 200, y: 200 });
+
+    // Click near the first point (within threshold)
+    tool.onPointerDown({ type: 'pointerdown' } as PointerEvent, { x: 102, y: 102 });
+
+    expect(addedAnnotations).toHaveLength(1);
+    const ann = addedAnnotations[0]!;
+    if (ann.geometry.type === 'path') {
+        expect(ann.geometry.closed).toBe(true);
+        expect(ann.geometry.points).toHaveLength(3);
+    }
+  });
+
+  it('should cancel path with only one point on Enter', () => {
+    tool = new PathTool();
+    tool.activate(mockOverlay, imageId, mockCallbacks);
+
+    tool.onPointerDown({ type: 'pointerdown' } as PointerEvent, { x: 10, y: 10 });
     tool.onKeyDown({ key: 'Enter' } as KeyboardEvent);
 
-    // The path tool creates the annotation even with duplicate points
-    // since Polyline with 2 identical points is valid
+    // Only 1 vertex — below minimum of 2 for open path
+    expect(addedAnnotations).toHaveLength(0);
     expect(mockCanvas.remove).toHaveBeenCalled();
   });
 
