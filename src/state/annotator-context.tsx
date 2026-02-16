@@ -1,9 +1,19 @@
-import { createContext, useContext, JSX, Accessor } from 'solid-js';
-import { AnnotationState, UIState, ConstraintStatus, ContextState } from '../core/types.js';
+import { createContext, useContext, createEffect, on, JSX, Accessor } from 'solid-js';
+import { produce } from 'solid-js/store';
+import {
+  Annotation,
+  AnnotationState,
+  UIState,
+  ConstraintStatus,
+  ContextState,
+  AnnotationId,
+  ImageId,
+} from '../core/types.js';
 import { createAnnotationStore } from './annotation-store.js';
 import { createUIStore } from './ui-store.js';
 import { createContextStore, createConstraintStatus } from './context-store.js';
 import { createActions } from './actions.js';
+import { getAllAnnotationsFlat } from '../core/annotations/serialization.js';
 
 interface AnnotatorContextValue {
   annotationState: AnnotationState;
@@ -15,13 +25,55 @@ interface AnnotatorContextValue {
 
 const AnnotatorContext = createContext<AnnotatorContextValue>();
 
-export function AnnotatorProvider(props: { children: JSX.Element }) {
+export interface AnnotatorProviderProps {
+  readonly children: JSX.Element;
+  /** Pre-existing annotations to load on mount */
+  readonly initialAnnotations?: Record<ImageId, Record<AnnotationId, Annotation>> | undefined;
+  /** Called when annotation state changes (after initial mount) */
+  readonly onAnnotationsChange?: ((annotations: Annotation[]) => void) | undefined;
+  /** Called when constraint status changes (after initial mount) */
+  readonly onConstraintChange?: ((status: ConstraintStatus) => void) | undefined;
+}
+
+export function AnnotatorProvider(props: AnnotatorProviderProps) {
   const { state: annotationState, setState: setAnnotationState } = createAnnotationStore();
   const { state: uiState, setState: setUIState } = createUIStore();
   const { state: contextState, setState: setContextState } = createContextStore();
 
   const actions = createActions(setAnnotationState, setUIState, setContextState);
   const constraintStatus = createConstraintStatus(contextState, annotationState);
+
+  // Load initial annotations if provided
+  if (props.initialAnnotations) {
+    setAnnotationState(produce((state) => {
+      for (const [imageId, annMap] of Object.entries(props.initialAnnotations!)) {
+        state.byImage[imageId as ImageId] = { ...annMap };
+      }
+    }));
+  }
+
+  // Fire onAnnotationsChange when annotations change (defer: skip initial mount)
+  createEffect(on(
+    () => JSON.stringify(annotationState.byImage),
+    () => {
+      if (props.onAnnotationsChange) {
+        const allAnnotations = getAllAnnotationsFlat(annotationState);
+        props.onAnnotationsChange(allAnnotations);
+      }
+    },
+    { defer: true }
+  ));
+
+  // Fire onConstraintChange when constraint status changes (defer: skip initial mount)
+  createEffect(on(
+    constraintStatus,
+    (status) => {
+      if (props.onConstraintChange) {
+        props.onConstraintChange(status);
+      }
+    },
+    { defer: true }
+  ));
 
   const value: AnnotatorContextValue = {
     annotationState,

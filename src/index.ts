@@ -49,9 +49,19 @@ export {
   useAnnotator,
   createConstraintStatus,
 } from './state/index.js';
+export type { AnnotatorProviderProps } from './state/annotator-context.js';
 
 // Tools
 export type { ToolCallbacks, AnnotatedFabricObject } from './core/tools/base-tool.js';
+
+// Serialization
+export {
+  serialize,
+  deserialize,
+  validateAnnotation,
+  getAllAnnotationsFlat,
+  SerializationError,
+} from './core/annotations/serialization.js';
 
 // Components
 export { default as ViewerCell } from './components/ViewerCell.js';
