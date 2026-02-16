@@ -51,7 +51,9 @@ export type Geometry =
 /** Visual styling for an annotation */
 export interface AnnotationStyle {
   readonly strokeColor: string;
+  /** Stroke width in screen pixels */
   readonly strokeWidth: number;
+  readonly strokeDashArray?: readonly number[];
   readonly fillColor: string;
   readonly fillOpacity: number;
   readonly opacity: number;

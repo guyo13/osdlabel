@@ -1,7 +1,8 @@
-import { FabricObject, ActiveSelection } from 'fabric';
-import { BaseTool, createAnnotationFromFabricObject, AnnotatedFabricObject, ToolCallbacks } from './base-tool.js';
+import { FabricObject } from 'fabric';
+import { BaseTool, AnnotatedFabricObject, ToolCallbacks } from './base-tool.js';
 import { ImageId, Point } from '../types.js';
 import type { FabricOverlay } from '../../overlay/fabric-overlay.js';
+import { getGeometryFromFabricObject } from '../fabric-utils.js';
 
 interface SelectionEvent {
   readonly selected: FabricObject[];
@@ -57,12 +58,6 @@ export class SelectTool extends BaseTool {
       this.overlay?.canvas.requestRenderAll();
   }
 
-  onKeyDown(event: KeyboardEvent): void {
-      if (event.key === 'Delete' || event.key === 'Backspace') {
-          this.deleteSelected();
-      }
-  }
-
   private onSelectionCreated(e: SelectionEvent) {
       if (!this.callbacks) return;
       const selected = e.selected || [];
@@ -93,39 +88,12 @@ export class SelectTool extends BaseTool {
       const currentAnnotation = this.callbacks.getAnnotation(annotationId, this.imageId);
       if (!currentAnnotation) return;
 
-      const newAnnotation = createAnnotationFromFabricObject(
-          obj,
-          this.imageId,
-          currentAnnotation.contextId,
-          currentAnnotation.style,
-          currentAnnotation.geometry.type
-      );
+      const geometry = getGeometryFromFabricObject(obj, currentAnnotation.geometry.type);
 
-      if (newAnnotation) {
+      if (geometry) {
           this.callbacks.updateAnnotation(annotationId, this.imageId, {
-              geometry: newAnnotation.geometry
+              geometry: geometry
           });
       }
-  }
-
-  private deleteSelected() {
-      if (!this.callbacks) return;
-      const activeObject = this.overlay?.canvas.getActiveObject();
-      if (!activeObject || !this.imageId) return;
-
-      let targets: FabricObject[] = [activeObject];
-      if (activeObject.type === 'activeSelection') {
-          targets = (activeObject as ActiveSelection).getObjects();
-      }
-
-      for (const obj of targets) {
-          const annotationId = (obj as AnnotatedFabricObject).annotationId;
-          if (annotationId && this.imageId) {
-              this.callbacks.deleteAnnotation(annotationId, this.imageId);
-          }
-      }
-
-      this.overlay?.canvas.discardActiveObject();
-      this.overlay?.canvas.requestRenderAll();
   }
 }

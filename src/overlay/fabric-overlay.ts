@@ -46,7 +46,7 @@ export function computeViewportTransform(viewer: OpenSeadragon.Viewer): TMat2D {
  * Two interaction modes:
  * - **navigation**: OSD handles all input, Fabric is display-only.
  * - **annotation**: Fabric handles all input (select, move, draw).
- *   Ctrl+drag or middle-mouse drag pans OSD within annotation mode.
+ *   Ctrl+drag or Command+drag pans OSD within annotation mode.
  */
 export class FabricOverlay {
   // ── Core references ──────────────────────────────────────────────
@@ -67,8 +67,8 @@ export class FabricOverlay {
   private _forwarding = false;
 
   /**
-   * When true, the current gesture is a pan-passthrough (Ctrl+drag or
-   * middle-mouse drag) and events should NOT be forwarded to Fabric.
+   * When true, the current gesture is a pan-passthrough (defined by
+   * _isPanTrigger) and events should NOT be forwarded to Fabric.
    */
   private _panGestureActive = false;
 
@@ -185,7 +185,7 @@ export class FabricOverlay {
 
       case 'annotation':
         // Fabric interactive: selection, moving, and drawing.
-        // OSD mouse nav is disabled (Ctrl+drag / middle-mouse for pan).
+        // OSD mouse nav is disabled.
         this._overlayTracker.setTracking(true);
         this._fabricCanvas.selection = true;
         this._fabricCanvas.forEachObject((obj) => {
@@ -320,10 +320,10 @@ export class FabricOverlay {
         const domEvent = eventInfo.originalEvent as PointerEvent;
 
         if (eventType === 'pointerdown') {
-          // Check for pan passthrough triggers (Ctrl+drag, middle mouse)
+          // Check for pan passthrough triggers
           if (this._isPanTrigger(domEvent)) {
             this._panGestureActive = true;
-            // Let event propagate to OSD — don't stop it.
+            // Let event propagate to OSD.
             // Temporarily enable OSD nav for this gesture.
             this._viewer.setMouseNavEnabled(true);
             return;

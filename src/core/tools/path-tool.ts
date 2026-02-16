@@ -89,6 +89,8 @@ export class PathTool extends BaseTool {
           }
       } else if (event.key === 'Escape') {
           this.cancel();
+      } else {
+        super.onKeyDown(event);
       }
   }
 

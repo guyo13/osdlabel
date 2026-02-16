@@ -1,5 +1,5 @@
-import { Rect, Circle, Line, Polyline, Polygon, FabricObject, Color } from 'fabric';
-import { Annotation, AnnotationStyle } from './types.js';
+import { Rect, Circle, Line, Polyline, Polygon, util, FabricObject, Color } from 'fabric';
+import { Annotation, AnnotationStyle, Geometry, AnnotationType } from './types.js';
 
 export function createFabricObjectFromAnnotation(annotation: Annotation): FabricObject | null {
   const { geometry, style } = annotation;
@@ -165,8 +165,77 @@ function getFabricOptions(style: AnnotationStyle, id: string) {
         fill: fill.toRgba(),
         stroke: style.strokeColor,
         strokeWidth: style.strokeWidth,
+        strokeDashArray: style.strokeDashArray ? [...style.strokeDashArray] : null,
         opacity: style.opacity,
         annotationId: id,
         strokeUniform: true, // Constant screen-width strokes regardless of zoom level
     };
+}
+
+export function getGeometryFromFabricObject(obj: FabricObject, type: AnnotationType): Geometry | null {
+  if (type === 'rectangle' && obj instanceof Rect) {
+    const width = obj.width * obj.scaleX;
+    const height = obj.height * obj.scaleY;
+    const left = obj.left;
+    const top = obj.top;
+
+    return {
+      type: 'rectangle',
+      origin: { x: left, y: top },
+      width: width,
+      height: height,
+      rotation: obj.angle,
+    };
+  }
+
+  if (type === 'circle' && obj instanceof Circle) {
+      const radius = obj.radius * Math.max(Math.abs(obj.scaleX), Math.abs(obj.scaleY));
+      const center = obj.getCenterPoint();
+      return {
+          type: 'circle',
+          center: { x: center.x, y: center.y },
+          radius: radius,
+      };
+  }
+
+  if (type === 'line' && obj instanceof Line) {
+      const matrix = obj.calcTransformMatrix();
+      const cx = (obj.x1 + obj.x2) / 2;
+      const cy = (obj.y1 + obj.y2) / 2;
+      const p1 = util.transformPoint({ x: obj.x1 - cx, y: obj.y1 - cy }, matrix);
+      const p2 = util.transformPoint({ x: obj.x2 - cx, y: obj.y2 - cy }, matrix);
+      return {
+          type: 'line',
+          start: { x: p1.x, y: p1.y },
+          end: { x: p2.x, y: p2.y },
+      };
+  }
+
+  if (type === 'point' && obj instanceof Circle) {
+      const center = obj.getCenterPoint();
+      return {
+          type: 'point',
+          position: { x: center.x, y: center.y },
+      };
+  }
+
+  if (type === 'path') {
+      // Polygon extends Polyline in Fabric, so instanceof Polyline matches both
+      if (obj instanceof Polyline) {
+          const matrix = obj.calcTransformMatrix();
+          const pathOffset = obj.pathOffset || { x: 0, y: 0 };
+          const points = (obj.points || []).map(p => {
+              const centeredP = { x: p.x - pathOffset.x, y: p.y - pathOffset.y };
+              const tp = util.transformPoint(centeredP, matrix);
+              return { x: tp.x, y: tp.y };
+          });
+          return {
+              type: 'path',
+              points: points,
+              closed: obj instanceof Polygon,
+          };
+      }
+  }
+
+  return null;
 }

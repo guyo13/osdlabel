@@ -9,7 +9,7 @@ import type { OverlayMode } from '../../../src/overlay/fabric-overlay.js';
  * The overlay uses an OSD MouseTracker to route events:
  * - navigation: tracker disabled, OSD handles all input
  * - annotation: tracker enabled, all events forwarded to Fabric,
- *   objects are selectable/evented, Ctrl+drag or middle-mouse pans OSD
+ *   objects are selectable/evented, Ctrl+drag or Command+drag pans OSD
  */
 
 interface MockState {
@@ -125,7 +125,7 @@ describe('Input routing — setMode', () => {
       expect(state.objectsEvented).toBe(true);
     });
 
-    it('disables OSD mouse navigation (Ctrl+drag or middle-mouse for pan)', () => {
+    it('disables OSD mouse navigation', () => {
       overlay.setMode('annotation');
       expect(state.osdMouseNavEnabled).toBe(false);
     });
