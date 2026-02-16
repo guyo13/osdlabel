@@ -93,7 +93,9 @@ const ViewerCell: Component<ViewerCellProps> = (props) => {
       const currentObjects = new Map<string, FabricObject>();
       const objectsToRemove: FabricObject[] = [];
 
-      for (const obj of canvas.getObjects()) {
+      // Clone the objects array to avoid modification during iteration
+      const currentObjectsList = canvas.getObjects().slice();
+      for (const obj of currentObjectsList) {
           const annotatedObj = obj as AnnotatedFabricObject;
           if (annotatedObj.annotationId) {
               currentObjects.set(annotatedObj.annotationId, obj);
@@ -123,11 +125,13 @@ const ViewerCell: Component<ViewerCellProps> = (props) => {
                        obj.setCoords();
                    } else {
                        // Object needs replacement (e.g. Polyline <-> Polygon switch)
+                       // Preserve z-index by inserting at the same index
+                       const index = canvas.getObjects().indexOf(obj);
                        canvas.remove(obj);
                        const newObj = createFabricObjectFromAnnotation(ann);
                        if (newObj) {
                            (newObj as AnnotatedFabricObject).updatedAt = ann.updatedAt;
-                           canvas.add(newObj);
+                           canvas.insertAt(index, newObj);
                        }
                    }
               }
@@ -165,10 +169,15 @@ const ViewerCell: Component<ViewerCellProps> = (props) => {
 
 function openImage(viewer: OpenSeadragon.Viewer, source: ImageSource): void {
   const url = source.dziUrl;
-  if (url.endsWith('.dzi')) {
-    viewer.open(url);
-  } else {
+  // Naive check: if it looks like an image file extension, treat as simple image.
+  // Otherwise assume it's a DZI source (XML or JSON).
+  const isSimpleImage = /\.(jpg|jpeg|png|webp|gif|bmp)$/i.test(url);
+
+  if (isSimpleImage) {
     viewer.open({ type: 'image', url });
+  } else {
+    // Passes URL directly to OSD, which handles DZI XML, IIIF, etc.
+    viewer.open(url);
   }
 }
 

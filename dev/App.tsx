@@ -7,14 +7,9 @@ import Filmstrip from '../src/components/Filmstrip.js';
 import GridControls from '../src/components/GridControls.js';
 import {
   createImageId,
-  createAnnotationContextId,
-  createAnnotationId,
   AnnotationContextId,
   AnnotationContext,
-  AnnotationId,
-  ImageId,
   ImageSource,
-  Annotation,
 } from '../src/core/types.js';
 import { AnnotatorProvider, useAnnotator } from '../src/state/annotator-context.js';
 import { serialize, deserialize } from '../src/core/annotations/serialization.js';
@@ -31,15 +26,15 @@ const IMAGES: ImageSource[] = [
     label: 'Duomo',
   },
   {
-    id: createImageId('scroll'),
-    dziUrl: 'https://openseadragon.github.io/example-images/rpbadrern/rp_bADrern.dzi',
-    label: 'Scroll',
+    id: createImageId('wide'),
+    dziUrl: 'https://openseadragon.github.io/example-images/pnp/pan/6a32000/6a32400/6a32487.dzi',
+    label: 'Wide image',
   },
   {
-    id: createImageId('testpattern'),
-    dziUrl: 'https://openseadragon.github.io/example-images/testpattern/testpattern.dzi',
-    label: 'Test Pattern',
-  },
+    id: createImageId('jpg'),
+    dziUrl: './sample-data/test-image.jpg',
+    label: 'JPG image',
+  }
 ];
 
 const CONTEXTS: AnnotationContext[] = [
@@ -55,7 +50,7 @@ const CONTEXTS: AnnotationContext[] = [
     id: 'ctx-2' as AnnotationContextId,
     label: 'Pneumothorax',
     tools: [
-      { type: 'path', maxCount: 1 },
+      { type: 'path', maxCount: 3 },
       { type: 'circle', maxCount: 2 },
     ],
   },
