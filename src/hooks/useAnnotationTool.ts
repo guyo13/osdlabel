@@ -9,7 +9,7 @@ import { PointTool } from '../core/tools/point-tool.js';
 import { PathTool } from '../core/tools/path-tool.js';
 import { SelectTool } from '../core/tools/select-tool.js';
 import { useAnnotator } from '../state/annotator-context.js';
-import { ImageId, Point } from '../core/types.js';
+import { ImageId, Point, AnnotationType } from '../core/types.js';
 
 interface FabricPointerEvent {
   readonly e: MouseEvent | PointerEvent | TouchEvent;
@@ -23,7 +23,18 @@ export function useAnnotationTool(
   imageId: () => ImageId | undefined,
   isActive: () => boolean
 ) {
-  const { uiState, contextState, annotationState, actions } = useAnnotator();
+  const { uiState, contextState, annotationState, constraintStatus, actions } = useAnnotator();
+
+  // Auto-switch to select tool when active drawing tool becomes disabled (limit reached)
+  createEffect(() => {
+    const tool = uiState.activeTool;
+    if (tool && tool !== 'select') {
+      const status = constraintStatus();
+      if (!status[tool as AnnotationType].enabled) {
+        actions.setActiveTool('select');
+      }
+    }
+  });
 
   createEffect(() => {
     const ov = overlay();
@@ -65,6 +76,10 @@ export function useAnnotationTool(
         if (!activeContextId) return undefined;
         const activeContext = contextState.contexts.find(c => c.id === activeContextId);
         return activeContext?.tools.find(t => t.type === toolType);
+      },
+      canAddAnnotation: (toolType: AnnotationType) => {
+        const status = constraintStatus();
+        return status[toolType].enabled;
       },
       addAnnotation: (annotation) => actions.addAnnotation(annotation),
       updateAnnotation: (id, imageIdArg, patch) => actions.updateAnnotation(id, imageIdArg, patch),

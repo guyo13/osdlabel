@@ -126,6 +126,11 @@ export class PathTool extends BaseTool {
         return;
       }
 
+      if (!this.callbacks.canAddAnnotation(this.type)) {
+        this.cancel();
+        return;
+      }
+
       const toolConstraint = this.callbacks.getToolConstraint(this.type);
 
       const style: AnnotationStyle = {

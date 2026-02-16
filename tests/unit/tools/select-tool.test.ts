@@ -43,6 +43,7 @@ describe('SelectTool', () => {
     mockCallbacks = {
       getActiveContextId: () => contextId,
       getToolConstraint: (type) => ({ type }),
+      canAddAnnotation: () => true,
       addAnnotation: vi.fn(),
       updateAnnotation: vi.fn(),
       deleteAnnotation: vi.fn(),
