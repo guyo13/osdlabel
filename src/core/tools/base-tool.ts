@@ -60,6 +60,7 @@ export abstract class BaseTool implements AnnotationTool {
   }
 
   deactivate(): void {
+    this.cancel();
     this.overlay = null;
     this.imageId = null;
     this.callbacks = null;

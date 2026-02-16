@@ -167,11 +167,6 @@ function getFabricOptions(style: AnnotationStyle, id: string) {
         strokeWidth: style.strokeWidth,
         opacity: style.opacity,
         annotationId: id,
-        strokeUniform: true, // Let's keep stroke consistent? Or false?
-        // If false, stroke scales with zoom.
-        // If true, stroke is constant screen width.
-        // AnnotationStyle usually implies "stroke width in image units".
-        // So strokeUniform: false (default).
-        // If style.strokeWidth = 2, it is 2 image pixels.
+        strokeUniform: true, // Constant screen-width strokes regardless of zoom level
     };
 }
