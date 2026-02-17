@@ -9,8 +9,8 @@ test.describe('Filmstrip', () => {
   test('should display all available images', async ({ page }) => {
     await expect(page.getByTestId('filmstrip-item-highsmith')).toBeVisible();
     await expect(page.getByTestId('filmstrip-item-duomo')).toBeVisible();
-    await expect(page.getByTestId('filmstrip-item-scroll')).toBeVisible();
-    await expect(page.getByTestId('filmstrip-item-testpattern')).toBeVisible();
+    await expect(page.getByTestId('filmstrip-item-wide')).toBeVisible();
+    await expect(page.getByTestId('filmstrip-item-jpg')).toBeVisible();
   });
 
   test('should assign image to active cell on click', async ({ page }) => {
