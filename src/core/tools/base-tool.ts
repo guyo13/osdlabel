@@ -1,25 +1,28 @@
 import { FabricObject } from 'fabric';
 import type { FabricOverlay } from '../../overlay/fabric-overlay.js';
-import { Annotation, AnnotationType, Point, AnnotationStyle, ImageId, AnnotationContextId, AnnotationId, ToolConstraint, createAnnotationId } from '../types.js';
-import { generateId } from '../../utils/id.js';
-import { getGeometryFromFabricObject } from '../fabric-utils.js';
+import { AnnotationType, Point, ImageId, AnnotationContextId, AnnotationId, ToolConstraint } from '../types.js';
+import '../fabric-module.js';
+
+/** Parameters for adding an annotation via a tool */
+export interface AddAnnotationParams {
+  readonly fabricObject: FabricObject;
+  readonly imageId: ImageId;
+  readonly contextId: AnnotationContextId;
+  readonly type: AnnotationType;
+  readonly label?: string;
+  readonly metadata?: Readonly<Record<string, unknown>>;
+}
 
 /** Framework-agnostic callbacks that tools use to interact with application state */
 export interface ToolCallbacks {
   readonly getActiveContextId: () => AnnotationContextId | null;
   readonly getToolConstraint: (type: AnnotationType) => ToolConstraint | undefined;
   readonly canAddAnnotation: (type: AnnotationType) => boolean;
-  readonly addAnnotation: (annotation: Omit<Annotation, 'createdAt' | 'updatedAt'>) => void;
-  readonly updateAnnotation: (id: AnnotationId, imageId: ImageId, patch: Partial<Omit<Annotation, 'id' | 'imageId' | 'createdAt' | 'updatedAt'>>) => void;
+  readonly addAnnotation: (params: AddAnnotationParams) => void;
+  readonly updateAnnotation: (id: AnnotationId, imageId: ImageId, fabricObject: FabricObject) => void;
   readonly deleteAnnotation: (id: AnnotationId, imageId: ImageId) => void;
   readonly setSelectedAnnotation: (id: AnnotationId | null) => void;
-  readonly getAnnotation: (id: AnnotationId, imageId: ImageId) => Annotation | undefined;
-}
-
-/** A Fabric object that may be associated with an annotation */
-export interface AnnotatedFabricObject extends FabricObject {
-  annotationId?: AnnotationId;
-  updatedAt?: string;
+  readonly getAnnotation: (id: AnnotationId, imageId: ImageId) => import('../types.js').Annotation | undefined;
 }
 
 export interface AnnotationTool {
@@ -88,29 +91,10 @@ export abstract class BaseTool implements AnnotationTool {
     this.overlay.canvas.requestRenderAll();
 
     for (const obj of activeObjects) {
-        const annotationId = (obj as AnnotatedFabricObject).annotationId;
+        const annotationId = obj.id as AnnotationId | undefined;
         if (annotationId) {
             this.callbacks.deleteAnnotation(annotationId, this.imageId);
         }
     }
   }
-}
-
-export function createAnnotationFromFabricObject(
-  obj: FabricObject,
-  imageId: ImageId,
-  contextId: AnnotationContextId,
-  style: AnnotationStyle,
-  type: AnnotationType
-): Omit<Annotation, 'createdAt' | 'updatedAt'> | null {
-  const geometry = getGeometryFromFabricObject(obj, type);
-  if (!geometry) return null;
-
-  return {
-    id: createAnnotationId(generateId()),
-    imageId,
-    contextId,
-    geometry,
-    style,
-  };
 }

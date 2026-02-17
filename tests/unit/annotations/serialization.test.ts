@@ -23,12 +23,9 @@ describe('Serialization', () => {
   const annId1 = createAnnotationId('ann1');
   const annId2 = createAnnotationId('ann2');
 
-  const baseStyle = {
-    strokeColor: 'red',
-    strokeWidth: 2,
-    fillColor: 'blue',
-    fillOpacity: 0.3,
-    opacity: 1,
+  const baseRawAnnotationData = {
+    format: 'fabric' as const,
+    data: { type: 'Rect', stroke: 'red', strokeWidth: 2, fill: 'rgba(0,0,255,0.3)', opacity: 1 },
   };
 
   const annotation1: Annotation = {
@@ -36,7 +33,7 @@ describe('Serialization', () => {
     imageId,
     contextId,
     geometry: { type: 'rectangle', origin: { x: 10, y: 20 }, width: 100, height: 50, rotation: 0 },
-    style: baseStyle,
+    rawAnnotationData: baseRawAnnotationData,
     createdAt: '2024-01-01T00:00:00.000Z',
     updatedAt: '2024-01-01T00:00:00.000Z',
   };
@@ -46,7 +43,7 @@ describe('Serialization', () => {
     imageId,
     contextId,
     geometry: { type: 'circle', center: { x: 200, y: 300 }, radius: 75 },
-    style: baseStyle,
+    rawAnnotationData: baseRawAnnotationData,
     createdAt: '2024-01-01T00:00:00.000Z',
     updatedAt: '2024-01-01T00:00:00.000Z',
   };
@@ -63,7 +60,7 @@ describe('Serialization', () => {
       }
       byImage[ann.imageId][ann.id] = ann;
     }
-    return { byImage };
+    return { byImage, reloadGeneration: 0 };
   }
 
   describe('serialize', () => {
@@ -80,7 +77,7 @@ describe('Serialization', () => {
     });
 
     it('should handle empty state', () => {
-      const state: AnnotationState = { byImage: {} };
+      const state: AnnotationState = { byImage: {}, reloadGeneration: 0 };
       const doc = serialize(state, imageSources);
 
       expect(doc.version).toBe('1.0.0');
@@ -121,7 +118,7 @@ describe('Serialization', () => {
       expect(restoredAnn1.imageId).toBe(imageId);
       expect(restoredAnn1.contextId).toBe(contextId);
       expect(restoredAnn1.geometry).toEqual(annotation1.geometry);
-      expect(restoredAnn1.style).toEqual(baseStyle);
+      expect(restoredAnn1.rawAnnotationData).toEqual(baseRawAnnotationData);
 
       const restoredAnn2 = result[imageId][annId2];
       expect(restoredAnn2.geometry).toEqual(annotation2.geometry);
@@ -257,10 +254,18 @@ describe('Serialization', () => {
       expect(validateAnnotation(badAnn)).toBe(false);
     });
 
-    it('should reject annotations with invalid style', () => {
+    it('should reject annotations with invalid rawAnnotationData', () => {
       const badAnn = {
         ...annotation1,
-        style: { strokeColor: 'red' }, // missing other fields
+        rawAnnotationData: { format: 'unknown', data: {} },
+      };
+      expect(validateAnnotation(badAnn)).toBe(false);
+    });
+
+    it('should reject annotations with missing rawAnnotationData', () => {
+      const badAnn = {
+        ...annotation1,
+        rawAnnotationData: undefined,
       };
       expect(validateAnnotation(badAnn)).toBe(false);
     });
@@ -276,7 +281,7 @@ describe('Serialization', () => {
     });
 
     it('should return empty array for empty state', () => {
-      const state: AnnotationState = { byImage: {} };
+      const state: AnnotationState = { byImage: {}, reloadGeneration: 0 };
       expect(getAllAnnotationsFlat(state)).toEqual([]);
     });
   });

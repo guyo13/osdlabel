@@ -59,6 +59,12 @@ export interface AnnotationStyle {
   readonly opacity: number;
 }
 
+// ── Raw Annotation Data ──────────────────────────────────────────────────
+
+/** Discriminated union for raw annotation data from rendering libraries */
+export type RawAnnotationData =
+  | { readonly format: 'fabric'; readonly data: Record<string, unknown> };
+
 // ── Annotation Entity ────────────────────────────────────────────────────
 
 /** A single annotation entity */
@@ -67,7 +73,7 @@ export interface Annotation {
   readonly imageId: ImageId;
   readonly contextId: AnnotationContextId;
   readonly geometry: Geometry;
-  readonly style: AnnotationStyle;
+  readonly rawAnnotationData: RawAnnotationData;
   readonly label?: string | undefined;
   readonly metadata?: Readonly<Record<string, unknown>> | undefined;
   readonly createdAt: string;
@@ -126,6 +132,7 @@ export interface ImageSource {
 /** Root state for the annotation system */
 export interface AnnotationState {
   byImage: Record<ImageId, Record<AnnotationId, Annotation>>;
+  reloadGeneration: number;
 }
 
 /** UI state */

@@ -115,8 +115,8 @@ export function validateAnnotation(value: unknown): value is Annotation {
   if (typeof v.createdAt !== 'string') return false;
   if (typeof v.updatedAt !== 'string') return false;
 
-  // Validate style
-  if (!validateStyle(v.style)) return false;
+  // Validate rawAnnotationData
+  if (!validateRawAnnotationData(v.rawAnnotationData)) return false;
 
   // Validate geometry
   if (!validateGeometry(v.geometry)) return false;
@@ -124,14 +124,11 @@ export function validateAnnotation(value: unknown): value is Annotation {
   return true;
 }
 
-function validateStyle(value: unknown): boolean {
+function validateRawAnnotationData(value: unknown): boolean {
   if (!isObject(value)) return false;
-  const s = value as Record<string, unknown>;
-  if (typeof s.strokeColor !== 'string') return false;
-  if (typeof s.strokeWidth !== 'number' || !isFinite(s.strokeWidth)) return false;
-  if (typeof s.fillColor !== 'string') return false;
-  if (typeof s.fillOpacity !== 'number' || !isFinite(s.fillOpacity)) return false;
-  if (typeof s.opacity !== 'number' || !isFinite(s.opacity)) return false;
+  const r = value as Record<string, unknown>;
+  if (r.format !== 'fabric') return false;
+  if (!isObject(r.data)) return false;
   return true;
 }
 

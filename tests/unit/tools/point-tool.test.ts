@@ -1,8 +1,9 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { PointTool } from '../../../src/core/tools/point-tool.js';
 import { FabricOverlay } from '../../../src/overlay/fabric-overlay.js';
-import { ToolCallbacks } from '../../../src/core/tools/base-tool.js';
-import { createAnnotationContextId, createImageId, Annotation } from '../../../src/core/types.js';
+import { ToolCallbacks, AddAnnotationParams } from '../../../src/core/tools/base-tool.js';
+import { createAnnotationContextId, createImageId } from '../../../src/core/types.js';
+import { Circle } from 'fabric';
 
 describe('PointTool', () => {
   let tool: PointTool;
@@ -14,13 +15,13 @@ describe('PointTool', () => {
     getZoom: ReturnType<typeof vi.fn>;
   };
   let mockCallbacks: ToolCallbacks;
-  let addedAnnotations: Array<Omit<Annotation, 'createdAt' | 'updatedAt'>>;
+  let addedParams: AddAnnotationParams[];
   const imageId = createImageId('test-image');
   const contextId = createAnnotationContextId('test-context');
 
   beforeEach(() => {
     vi.clearAllMocks();
-    addedAnnotations = [];
+    addedParams = [];
 
     mockCanvas = {
       add: vi.fn(),
@@ -37,7 +38,7 @@ describe('PointTool', () => {
       getActiveContextId: () => contextId,
       getToolConstraint: (type) => ({ type }),
       canAddAnnotation: () => true,
-      addAnnotation: (ann) => { addedAnnotations.push(ann); },
+      addAnnotation: (params) => { addedParams.push(params); },
       updateAnnotation: vi.fn(),
       deleteAnnotation: vi.fn(),
       setSelectedAnnotation: vi.fn(),
@@ -45,48 +46,69 @@ describe('PointTool', () => {
     };
   });
 
-  it('should create annotation on pointer down', () => {
+  it('should create preview on pointer down and add to canvas', () => {
     tool = new PointTool();
     tool.activate(mockOverlay, imageId, mockCallbacks);
 
-    const event = { type: 'pointerdown' } as PointerEvent;
-    tool.onPointerDown(event, { x: 30, y: 30 });
+    tool.onPointerDown({ type: 'pointerdown' } as PointerEvent, { x: 30, y: 30 });
 
-    expect(addedAnnotations).toHaveLength(1);
-    const ann = addedAnnotations[0];
+    // Preview is added to canvas
+    expect(mockCanvas.add).toHaveBeenCalled();
+    const preview = mockCanvas.add.mock.calls[0][0];
+    expect(preview).toBeInstanceOf(Circle);
+    expect(preview.left).toBe(30);
+    expect(preview.top).toBe(30);
 
-    expect(ann.geometry.type).toBe('point');
-    if (ann.geometry.type === 'point') {
-        expect(ann.geometry.position.x).toBe(30);
-        expect(ann.geometry.position.y).toBe(30);
-    }
-
-    // PointTool does not add preview to canvas
-    expect(mockCanvas.add).not.toHaveBeenCalled();
+    // Not committed yet — committed on pointer up
+    expect(addedParams).toHaveLength(0);
   });
 
-  it('should ignore pointer move', () => {
+  it('should update position on pointer move (drag)', () => {
     tool = new PointTool();
     tool.activate(mockOverlay, imageId, mockCallbacks);
 
-    const event = { type: 'pointerdown' } as PointerEvent;
-    tool.onPointerDown(event, { x: 10, y: 10 });
+    tool.onPointerDown({ type: 'pointerdown' } as PointerEvent, { x: 10, y: 10 });
 
-    const moveEvent = { type: 'pointermove' } as PointerEvent;
-    tool.onPointerMove(moveEvent, { x: 30, y: 30 });
+    const preview = mockCanvas.add.mock.calls[0][0];
 
-    expect(mockCanvas.requestRenderAll).not.toHaveBeenCalled();
+    tool.onPointerMove({ type: 'pointermove' } as PointerEvent, { x: 30, y: 30 });
+
+    expect(preview.left).toBe(30);
+    expect(preview.top).toBe(30);
+    expect(mockCanvas.requestRenderAll).toHaveBeenCalled();
   });
 
-  it('should ignore pointer up', () => {
+  it('should commit annotation on pointer up with fabricObject', () => {
     tool = new PointTool();
     tool.activate(mockOverlay, imageId, mockCallbacks);
 
-    const event = { type: 'pointerdown' } as PointerEvent;
-    tool.onPointerDown(event, { x: 10, y: 10 });
+    tool.onPointerDown({ type: 'pointerdown' } as PointerEvent, { x: 30, y: 30 });
+    tool.onPointerUp({ type: 'pointerup' } as PointerEvent, { x: 30, y: 30 });
 
-    const upEvent = { type: 'pointerup' } as PointerEvent;
-    tool.onPointerUp(upEvent, { x: 10, y: 10 });
+    expect(addedParams).toHaveLength(1);
+    const params = addedParams[0]!;
+
+    expect(params.type).toBe('point');
+    expect(params.imageId).toBe(imageId);
+    expect(params.contextId).toBe(contextId);
+    expect(params.fabricObject).toBeInstanceOf(Circle);
+
+    // Object stays on canvas
+    expect(mockCanvas.remove).not.toHaveBeenCalled();
+  });
+
+  it('should allow drag-to-reposition before commit', () => {
+    tool = new PointTool();
+    tool.activate(mockOverlay, imageId, mockCallbacks);
+
+    tool.onPointerDown({ type: 'pointerdown' } as PointerEvent, { x: 10, y: 10 });
+    tool.onPointerMove({ type: 'pointermove' } as PointerEvent, { x: 50, y: 50 });
+    tool.onPointerUp({ type: 'pointerup' } as PointerEvent, { x: 50, y: 50 });
+
+    expect(addedParams).toHaveLength(1);
+    const preview = mockCanvas.add.mock.calls[0][0];
+    expect(preview.left).toBe(50);
+    expect(preview.top).toBe(50);
   });
 
   it('should not create annotation when no active context', () => {
@@ -100,6 +122,19 @@ describe('PointTool', () => {
 
     tool.onPointerDown({ type: 'pointerdown' } as PointerEvent, { x: 30, y: 30 });
 
-    expect(addedAnnotations).toHaveLength(0);
+    expect(addedParams).toHaveLength(0);
+    expect(mockCanvas.add).not.toHaveBeenCalled();
+  });
+
+  it('should cancel and remove preview on cancel()', () => {
+    tool = new PointTool();
+    tool.activate(mockOverlay, imageId, mockCallbacks);
+
+    tool.onPointerDown({ type: 'pointerdown' } as PointerEvent, { x: 30, y: 30 });
+    expect(mockCanvas.add).toHaveBeenCalled();
+
+    tool.cancel();
+    expect(mockCanvas.remove).toHaveBeenCalled();
+    expect(addedParams).toHaveLength(0);
   });
 });

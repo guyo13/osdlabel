@@ -18,6 +18,7 @@ export type {
   ContextState,
   ConstraintStatus,
   KeyboardShortcutMap,
+  RawAnnotationData,
 } from './core/types.js';
 
 // ID factory functions
@@ -52,7 +53,7 @@ export {
 export type { AnnotatorProviderProps } from './state/annotator-context.js';
 
 // Tools
-export type { ToolCallbacks, AnnotatedFabricObject } from './core/tools/base-tool.js';
+export type { ToolCallbacks, AddAnnotationParams } from './core/tools/base-tool.js';
 
 // Serialization
 export {
