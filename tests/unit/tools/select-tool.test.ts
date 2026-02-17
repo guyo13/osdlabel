@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { SelectTool } from '../../../src/core/tools/select-tool.js';
 import { FabricOverlay } from '../../../src/overlay/fabric-overlay.js';
 import { ToolCallbacks } from '../../../src/core/tools/base-tool.js';
-import { createImageId, createAnnotationContextId, createAnnotationId, Annotation } from '../../../src/core/types.js';
+import { createImageId, createAnnotationContextId, createAnnotationId } from '../../../src/core/types.js';
 import { FabricObject } from 'fabric';
 
 describe('SelectTool', () => {
@@ -60,7 +60,6 @@ describe('SelectTool', () => {
     tool.activate(mockOverlay, imageId, mockCallbacks);
     expect(mockCanvas.on).toHaveBeenCalledWith('selection:created', expect.any(Function));
     expect(mockCanvas.on).toHaveBeenCalledWith('selection:cleared', expect.any(Function));
-    expect(mockCanvas.on).toHaveBeenCalledWith('object:modified', expect.any(Function));
   });
 
   it('should detach event listeners on deactivate', () => {
@@ -68,7 +67,6 @@ describe('SelectTool', () => {
     tool.deactivate();
     expect(mockCanvas.off).toHaveBeenCalledWith('selection:created', expect.any(Function));
     expect(mockCanvas.off).toHaveBeenCalledWith('selection:cleared', expect.any(Function));
-    expect(mockCanvas.off).toHaveBeenCalledWith('object:modified', expect.any(Function));
     expect(mockCanvas.discardActiveObject).toHaveBeenCalled();
   });
 
@@ -100,33 +98,6 @@ describe('SelectTool', () => {
     capturedHandlers['selection:cleared']({ deselected: [] });
 
     expect(mockCallbacks.setSelectedAnnotation).toHaveBeenCalledWith(null);
-  });
-
-  it('should trigger updateAnnotation with fabricObject on object:modified', () => {
-    const annId = createAnnotationId('ann-1');
-    const mockAnnotation: Annotation = {
-      id: annId,
-      imageId,
-      contextId,
-      geometry: { type: 'rectangle', origin: { x: 0, y: 0 }, width: 10, height: 10, rotation: 0 },
-      rawAnnotationData: { format: 'fabric', data: { type: 'Rect' } },
-      createdAt: '2024-01-01T00:00:00Z',
-      updatedAt: '2024-01-01T00:00:00Z',
-    };
-
-    const getAnnotationMock = vi.fn().mockReturnValue(mockAnnotation);
-    const callbacksWithAnnotation: ToolCallbacks = {
-      ...mockCallbacks,
-      getAnnotation: getAnnotationMock,
-    };
-
-    tool.activate(mockOverlay, imageId, callbacksWithAnnotation);
-
-    const mockTarget = { id: annId } as unknown as FabricObject;
-    capturedHandlers['object:modified']({ target: mockTarget });
-
-    // updateAnnotation should be called with the fabricObject directly
-    expect(callbacksWithAnnotation.updateAnnotation).toHaveBeenCalledWith(annId, imageId, mockTarget);
   });
 
   it('should trigger deleteAnnotation on Delete key', () => {
