@@ -1,14 +1,13 @@
 import { onMount, onCleanup, createEffect, on, createSignal } from 'solid-js';
 import type { Component } from 'solid-js';
 import OpenSeadragon from 'openseadragon';
-import { FabricObject } from 'fabric';
 import { FabricOverlay } from '../overlay/fabric-overlay.js';
 import type { OverlayMode } from '../overlay/fabric-overlay.js';
 import type { ImageSource } from '../core/types.js';
 import { useAnnotationTool } from '../hooks/useAnnotationTool.js';
 import { useAnnotator } from '../state/annotator-context.js';
-import { AnnotatedFabricObject } from '../core/tools/base-tool.js';
-import { createFabricObjectFromAnnotation, updateFabricObjectFromAnnotation } from '../core/fabric-utils.js';
+import { createFabricObjectFromRawData } from '../core/fabric-utils.js';
+import '../core/fabric-module.js';
 
 export interface ViewerCellProps {
   readonly imageSource: ImageSource | undefined;
@@ -19,7 +18,7 @@ export interface ViewerCellProps {
 }
 
 const ViewerCell: Component<ViewerCellProps> = (props) => {
-  const { annotationState } = useAnnotator();
+  const { annotationState, contextState } = useAnnotator();
   let containerRef: HTMLDivElement | undefined;
   let viewer: OpenSeadragon.Viewer | undefined;
   const [overlay, setOverlay] = createSignal<FabricOverlay>();
@@ -80,76 +79,37 @@ const ViewerCell: Component<ViewerCellProps> = (props) => {
       () => props.isActive
   );
 
-  // Sync annotations from state to canvas
+  // Sync annotations from state to canvas (full clear-and-reload)
   createEffect(() => {
-      const ov = overlay();
-      const imageId = props.imageSource?.id;
-      if (!ov || !imageId) return;
+    const ov = overlay();
+    const imageId = props.imageSource?.id;
+    const contextId = contextState.activeContextId;
+    // Track these as reactive dependencies so the effect re-runs
+    void props.isActive;
+    void annotationState.reloadGeneration;
 
-      const imageAnns = annotationState.byImage[imageId] || {};
-      const canvas = ov.canvas;
+    if (!ov || !imageId) return;
 
-      // Map existing objects by annotationId
-      const currentObjects = new Map<string, FabricObject>();
-      const objectsToRemove: FabricObject[] = [];
+    // Filter annotations by imageId + contextId
+    const imageAnns = annotationState.byImage[imageId] || {};
+    const matching = contextId
+      ? Object.values(imageAnns).filter(a => a.contextId === contextId)
+      : Object.values(imageAnns);
 
-      // Clone the objects array to avoid modification during iteration
-      const currentObjectsList = canvas.getObjects().slice();
-      for (const obj of currentObjectsList) {
-          const annotatedObj = obj as AnnotatedFabricObject;
-          if (annotatedObj.annotationId) {
-              currentObjects.set(annotatedObj.annotationId, obj);
-          }
+    // Clear all existing annotation objects from canvas
+    const toRemove = ov.canvas.getObjects().filter(obj => obj.id);
+    if (toRemove.length > 0) ov.canvas.remove(...toRemove);
+
+    // Async load from rawAnnotationData
+    const capturedImageId = imageId;
+    void (async () => {
+      for (const ann of matching) {
+        if (props.imageSource?.id !== capturedImageId) return; // stale
+        const obj = await createFabricObjectFromRawData(ann);
+        if (obj) ov.canvas.add(obj);
       }
-
-      const activeIds = new Set<string>();
-
-      // Update or create objects
-      for (const ann of Object.values(imageAnns)) {
-          activeIds.add(ann.id);
-          const obj = currentObjects.get(ann.id);
-
-          if (!obj) {
-              // Create
-              const newObj = createFabricObjectFromAnnotation(ann);
-              if (newObj) {
-                  (newObj as AnnotatedFabricObject).updatedAt = ann.updatedAt;
-                  canvas.add(newObj);
-              }
-          } else {
-              // Update if changed
-              if ((obj as AnnotatedFabricObject).updatedAt !== ann.updatedAt) {
-                   const updatedInPlace = updateFabricObjectFromAnnotation(obj, ann);
-                   if (updatedInPlace) {
-                       (obj as AnnotatedFabricObject).updatedAt = ann.updatedAt;
-                       obj.setCoords();
-                   } else {
-                       // Object needs replacement (e.g. Polyline <-> Polygon switch)
-                       // Preserve z-index by inserting at the same index
-                       const index = canvas.getObjects().indexOf(obj);
-                       canvas.remove(obj);
-                       const newObj = createFabricObjectFromAnnotation(ann);
-                       if (newObj) {
-                           (newObj as AnnotatedFabricObject).updatedAt = ann.updatedAt;
-                           canvas.insertAt(index, newObj);
-                       }
-                   }
-              }
-          }
-      }
-
-      // Remove deleted objects
-      for (const [id, obj] of currentObjects) {
-          if (!activeIds.has(id)) {
-              objectsToRemove.push(obj);
-          }
-      }
-
-      if (objectsToRemove.length > 0) {
-          canvas.remove(...objectsToRemove);
-      }
-
-      canvas.requestRenderAll();
+      ov.canvas.requestRenderAll();
+    })();
   });
 
   return (
@@ -169,14 +129,11 @@ const ViewerCell: Component<ViewerCellProps> = (props) => {
 
 function openImage(viewer: OpenSeadragon.Viewer, source: ImageSource): void {
   const url = source.dziUrl;
-  // Naive check: if it looks like an image file extension, treat as simple image.
-  // Otherwise assume it's a DZI source (XML or JSON).
   const isSimpleImage = /\.(jpg|jpeg|png|webp|gif|bmp)$/i.test(url);
 
   if (isSimpleImage) {
     viewer.open({ type: 'image', url });
   } else {
-    // Passes URL directly to OSD, which handles DZI XML, IIIF, etc.
     viewer.open(url);
   }
 }

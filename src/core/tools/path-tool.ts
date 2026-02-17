@@ -1,10 +1,11 @@
-import { Polyline } from 'fabric';
+import { Polyline, Polygon } from 'fabric';
 import { BaseTool } from './base-tool.js';
 import { AnnotationType, Point, AnnotationStyle, createAnnotationId } from '../types.js';
 import { DEFAULT_ANNOTATION_STYLE } from '../constants.js';
+import { getFabricOptions } from '../fabric-utils.js';
 import { generateId } from '../../utils/id.js';
 
-/** Distance in image-space pixels to snap-close to the first point */
+/** Distance in screen pixels to snap-close to the first point */
 const CLOSE_THRESHOLD_SCREEN_PX = 10;
 
 export class PathTool extends BaseTool {
@@ -98,7 +99,6 @@ export class PathTool extends BaseTool {
       if (this.vertices.length === 0 || !this.overlay) return false;
       const first = this.vertices[0]!;
 
-      // Convert both points to screen space to get a zoom-independent threshold
       const firstScreen = this.overlay.imageToScreen(first);
       const currentScreen = this.overlay.imageToScreen(imagePoint);
 
@@ -135,34 +135,49 @@ export class PathTool extends BaseTool {
       }
 
       const toolConstraint = this.callbacks.getToolConstraint(this.type);
-
       const style: AnnotationStyle = {
         ...DEFAULT_ANNOTATION_STYLE,
         ...toolConstraint?.defaultStyle,
       };
 
-      // Build geometry directly from tracked vertices (not from the Fabric preview object)
-      const annotation = {
-        id: createAnnotationId(generateId()),
-        imageId: this.imageId,
-        contextId: activeContextId,
-        geometry: {
-          type: 'path' as const,
-          points: this.vertices.map(p => ({ x: p.x, y: p.y })),
-          closed,
-        },
-        style,
-      };
+      const id = createAnnotationId(generateId());
+      const options = getFabricOptions(style, id);
+      const pts = this.vertices.map(p => ({ x: p.x, y: p.y }));
 
-      // Clean up preview
+      // Remove preview polyline
       if (this.preview) {
           this.overlay.canvas.remove(this.preview);
       }
-      this.preview = null;
-      this.vertices = [];
+
+      // Create the final object (Polygon for closed, Polyline for open)
+      let finalObj: Polyline;
+      if (closed) {
+          finalObj = new Polygon(pts, {
+              ...options,
+              selectable: true,
+              evented: true,
+          });
+      } else {
+          finalObj = new Polyline(pts, {
+              ...options,
+              fill: 'transparent',
+              selectable: true,
+              evented: true,
+          });
+      }
+
+      this.overlay.canvas.add(finalObj);
       this.overlay.canvas.requestRenderAll();
 
-      this.callbacks.addAnnotation(annotation);
+      this.callbacks.addAnnotation({
+          fabricObject: finalObj,
+          imageId: this.imageId,
+          contextId: activeContextId,
+          type: this.type,
+      });
+
+      this.preview = null;
+      this.vertices = [];
   }
 
   cancel(): void {

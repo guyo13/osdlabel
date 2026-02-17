@@ -1,8 +1,8 @@
 import { FabricObject } from 'fabric';
-import { BaseTool, AnnotatedFabricObject, ToolCallbacks } from './base-tool.js';
-import { ImageId, Point } from '../types.js';
+import { BaseTool, ToolCallbacks } from './base-tool.js';
+import { AnnotationId, ImageId, Point } from '../types.js';
 import type { FabricOverlay } from '../../overlay/fabric-overlay.js';
-import { getGeometryFromFabricObject } from '../fabric-utils.js';
+import '../fabric-module.js';
 
 interface SelectionEvent {
   readonly selected: FabricObject[];
@@ -62,8 +62,8 @@ export class SelectTool extends BaseTool {
       if (!this.callbacks) return;
       const selected = e.selected || [];
       if (selected.length === 1) {
-          const obj = selected[0] as AnnotatedFabricObject;
-          const annotationId = obj.annotationId;
+          const obj = selected[0]!;
+          const annotationId = obj.id as AnnotationId | undefined;
           if (annotationId) {
               this.callbacks.setSelectedAnnotation(annotationId);
           }
@@ -82,18 +82,9 @@ export class SelectTool extends BaseTool {
       const obj = e.target;
       if (!obj || !this.imageId) return;
 
-      const annotationId = (obj as AnnotatedFabricObject).annotationId;
+      const annotationId = obj.id as AnnotationId | undefined;
       if (!annotationId) return;
 
-      const currentAnnotation = this.callbacks.getAnnotation(annotationId, this.imageId);
-      if (!currentAnnotation) return;
-
-      const geometry = getGeometryFromFabricObject(obj, currentAnnotation.geometry.type);
-
-      if (geometry) {
-          this.callbacks.updateAnnotation(annotationId, this.imageId, {
-              geometry: geometry
-          });
-      }
+      this.callbacks.updateAnnotation(annotationId, this.imageId, obj);
   }
 }

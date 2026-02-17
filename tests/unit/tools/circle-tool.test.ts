@@ -1,8 +1,8 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { CircleTool } from '../../../src/core/tools/circle-tool.js';
 import { FabricOverlay } from '../../../src/overlay/fabric-overlay.js';
-import { ToolCallbacks } from '../../../src/core/tools/base-tool.js';
-import { createAnnotationContextId, createImageId, Annotation } from '../../../src/core/types.js';
+import { ToolCallbacks, AddAnnotationParams } from '../../../src/core/tools/base-tool.js';
+import { createAnnotationContextId, createImageId } from '../../../src/core/types.js';
 import { Circle } from 'fabric';
 
 describe('CircleTool', () => {
@@ -15,13 +15,13 @@ describe('CircleTool', () => {
     getZoom: ReturnType<typeof vi.fn>;
   };
   let mockCallbacks: ToolCallbacks;
-  let addedAnnotations: Array<Omit<Annotation, 'createdAt' | 'updatedAt'>>;
+  let addedParams: AddAnnotationParams[];
   const imageId = createImageId('test-image');
   const contextId = createAnnotationContextId('test-context');
 
   beforeEach(() => {
     vi.clearAllMocks();
-    addedAnnotations = [];
+    addedParams = [];
 
     mockCanvas = {
       add: vi.fn(),
@@ -38,7 +38,7 @@ describe('CircleTool', () => {
       getActiveContextId: () => contextId,
       getToolConstraint: (type) => ({ type }),
       canAddAnnotation: () => true,
-      addAnnotation: (ann) => { addedAnnotations.push(ann); },
+      addAnnotation: (params) => { addedParams.push(params); },
       updateAnnotation: vi.fn(),
       deleteAnnotation: vi.fn(),
       setSelectedAnnotation: vi.fn(),
@@ -77,41 +77,25 @@ describe('CircleTool', () => {
     expect(mockCanvas.requestRenderAll).toHaveBeenCalled();
   });
 
-  it('should create annotation on pointer up', () => {
-    tool = new CircleTool();
-    tool.activate(mockOverlay, imageId, mockCallbacks);
-
-    const event = { type: 'pointerdown' } as PointerEvent;
-    tool.onPointerDown(event, { x: 10, y: 10 });
-
-    const moveEvent = { type: 'pointermove' } as PointerEvent;
-    tool.onPointerMove(moveEvent, { x: 30, y: 30 });
-
-    const upEvent = { type: 'pointerup' } as PointerEvent;
-    tool.onPointerUp(upEvent, { x: 30, y: 30 });
-
-    expect(addedAnnotations).toHaveLength(1);
-    const ann = addedAnnotations[0];
-
-    expect(ann.geometry.type).toBe('circle');
-    if (ann.geometry.type === 'circle') {
-        expect(ann.geometry.radius).toBeGreaterThan(0);
-        expect(ann.geometry.center.x).toBe(10);
-        expect(ann.geometry.center.y).toBe(10);
-    }
-
-    expect(mockCanvas.remove).toHaveBeenCalled();
-  });
-
-  it('should not create annotation for zero radius', () => {
+  it('should commit annotation on pointer up with fabricObject', () => {
     tool = new CircleTool();
     tool.activate(mockOverlay, imageId, mockCallbacks);
 
     tool.onPointerDown({ type: 'pointerdown' } as PointerEvent, { x: 10, y: 10 });
-    tool.onPointerUp({ type: 'pointerup' } as PointerEvent, { x: 10, y: 10 });
+    tool.onPointerMove({ type: 'pointermove' } as PointerEvent, { x: 30, y: 30 });
+    tool.onPointerUp({ type: 'pointerup' } as PointerEvent, { x: 30, y: 30 });
 
-    // Zero-radius circle still generates annotation; tool does not filter
-    expect(mockCanvas.remove).toHaveBeenCalled();
+    expect(addedParams).toHaveLength(1);
+    const params = addedParams[0]!;
+
+    expect(params.type).toBe('circle');
+    expect(params.imageId).toBe(imageId);
+    expect(params.contextId).toBe(contextId);
+    expect(params.fabricObject).toBeInstanceOf(Circle);
+    expect(params.fabricObject.get('radius')).toBeGreaterThan(0);
+
+    // Object stays on canvas
+    expect(mockCanvas.remove).not.toHaveBeenCalled();
   });
 
   it('should not create annotation when no active context', () => {
@@ -127,6 +111,7 @@ describe('CircleTool', () => {
     tool.onPointerMove({ type: 'pointermove' } as PointerEvent, { x: 30, y: 30 });
     tool.onPointerUp({ type: 'pointerup' } as PointerEvent, { x: 30, y: 30 });
 
-    expect(addedAnnotations).toHaveLength(0);
+    expect(addedParams).toHaveLength(0);
+    expect(mockCanvas.add).not.toHaveBeenCalled();
   });
 });

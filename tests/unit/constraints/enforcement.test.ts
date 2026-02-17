@@ -47,12 +47,9 @@ describe('Constraint Enforcement', () => {
     ],
   };
 
-  const baseStyle = {
-    strokeColor: 'red',
-    strokeWidth: 1,
-    fillColor: 'none',
-    fillOpacity: 0,
-    opacity: 1,
+  const baseRawData = {
+    format: 'fabric' as const,
+    data: { type: 'Rect', stroke: 'red', strokeWidth: 1, fill: 'transparent', opacity: 1 },
   };
 
   it('should disable tool when maxCount is reached', () => {
@@ -73,7 +70,7 @@ describe('Constraint Enforcement', () => {
       imageId,
       contextId: contextId1,
       geometry: { type: 'rectangle', origin: { x: 0, y: 0 }, width: 10, height: 10, rotation: 0 },
-      style: baseStyle,
+      rawAnnotationData: baseRawData,
     });
 
     status = constraintStatus();
@@ -86,7 +83,7 @@ describe('Constraint Enforcement', () => {
       imageId,
       contextId: contextId1,
       geometry: { type: 'rectangle', origin: { x: 20, y: 20 }, width: 10, height: 10, rotation: 0 },
-      style: baseStyle,
+      rawAnnotationData: baseRawData,
     });
 
     status = constraintStatus();
@@ -108,14 +105,14 @@ describe('Constraint Enforcement', () => {
       imageId,
       contextId: contextId1,
       geometry: { type: 'rectangle', origin: { x: 0, y: 0 }, width: 10, height: 10, rotation: 0 },
-      style: baseStyle,
+      rawAnnotationData: baseRawData,
     });
     actions.addAnnotation({
       id: createAnnotationId('r2'),
       imageId,
       contextId: contextId1,
       geometry: { type: 'rectangle', origin: { x: 20, y: 20 }, width: 10, height: 10, rotation: 0 },
-      style: baseStyle,
+      rawAnnotationData: baseRawData,
     });
 
     let status = constraintStatus();
@@ -177,7 +174,7 @@ describe('Constraint Enforcement', () => {
         imageId,
         contextId: contextId1,
         geometry: { type: 'circle', center: { x: i * 10, y: 0 }, radius: 5 },
-        style: baseStyle,
+        rawAnnotationData: baseRawData,
       });
     }
 
@@ -216,7 +213,7 @@ describe('Constraint Enforcement', () => {
       imageId,
       contextId: contextId1,
       geometry: { type: 'rectangle', origin: { x: 0, y: 0 }, width: 10, height: 10, rotation: 0 },
-      style: baseStyle,
+      rawAnnotationData: baseRawData,
     });
 
     // Add a line in context2 (should not affect context1's counts)
@@ -225,7 +222,7 @@ describe('Constraint Enforcement', () => {
       imageId,
       contextId: contextId2,
       geometry: { type: 'line', start: { x: 0, y: 0 }, end: { x: 10, y: 10 } },
-      style: baseStyle,
+      rawAnnotationData: baseRawData,
     });
 
     let status = constraintStatus();
@@ -258,7 +255,7 @@ describe('Constraint Enforcement', () => {
       imageId,
       contextId: contextId2,
       geometry: { type: 'line', start: { x: 0, y: 0 }, end: { x: 10, y: 10 } },
-      style: baseStyle,
+      rawAnnotationData: baseRawData,
     });
 
     expect(canAddLine()).toBe(false);

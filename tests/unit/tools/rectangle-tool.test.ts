@@ -1,8 +1,8 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { RectangleTool } from '../../../src/core/tools/rectangle-tool.js';
 import { FabricOverlay } from '../../../src/overlay/fabric-overlay.js';
-import { ToolCallbacks } from '../../../src/core/tools/base-tool.js';
-import { createAnnotationContextId, createImageId, Annotation } from '../../../src/core/types.js';
+import { ToolCallbacks, AddAnnotationParams } from '../../../src/core/tools/base-tool.js';
+import { createAnnotationContextId, createImageId } from '../../../src/core/types.js';
 import { Rect } from 'fabric';
 
 describe('RectangleTool', () => {
@@ -15,13 +15,13 @@ describe('RectangleTool', () => {
     getZoom: ReturnType<typeof vi.fn>;
   };
   let mockCallbacks: ToolCallbacks;
-  let addedAnnotations: Array<Omit<Annotation, 'createdAt' | 'updatedAt'>>;
+  let addedParams: AddAnnotationParams[];
   const imageId = createImageId('test-image');
   const contextId = createAnnotationContextId('test-context');
 
   beforeEach(() => {
     vi.clearAllMocks();
-    addedAnnotations = [];
+    addedParams = [];
 
     mockCanvas = {
       add: vi.fn(),
@@ -38,7 +38,7 @@ describe('RectangleTool', () => {
       getActiveContextId: () => contextId,
       getToolConstraint: (type) => ({ type }),
       canAddAnnotation: () => true,
-      addAnnotation: (ann) => { addedAnnotations.push(ann); },
+      addAnnotation: (params) => { addedParams.push(params); },
       updateAnnotation: vi.fn(),
       deleteAnnotation: vi.fn(),
       setSelectedAnnotation: vi.fn(),
@@ -78,7 +78,7 @@ describe('RectangleTool', () => {
     expect(mockCanvas.requestRenderAll).toHaveBeenCalled();
   });
 
-  it('should create annotation on pointer up', () => {
+  it('should commit annotation on pointer up with fabricObject', () => {
     tool = new RectangleTool();
     tool.activate(mockOverlay, imageId, mockCallbacks);
 
@@ -91,16 +91,18 @@ describe('RectangleTool', () => {
     const upEvent = { type: 'pointerup' } as PointerEvent;
     tool.onPointerUp(upEvent, { x: 30, y: 40 });
 
-    expect(addedAnnotations).toHaveLength(1);
-    const ann = addedAnnotations[0];
+    expect(addedParams).toHaveLength(1);
+    const params = addedParams[0]!;
 
-    expect(ann.geometry.type).toBe('rectangle');
-    if (ann.geometry.type === 'rectangle') {
-        expect(ann.geometry.width).toBe(20);
-        expect(ann.geometry.height).toBe(30);
-    }
+    expect(params.type).toBe('rectangle');
+    expect(params.imageId).toBe(imageId);
+    expect(params.contextId).toBe(contextId);
+    expect(params.fabricObject).toBeInstanceOf(Rect);
+    expect(params.fabricObject.width).toBe(20);
+    expect(params.fabricObject.height).toBe(30);
 
-    expect(mockCanvas.remove).toHaveBeenCalled();
+    // Object stays on canvas (no remove call)
+    expect(mockCanvas.remove).not.toHaveBeenCalled();
   });
 
   it('should handle negative drag direction', () => {
@@ -121,16 +123,15 @@ describe('RectangleTool', () => {
     expect(preview.top).toBe(10);
   });
 
-  it('should not create annotation for zero-size shape', () => {
+  it('should set id on preview object', () => {
     tool = new RectangleTool();
     tool.activate(mockOverlay, imageId, mockCallbacks);
 
     tool.onPointerDown({ type: 'pointerdown' } as PointerEvent, { x: 10, y: 10 });
-    tool.onPointerUp({ type: 'pointerup' } as PointerEvent, { x: 10, y: 10 });
 
-    // Zero-size rect still generates an annotation with width=0, height=0
-    // The tool creates it; validation is not the tool's job
-    expect(mockCanvas.remove).toHaveBeenCalled();
+    const preview = mockCanvas.add.mock.calls[0][0];
+    expect(preview.id).toBeDefined();
+    expect(typeof preview.id).toBe('string');
   });
 
   it('should not create annotation when no active context', () => {
@@ -146,6 +147,8 @@ describe('RectangleTool', () => {
     tool.onPointerMove({ type: 'pointermove' } as PointerEvent, { x: 30, y: 40 });
     tool.onPointerUp({ type: 'pointerup' } as PointerEvent, { x: 30, y: 40 });
 
-    expect(addedAnnotations).toHaveLength(0);
+    expect(addedParams).toHaveLength(0);
+    // No preview should have been added either
+    expect(mockCanvas.add).not.toHaveBeenCalled();
   });
 });

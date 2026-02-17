@@ -1,7 +1,7 @@
 import { createEffect, onCleanup } from 'solid-js';
 import type { FabricObject } from 'fabric';
 import type { FabricOverlay } from '../overlay/fabric-overlay.js';
-import { AnnotationTool, ToolCallbacks, AnnotatedFabricObject } from '../core/tools/base-tool.js';
+import { AnnotationTool, ToolCallbacks, AddAnnotationParams } from '../core/tools/base-tool.js';
 import { RectangleTool } from '../core/tools/rectangle-tool.js';
 import { CircleTool } from '../core/tools/circle-tool.js';
 import { LineTool } from '../core/tools/line-tool.js';
@@ -9,7 +9,9 @@ import { PointTool } from '../core/tools/point-tool.js';
 import { PathTool } from '../core/tools/path-tool.js';
 import { SelectTool } from '../core/tools/select-tool.js';
 import { useAnnotator } from '../state/annotator-context.js';
-import { ImageId, Point, AnnotationType } from '../core/types.js';
+import { AnnotationId, ImageId, Point, AnnotationType } from '../core/types.js';
+import { getGeometryFromFabricObject, serializeFabricObject } from '../core/fabric-utils.js';
+import '../core/fabric-module.js';
 
 interface FabricPointerEvent {
   readonly e: MouseEvent | PointerEvent | TouchEvent;
@@ -81,8 +83,44 @@ export function useAnnotationTool(
         const status = constraintStatus();
         return status[toolType].enabled;
       },
-      addAnnotation: (annotation) => actions.addAnnotation(annotation),
-      updateAnnotation: (id, imageIdArg, patch) => actions.updateAnnotation(id, imageIdArg, patch),
+      addAnnotation: (params: AddAnnotationParams) => {
+        const { fabricObject, imageId: imgIdParam, contextId, type: annType, label, metadata } = params;
+
+        // Read the annotation ID set by the tool via module augmentation
+        const id = fabricObject.id as AnnotationId;
+
+        // Derive geometry from the Fabric object
+        const geometry = getGeometryFromFabricObject(fabricObject, annType);
+        if (!geometry) {
+          console.warn('Could not extract geometry from Fabric object');
+          return;
+        }
+
+        // Serialize the Fabric object
+        const rawAnnotationData = serializeFabricObject(fabricObject);
+
+        actions.addAnnotation({
+          id,
+          imageId: imgIdParam,
+          contextId,
+          geometry,
+          rawAnnotationData,
+          label,
+          metadata,
+        });
+      },
+      updateAnnotation: (id: AnnotationId, imageIdArg: ImageId, fabricObject: FabricObject) => {
+        // Look up current annotation to get geometry type
+        const currentAnnotation = annotationState.byImage[imageIdArg]?.[id];
+        if (!currentAnnotation) return;
+
+        const geometry = getGeometryFromFabricObject(fabricObject, currentAnnotation.geometry.type);
+        if (!geometry) return;
+
+        const rawAnnotationData = serializeFabricObject(fabricObject);
+
+        actions.updateAnnotation(id, imageIdArg, { geometry, rawAnnotationData });
+      },
       deleteAnnotation: (id, imageIdArg) => actions.deleteAnnotation(id, imageIdArg),
       setSelectedAnnotation: (id) => actions.setSelectedAnnotation(id),
       getAnnotation: (id, imageIdArg) => {
@@ -105,11 +143,8 @@ export function useAnnotationTool(
         if (!tool) return;
 
         // For drawing tools, skip if the click landed on an existing annotation object.
-        // This allows Fabric's built-in selection/move to handle the interaction instead
-        // of accidentally starting a new drawing on top of an existing annotation.
         if (isDrawingTool && opt.target) {
-            const annotatedTarget = opt.target as AnnotatedFabricObject;
-            if (annotatedTarget.annotationId) {
+            if (opt.target.id) {
                 suppressedDown = true;
                 return;
             }

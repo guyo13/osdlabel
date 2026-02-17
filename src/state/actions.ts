@@ -72,6 +72,12 @@ export function createActions(
     setContextState('activeContextId', contextId);
   }
 
+  function triggerReload(): void {
+    setAnnotationState(produce((state) => {
+      state.reloadGeneration += 1;
+    }));
+  }
+
   return {
     addAnnotation,
     updateAnnotation,
@@ -83,5 +89,6 @@ export function createActions(
     setGridDimensions,
     setContexts,
     setActiveContext,
+    triggerReload,
   };
 }

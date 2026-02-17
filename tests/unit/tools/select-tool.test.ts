@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { SelectTool } from '../../../src/core/tools/select-tool.js';
 import { FabricOverlay } from '../../../src/overlay/fabric-overlay.js';
-import { ToolCallbacks, AnnotatedFabricObject } from '../../../src/core/tools/base-tool.js';
+import { ToolCallbacks } from '../../../src/core/tools/base-tool.js';
 import { createImageId, createAnnotationContextId, createAnnotationId, Annotation } from '../../../src/core/types.js';
 import { FabricObject } from 'fabric';
 
@@ -14,6 +14,7 @@ describe('SelectTool', () => {
     discardActiveObject: ReturnType<typeof vi.fn>;
     requestRenderAll: ReturnType<typeof vi.fn>;
     getActiveObject: ReturnType<typeof vi.fn>;
+    getActiveObjects: ReturnType<typeof vi.fn>;
     remove: ReturnType<typeof vi.fn>;
   };
   let mockCallbacks: ToolCallbacks;
@@ -33,6 +34,7 @@ describe('SelectTool', () => {
       discardActiveObject: vi.fn(),
       requestRenderAll: vi.fn(),
       getActiveObject: vi.fn(),
+      getActiveObjects: vi.fn().mockReturnValue([]),
       remove: vi.fn(),
     };
 
@@ -74,7 +76,7 @@ describe('SelectTool', () => {
     tool.activate(mockOverlay, imageId, mockCallbacks);
 
     const annId = createAnnotationId('ann-1');
-    const mockObj = { annotationId: annId } as AnnotatedFabricObject;
+    const mockObj = { id: annId } as unknown as FabricObject;
 
     capturedHandlers['selection:created']({ selected: [mockObj] });
 
@@ -84,8 +86,8 @@ describe('SelectTool', () => {
   it('should trigger setSelectedAnnotation(null) on selection:created with multiple objects', () => {
     tool.activate(mockOverlay, imageId, mockCallbacks);
 
-    const mockObj1 = { annotationId: createAnnotationId('ann-1') } as AnnotatedFabricObject;
-    const mockObj2 = { annotationId: createAnnotationId('ann-2') } as AnnotatedFabricObject;
+    const mockObj1 = { id: createAnnotationId('ann-1') } as unknown as FabricObject;
+    const mockObj2 = { id: createAnnotationId('ann-2') } as unknown as FabricObject;
 
     capturedHandlers['selection:created']({ selected: [mockObj1, mockObj2] });
 
@@ -100,14 +102,14 @@ describe('SelectTool', () => {
     expect(mockCallbacks.setSelectedAnnotation).toHaveBeenCalledWith(null);
   });
 
-  it('should trigger updateAnnotation on object:modified', () => {
+  it('should trigger updateAnnotation with fabricObject on object:modified', () => {
     const annId = createAnnotationId('ann-1');
     const mockAnnotation: Annotation = {
       id: annId,
       imageId,
       contextId,
       geometry: { type: 'rectangle', origin: { x: 0, y: 0 }, width: 10, height: 10, rotation: 0 },
-      style: { strokeColor: '#000', strokeWidth: 2, fillColor: '#fff', fillOpacity: 0.3, opacity: 1 },
+      rawAnnotationData: { format: 'fabric', data: { type: 'Rect' } },
       createdAt: '2024-01-01T00:00:00Z',
       updatedAt: '2024-01-01T00:00:00Z',
     };
@@ -120,27 +122,20 @@ describe('SelectTool', () => {
 
     tool.activate(mockOverlay, imageId, callbacksWithAnnotation);
 
-    // Simulate a Fabric Rect object that was modified
-    // We need to create a mock that `createAnnotationFromFabricObject` can work with
-    // Since it checks `instanceof Rect`, and we can't easily mock that, the function
-    // will return null and updateAnnotation won't be called
-    const mockTarget = { annotationId: annId } as AnnotatedFabricObject;
+    const mockTarget = { id: annId } as unknown as FabricObject;
     capturedHandlers['object:modified']({ target: mockTarget });
 
-    // getAnnotation should have been called
-    expect(getAnnotationMock).toHaveBeenCalledWith(annId, imageId);
+    // updateAnnotation should be called with the fabricObject directly
+    expect(callbacksWithAnnotation.updateAnnotation).toHaveBeenCalledWith(annId, imageId, mockTarget);
   });
 
   it('should trigger deleteAnnotation on Delete key', () => {
     tool.activate(mockOverlay, imageId, mockCallbacks);
 
     const annId = createAnnotationId('ann-1');
-    const mockObj = {
-      annotationId: annId,
-      type: 'rect',
-    } as unknown as AnnotatedFabricObject;
+    const mockObj = { id: annId, type: 'rect' } as unknown as FabricObject;
 
-    mockCanvas.getActiveObject.mockReturnValue(mockObj);
+    mockCanvas.getActiveObjects.mockReturnValue([mockObj]);
 
     tool.onKeyDown({ key: 'Delete' } as KeyboardEvent);
 
@@ -152,12 +147,9 @@ describe('SelectTool', () => {
     tool.activate(mockOverlay, imageId, mockCallbacks);
 
     const annId = createAnnotationId('ann-2');
-    const mockObj = {
-      annotationId: annId,
-      type: 'circle',
-    } as unknown as AnnotatedFabricObject;
+    const mockObj = { id: annId, type: 'circle' } as unknown as FabricObject;
 
-    mockCanvas.getActiveObject.mockReturnValue(mockObj);
+    mockCanvas.getActiveObjects.mockReturnValue([mockObj]);
 
     tool.onKeyDown({ key: 'Backspace' } as KeyboardEvent);
 
