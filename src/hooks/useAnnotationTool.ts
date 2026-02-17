@@ -38,6 +38,38 @@ export function useAnnotationTool(
     }
   });
 
+  // Handle object modification (resize, rotate, move) globally
+  // This ensures updates are recorded regardless of which tool is active
+  createEffect(() => {
+    const ov = overlay();
+    const imgId = imageId();
+
+    if (!ov || !imgId) return;
+
+    const handleObjectModified = (e: { target: FabricObject }) => {
+      const obj = e.target;
+      if (!obj || !obj.id) return;
+
+      const annotationId = obj.id as AnnotationId;
+
+      // Look up current annotation to get geometry type
+      const currentAnnotation = annotationState.byImage[imgId]?.[annotationId];
+      if (!currentAnnotation) return;
+
+      const geometry = getGeometryFromFabricObject(obj, currentAnnotation.geometry.type);
+      if (!geometry) return;
+
+      const rawAnnotationData = serializeFabricObject(obj);
+
+      actions.updateAnnotation(annotationId, imgId, { geometry, rawAnnotationData });
+    };
+
+    ov.canvas.on('object:modified', handleObjectModified);
+    onCleanup(() => {
+      ov.canvas.off('object:modified', handleObjectModified);
+    });
+  });
+
   createEffect(() => {
     const ov = overlay();
     const active = isActive();
