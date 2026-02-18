@@ -25,8 +25,11 @@ interface AnnotatorContextValue {
   actions: ReturnType<typeof createActions>;
 }
 
-const KeyboardHandler = (props: { shortcuts: KeyboardShortcutMap }) => {
-  useKeyboard(props.shortcuts);
+const KeyboardHandler = (props: {
+  shortcuts: KeyboardShortcutMap;
+  shouldSkipTargetPredicate?: (target: HTMLElement) => boolean;
+}) => {
+  useKeyboard(props.shortcuts, props.shouldSkipTargetPredicate);
   return null;
 };
 
@@ -41,6 +44,8 @@ export interface AnnotatorProviderProps {
   /** Called when constraint status changes (after initial mount) */
   readonly onConstraintChange?: ((status: ConstraintStatus) => void) | undefined;
   readonly keyboardShortcuts?: Partial<KeyboardShortcutMap> | undefined;
+  /** Optional callback to suppress keyboard shortcuts for specific targets */
+  readonly shouldSkipKeyboardShortcutPredicate?: ((target: HTMLElement) => boolean) | undefined;
 }
 
 export function AnnotatorProvider(props: AnnotatorProviderProps) {
@@ -95,7 +100,10 @@ export function AnnotatorProvider(props: AnnotatorProviderProps) {
 
   return (
     <AnnotatorContext.Provider value={value}>
-      <KeyboardHandler shortcuts={mergedShortcuts} />
+      <KeyboardHandler
+        shortcuts={mergedShortcuts}
+        shouldSkipTargetPredicate={props.shouldSkipKeyboardShortcutPredicate}
+      />
       {props.children}
     </AnnotatorContext.Provider>
   );
