@@ -42,6 +42,8 @@ const GridView: Component<GridViewProps> = (props) => {
 
           return (
             <div
+              data-testid={`grid-cell-${cellIndex}`}
+              data-active={isActive()}
               style={{
                 position: 'relative',
                 'min-height': '0',

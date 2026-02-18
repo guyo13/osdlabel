@@ -87,6 +87,7 @@ const Annotator: Component<AnnotatorProps> = (props) => {
       initialAnnotations={props.initialAnnotations}
       onAnnotationsChange={props.onAnnotationsChange}
       onConstraintChange={props.onConstraintChange}
+      keyboardShortcuts={props.keyboardShortcuts}
     >
       <AnnotatorSetup contexts={props.contexts} />
       <AnnotatorInner

@@ -1,4 +1,4 @@
-import type { AnnotationStyle, KeyboardShortcutMap } from './types.js';
+import type { AnnotationStyle } from './types.js';
 
 /** Default visual style applied to new annotations */
 export const DEFAULT_ANNOTATION_STYLE: AnnotationStyle = {
@@ -21,26 +21,3 @@ export const MAX_GRID_SIZE = {
   rows: 4,
 } as const;
 
-/** Default keyboard shortcuts */
-export const DEFAULT_KEYBOARD_SHORTCUTS: KeyboardShortcutMap = {
-  selectTool: 'v',
-  rectangleTool: 'r',
-  circleTool: 'c',
-  lineTool: 'l',
-  pointTool: 'p',
-  pathTool: 'd',
-  cancel: 'Escape',
-  delete: 'Delete',
-  deleteAlt: 'Backspace',
-  gridCell1: '1',
-  gridCell2: '2',
-  gridCell3: '3',
-  gridCell4: '4',
-  gridCell5: '5',
-  gridCell6: '6',
-  gridCell7: '7',
-  gridCell8: '8',
-  gridCell9: '9',
-  increaseGridColumns: '+',
-  decreaseGridColumns: '-',
-} as const;

@@ -8,12 +8,14 @@ import {
   ContextState,
   AnnotationId,
   ImageId,
+  KeyboardShortcutMap,
 } from '../core/types.js';
 import { createAnnotationStore } from './annotation-store.js';
 import { createUIStore } from './ui-store.js';
 import { createContextStore, createConstraintStatus } from './context-store.js';
 import { createActions } from './actions.js';
 import { getAllAnnotationsFlat } from '../core/annotations/serialization.js';
+import { DEFAULT_KEYBOARD_SHORTCUTS, useKeyboard } from '../hooks/useKeyboard.js';
 
 interface AnnotatorContextValue {
   annotationState: AnnotationState;
@@ -22,6 +24,11 @@ interface AnnotatorContextValue {
   constraintStatus: Accessor<ConstraintStatus>;
   actions: ReturnType<typeof createActions>;
 }
+
+const KeyboardHandler = (props: { shortcuts: KeyboardShortcutMap }) => {
+  useKeyboard(props.shortcuts);
+  return null;
+};
 
 const AnnotatorContext = createContext<AnnotatorContextValue>();
 
@@ -33,6 +40,7 @@ export interface AnnotatorProviderProps {
   readonly onAnnotationsChange?: ((annotations: Annotation[]) => void) | undefined;
   /** Called when constraint status changes (after initial mount) */
   readonly onConstraintChange?: ((status: ConstraintStatus) => void) | undefined;
+  readonly keyboardShortcuts?: Partial<KeyboardShortcutMap> | undefined;
 }
 
 export function AnnotatorProvider(props: AnnotatorProviderProps) {
@@ -83,8 +91,11 @@ export function AnnotatorProvider(props: AnnotatorProviderProps) {
     actions,
   };
 
+  const mergedShortcuts = { ...DEFAULT_KEYBOARD_SHORTCUTS, ...props.keyboardShortcuts };
+
   return (
     <AnnotatorContext.Provider value={value}>
+      <KeyboardHandler shortcuts={mergedShortcuts} />
       {props.children}
     </AnnotatorContext.Provider>
   );

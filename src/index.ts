@@ -33,7 +33,6 @@ export {
   DEFAULT_ANNOTATION_STYLE,
   DEFAULT_GRID_CONFIG,
   MAX_GRID_SIZE,
-  DEFAULT_KEYBOARD_SHORTCUTS,
 } from './core/constants.js';
 
 // Overlay
@@ -76,3 +75,4 @@ export type { AnnotatorProps } from './components/Annotator.js';
 
 // Hooks
 export { useConstraints } from './hooks/useConstraints.js';
+export { useKeyboard, DEFAULT_KEYBOARD_SHORTCUTS } from './hooks/useKeyboard.js';
