@@ -1,0 +1,34 @@
+---
+title: OSDLabel
+description: A DZI image annotation library built with SolidJS, Fabric.js, and OpenSeaDragon.
+template: splash
+hero:
+  tagline: High-performance annotation for Deep Zoom Images
+  actions:
+    - text: Get Started
+      link: /guide/introduction/
+      icon: right-arrow
+      variant: primary
+    - text: View on GitHub
+      link: https://github.com/guyo13/osdlabel
+      icon: external
+---
+
+import { Card, CardGrid } from '@astrojs/starlight/components';
+
+## Features
+
+<CardGrid stagger>
+	<Card title="High Performance" icon="rocket">
+		Built with SolidJS for fine-grained reactivity and minimal overhead.
+	</Card>
+	<Card title="Deep Zoom Support" icon="magnifier">
+		Seamlessly handles gigapixel images using OpenSeaDragon.
+	</Card>
+	<Card title="Rich Annotations" icon="pencil">
+		Draw rectangles, circles, lines, points, and paths with Fabric.js.
+	</Card>
+	<Card title="Constraint System" icon="setting">
+		Define per-context tool availability and limits for structured workflows.
+	</Card>
+</CardGrid>
