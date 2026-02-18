@@ -669,7 +669,6 @@ Default keyboard shortcuts (all overridable via the `keyboardShortcuts` prop):
 | `D` | Switch to Path (draw) tool |
 | `Escape` | Cancel current drawing / deselect annotation / exit tool to navigation mode |
 | `Delete` / `Backspace` | Delete selected annotation |
-| `Space` (hold) | Temporarily switch to navigation (pan) mode; release to return to previous tool |
 | `1`–`9` | Activate grid cell 1–9 |
 | `+` / `-` | Increase/decrease grid columns |
 

@@ -173,7 +173,6 @@ export interface KeyboardShortcutMap {
   readonly cancel: string;
   readonly delete: string;
   readonly deleteAlt: string;
-  readonly temporaryPan: string;
   readonly gridCell1: string;
   readonly gridCell2: string;
   readonly gridCell3: string;

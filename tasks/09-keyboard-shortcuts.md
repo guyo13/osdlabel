@@ -16,7 +16,7 @@ A SolidJS hook that registers global keyboard event listeners:
 - Listen on `'keydown'` and `'keyup'` on `document` (or the annotator root element).
 - Maintain a map of `key → action` from the merged shortcut config (defaults + overrides from props).
 - **Suppress shortcuts** when the active element is a text input, textarea, or contenteditable.
-- Handle modifier keys: the Space key hold behavior (temporary pan mode) requires tracking keydown/keyup.
+- Handle modifier keys if needed.
 
 ### 2. Implement all default shortcuts from §10
 
@@ -30,15 +30,9 @@ A SolidJS hook that registers global keyboard event listeners:
 | `D` | `setActiveTool('path')` |
 | `Escape` | Cancel current drawing OR deselect OR set tool to null |
 | `Delete` / `Backspace` | Delete selected annotation |
-| `Space` (hold) | Temporarily switch to navigation mode; release restores previous tool |
 | `1`–`9` | `setActiveCell(n - 1)` |
 | `+` / `=` | Increment grid columns (up to max) |
 | `-` | Decrement grid columns (down to 1) |
-
-**Space bar hold behavior:**
-- On `keydown` (space): save current tool, set tool to `null` (navigation mode).
-- On `keyup` (space): restore the saved tool.
-- Prevent browser scroll on space.
 
 **Escape behavior (cascading):**
 1. If currently drawing (tool in mid-interaction): cancel the drawing.
@@ -68,7 +62,6 @@ Register event listeners in `onMount`, remove in `onCleanup`. The hook should be
 - Press `V`, click an annotation, verify it's selected.
 - Press `Delete`, verify the annotation is removed.
 - Press `Escape` to cycle through: cancel drawing → deselect → navigation mode.
-- Hold `Space`, verify pan mode activates; release, verify previous tool restores.
 - Press `1`, `2` to switch grid cells.
 - Press `+` to expand grid.
 
@@ -79,9 +72,8 @@ Register event listeners in `onMount`, remove in `onCleanup`. The hook should be
 ## Verification
 
 1. All default shortcuts work as specified.
-2. Space-hold temporarily enables pan mode.
-3. Escape cascading works correctly.
-4. Shortcuts are suppressed when typing in a text input.
-5. Custom shortcut overrides work.
-6. `pnpm typecheck` passes.
-7. `pnpm test:e2e` passes (keyboard spec).
+2. Escape cascading works correctly.
+3. Shortcuts are suppressed when typing in a text input.
+4. Custom shortcut overrides work.
+5. `pnpm typecheck` passes.
+6. `pnpm test:e2e` passes (keyboard spec).
