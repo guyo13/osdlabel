@@ -72,6 +72,8 @@ function AppContent() {
   const [copyLabel, setCopyLabel] = createSignal('Copy JSON');
   const [activeCtxIdx, setActiveCtxIdx] = createSignal(0);
   const [exportedJson, setExportedJson] = createSignal('');
+  const [showImportPanel, setShowImportPanel] = createSignal(false);
+  const [importJsonText, setImportJsonText] = createSignal('');
 
   // Initialize contexts
   actions.setContexts(CONTEXTS);
@@ -99,25 +101,20 @@ function AppContent() {
     setExportedJson(json);
   };
 
-  const handleImportJson = () => {
-    const json = exportedJson();
+  const openImportPanel = () => {
+    setImportJsonText('');
+    setShowImportPanel(true);
+  };
+
+  const confirmImport = () => {
+    const json = importJsonText();
     if (!json.trim()) return;
     try {
       const parsed: unknown = JSON.parse(json);
       const byImage = deserialize(parsed);
-      for (const annMap of Object.values(byImage)) {
-        for (const ann of Object.values(annMap)) {
-          actions.addAnnotation({
-            id: ann.id,
-            imageId: ann.imageId,
-            contextId: ann.contextId,
-            geometry: ann.geometry,
-            style: ann.style,
-            label: ann.label,
-            metadata: ann.metadata,
-          });
-        }
-      }
+      actions.setAnnotationState({byImage, reloadGeneration:0});
+      setShowImportPanel(false);
+      setImportJsonText('');
     } catch (err) {
       alert(`Import failed: ${err instanceof Error ? err.message : String(err)}`);
     }
@@ -184,7 +181,7 @@ function AppContent() {
           <button onClick={handleExportJson} style={buttonStyle}>
             Export JSON
           </button>
-          <button onClick={handleImportJson} style={buttonStyle}>
+          <button onClick={openImportPanel} style={buttonStyle}>
             Import JSON
           </button>
         </div>
@@ -206,6 +203,64 @@ function AppContent() {
 
       {/* Status bar */}
       <StatusBar imageId={activeImageId()} />
+
+      {/* JSON import panel */}
+      {showImportPanel() && (
+        <div style={{
+          position: 'fixed',
+          bottom: '40px',
+          left: '10px',
+          width: '400px',
+          'max-height': '340px',
+          background: '#1a1a2e',
+          border: '1px solid #555',
+          'border-radius': '8px',
+          padding: '8px',
+          'z-index': '1000',
+          display: 'flex',
+          'flex-direction': 'column',
+          gap: '6px',
+        }}>
+          <div style={{ display: 'flex', 'justify-content': 'space-between', 'align-items': 'center' }}>
+            <span style={{ color: '#fff', 'font-size': '12px', 'font-weight': 'bold' }}>Import JSON</span>
+            <button
+              onClick={() => setShowImportPanel(false)}
+              style={{ background: 'none', border: 'none', color: '#aaa', cursor: 'pointer', 'font-size': '14px' }}
+            >
+              X
+            </button>
+          </div>
+          <textarea
+            placeholder="Paste exported JSON here..."
+            value={importJsonText()}
+            onInput={(e) => setImportJsonText(e.currentTarget.value)}
+            style={{
+              width: '100%',
+              height: '240px',
+              background: '#111',
+              color: '#0f0',
+              border: '1px solid #333',
+              'border-radius': '4px',
+              padding: '6px',
+              'font-family': 'monospace',
+              'font-size': '11px',
+              resize: 'none',
+              'box-sizing': 'border-box',
+            }}
+          />
+          <div style={{ display: 'flex', gap: '6px', 'justify-content': 'flex-end' }}>
+            <button onClick={() => setShowImportPanel(false)} style={buttonStyle}>
+              Close
+            </button>
+            <button
+              onClick={confirmImport}
+              style={{ ...buttonStyle, background: '#1a5c2a', 'border-color': '#2a8a3e' }}
+            >
+              Confirm
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* JSON export panel */}
       {exportedJson() && (
