@@ -32,7 +32,6 @@ export const DEFAULT_KEYBOARD_SHORTCUTS: KeyboardShortcutMap = {
   cancel: 'Escape',
   delete: 'Delete',
   deleteAlt: 'Backspace',
-  temporaryPan: ' ',
   gridCell1: '1',
   gridCell2: '2',
   gridCell3: '3',
