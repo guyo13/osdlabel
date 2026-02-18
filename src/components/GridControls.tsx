@@ -1,4 +1,4 @@
-import type { Component } from 'solid-js';
+import { Component, createSignal, For, Show } from 'solid-js';
 import { useAnnotator } from '../state/annotator-context.js';
 
 export interface GridControlsProps {
@@ -6,13 +6,130 @@ export interface GridControlsProps {
   readonly maxRows: number;
 }
 
+const TableSelector: Component<{
+  maxColumns: number;
+  maxRows: number;
+  currentColumns: number;
+  currentRows: number;
+  onSelect: (cols: number, rows: number) => void;
+}> = (props) => {
+  const [hoverCols, setHoverCols] = createSignal<number | null>(null);
+  const [hoverRows, setHoverRows] = createSignal<number | null>(null);
+  const [isOpen, setIsOpen] = createSignal(false);
+
+  const handleMouseEnter = (c: number, r: number) => {
+    setHoverCols(c);
+    setHoverRows(r);
+  };
+
+  const handleClick = (c: number, r: number) => {
+    props.onSelect(c, r);
+    setIsOpen(false);
+  };
+
+  const getCellColor = (c: number, r: number) => {
+    const targetCols = hoverCols() ?? props.currentColumns;
+    const targetRows = hoverRows() ?? props.currentRows;
+    const isSelected = c <= targetCols && r <= targetRows;
+    return isSelected ? '#2196F3' : '#444';
+  };
+  
+  // Icon for the grid button
+  const GridIcon = () => (
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+      <path d="M1 1h14v14H1V1zm2 2v4h4V3H3zm6 0v4h4V3H9zM3 9v4h4V9H3zm6 0v4h4V9H9z" fill-rule="evenodd" clip-rule="evenodd"/>
+    </svg>
+  );
+
+  return (
+    <div style={{ position: 'relative' }} onMouseLeave={() => setIsOpen(false)}>
+      <button
+        data-testid="grid-selector-trigger"
+        onClick={() => setIsOpen(!isOpen())}
+        style={{
+          padding: '4px 8px',
+          border: '1px solid #444',
+          'border-radius': '4px',
+          background: '#333',
+          color: '#fff',
+          cursor: 'pointer',
+          display: 'flex',
+          'align-items': 'center',
+          gap: '6px',
+          'font-size': '12px',
+        }}
+        title="Change Grid Layout"
+      >
+        <GridIcon />
+        <span data-testid="grid-size">{props.currentColumns}x{props.currentRows}</span>
+      </button>
+
+      <Show when={isOpen()}>
+        <div
+          data-testid="grid-selector-popover"
+          style={{
+            position: 'absolute',
+            top: '100%',
+            left: '0',
+            'padding-top': '4px', // Use padding instead of margin to include the gap in the hit area
+            'pointer-events': 'auto', // Ensure pointer events work
+            'min-width': '100px',
+            'z-index': 1000,
+          }}
+          onMouseLeave={() => {
+              setHoverCols(null);
+              setHoverRows(null);
+          }}
+        >
+          <div style={{
+            background: '#2a2a2a',
+            border: '1px solid #444',
+            'border-radius': '4px',
+            padding: '8px',
+            'box-shadow': '0 4px 6px rgba(0,0,0,0.3)',
+          }}>
+            <div style={{ 'margin-bottom': '6px', 'font-size': '11px', color: '#aaa', 'text-align': 'center' }}>
+                {(hoverCols() ?? props.currentColumns)} x {(hoverRows() ?? props.currentRows)}
+            </div>
+            <div
+              style={{
+                display: 'grid',
+                'grid-template-columns': `repeat(${props.maxColumns}, 1fr)`,
+                gap: '2px',
+              }}
+            >
+              <For each={Array.from({ length: props.maxRows }, (_, i) => i + 1)}>
+                {(r) => (
+                  <For each={Array.from({ length: props.maxColumns }, (_, i) => i + 1)}>
+                    {(c) => (
+                      <div
+                        data-testid={`grid-cell-${c}-${r}`}
+                        onMouseEnter={() => handleMouseEnter(c, r)}
+                        onClick={() => handleClick(c, r)}
+                        style={{
+                          width: '18px',
+                          height: '18px',
+                          background: getCellColor(c, r),
+                          border: '1px solid #555',
+                          cursor: 'pointer',
+                          'border-radius': '2px',
+                          transition: 'background 0.1s ease',
+                        }}
+                      />
+                    )}
+                  </For>
+                )}
+              </For>
+            </div>
+          </div>
+        </div>
+      </Show>
+    </div>
+  );
+};
+
 const GridControls: Component<GridControlsProps> = (props) => {
   const { uiState, actions } = useAnnotator();
-
-  const canAddColumn = () => uiState.gridColumns < props.maxColumns;
-  const canRemoveColumn = () => uiState.gridColumns > 1;
-  const canAddRow = () => uiState.gridRows < props.maxRows;
-  const canRemoveRow = () => uiState.gridRows > 1;
 
   const changeGrid = (newCols: number, newRows: number) => {
     const cols = Math.max(1, Math.min(newCols, props.maxColumns));
@@ -26,67 +143,22 @@ const GridControls: Component<GridControlsProps> = (props) => {
     }
   };
 
-  const smallButtonStyle = (enabled: boolean) => ({
-    padding: '2px 6px',
-    border: 'none',
-    'border-radius': '3px',
-    cursor: enabled ? 'pointer' : 'not-allowed',
-    background: enabled ? '#333' : '#1a1a1a',
-    color: enabled ? '#fff' : '#555',
-    'font-size': '12px',
-    'font-weight': 'bold',
-    'min-width': '20px',
-  });
-
   return (
     <div
       data-testid="grid-controls"
       style={{
         display: 'flex',
-        gap: '4px',
         'align-items': 'center',
-        'font-size': '12px',
-        color: '#aaa',
         'font-family': 'system-ui, sans-serif',
       }}
     >
-      <span style={{ color: '#888' }}>Grid:</span>
-      <button
-        data-testid="grid-remove-col"
-        disabled={!canRemoveColumn()}
-        onClick={() => changeGrid(uiState.gridColumns - 1, uiState.gridRows)}
-        style={smallButtonStyle(canRemoveColumn())}
-      >
-        -
-      </button>
-      <span data-testid="grid-size" style={{ color: '#fff', 'min-width': '30px', 'text-align': 'center' }}>
-        {uiState.gridColumns}x{uiState.gridRows}
-      </span>
-      <button
-        data-testid="grid-add-col"
-        disabled={!canAddColumn()}
-        onClick={() => changeGrid(uiState.gridColumns + 1, uiState.gridRows)}
-        style={smallButtonStyle(canAddColumn())}
-      >
-        +
-      </button>
-      <span style={{ color: '#555' }}>|</span>
-      <button
-        data-testid="grid-remove-row"
-        disabled={!canRemoveRow()}
-        onClick={() => changeGrid(uiState.gridColumns, uiState.gridRows - 1)}
-        style={smallButtonStyle(canRemoveRow())}
-      >
-        -R
-      </button>
-      <button
-        data-testid="grid-add-row"
-        disabled={!canAddRow()}
-        onClick={() => changeGrid(uiState.gridColumns, uiState.gridRows + 1)}
-        style={smallButtonStyle(canAddRow())}
-      >
-        +R
-      </button>
+      <TableSelector
+        maxColumns={props.maxColumns}
+        maxRows={props.maxRows}
+        currentColumns={uiState.gridColumns}
+        currentRows={uiState.gridRows}
+        onSelect={changeGrid}
+      />
     </div>
   );
 };

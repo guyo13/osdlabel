@@ -31,7 +31,8 @@ test.describe('Filmstrip', () => {
 
   test('should assign different images to different cells', async ({ page }) => {
     // Expand to 2x1
-    await page.getByTestId('grid-add-col').click();
+    await page.getByTestId('grid-selector-trigger').click();
+    await page.getByTestId('grid-cell-2-1').click();
 
     // Click the empty cell to make it active
     await page.locator('text=Assign an image').first().click();
