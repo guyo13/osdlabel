@@ -45,23 +45,31 @@ test.describe('Constraint System', () => {
     await expect(lineButton).toBeEnabled();
     await expect(lineButton).toContainText('Line 0/3');
 
-    // Draw 3 lines by selecting the line tool and drawing on the canvas
-    for (let i = 0; i < 3; i++) {
-      await lineButton.click();
-      // Draw a line on the canvas
-      const yStart = 100 + i * 60;
-      const yEnd = yStart;
-      await canvas.click({ position: { x: 100, y: yStart }, force: true });
-      await page.mouse.move(300, yEnd);
-      await page.mouse.down();
-      await page.mouse.move(300, yEnd, { steps: 5 });
-      await page.mouse.up();
+    // Select the line tool once
+    await lineButton.click();
 
-      // Wait for the annotation to register
-      await page.waitForTimeout(300);
+    // Get canvas position
+    const box = await canvas.boundingBox();
+    if (!box) throw new Error('Canvas not found');
+
+    // Draw 3 lines
+    for (let i = 0; i < 3; i++) {
+        const yStart = box.y + 100 + i * 60;
+        const xStart = box.x + 100;
+        const xEnd = box.x + 300;
+        
+        // Start
+        await page.mouse.move(xStart, yStart);
+        await page.mouse.down();
+        // Drag
+        await page.mouse.move(xEnd, yStart, { steps: 5 });
+        // End
+        await page.mouse.up();
+
+        await page.waitForTimeout(300);
     }
 
-    // After 3 lines, the button should be disabled
+    // Checking disabled state
     await expect(lineButton).toBeDisabled();
     await expect(lineButton).toContainText('Line 3/3');
 
@@ -75,15 +83,21 @@ test.describe('Constraint System', () => {
     await page.waitForTimeout(1000);
 
     const lineButton = page.getByTestId('tool-line');
+    await lineButton.click();
+
+    // Get canvas position
+    const box = await canvas.boundingBox();
+    if (!box) throw new Error('Canvas not found');
 
     // Draw 3 lines to hit the limit
     for (let i = 0; i < 3; i++) {
-      await lineButton.click();
-      const yStart = 100 + i * 60;
-      await canvas.click({ position: { x: 100, y: yStart }, force: true });
-      await page.mouse.move(300, yStart);
+      const yStart = box.y + 100 + i * 60;
+      const xStart = box.x + 100;
+      const xEnd = box.x + 300;
+      
+      await page.mouse.move(xStart, yStart);
       await page.mouse.down();
-      await page.mouse.move(300, yStart, { steps: 5 });
+      await page.mouse.move(xEnd, yStart, { steps: 5 });
       await page.mouse.up();
       await page.waitForTimeout(300);
     }
@@ -95,7 +109,11 @@ test.describe('Constraint System', () => {
     await page.waitForTimeout(200);
 
     // Click on approximately where the first line was drawn
-    await canvas.click({ position: { x: 200, y: 100 }, force: true });
+    // Line 1 was at box.y + 100
+    const clickY = box.y + 100;
+    const clickX = box.x + 200; // Midpoint
+    
+    await page.mouse.click(clickX, clickY);
     await page.waitForTimeout(300);
 
     // Delete with keyboard
@@ -103,8 +121,8 @@ test.describe('Constraint System', () => {
     await page.waitForTimeout(300);
 
     // The line tool should be re-enabled
-    await expect(lineButton).toBeEnabled();
     await expect(lineButton).toContainText('Line 2/3');
+    await expect(lineButton).toBeEnabled();
   });
 
   test('status bar shows correct context and counts', async ({ page }) => {
