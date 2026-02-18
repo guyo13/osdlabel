@@ -90,5 +90,6 @@ export function createActions(
     setContexts,
     setActiveContext,
     triggerReload,
+    setAnnotationState
   };
 }
