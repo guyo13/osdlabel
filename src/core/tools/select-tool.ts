@@ -1,6 +1,6 @@
 import { FabricObject } from 'fabric';
 import { BaseTool, ToolCallbacks } from './base-tool.js';
-import { AnnotationId, ImageId, Point } from '../types.js';
+import { AnnotationId, ImageId, Point, KeyboardShortcutMap } from '../types.js';
 import type { FabricOverlay } from '../../overlay/fabric-overlay.js';
 import '../fabric-module.js';
 
@@ -20,8 +20,8 @@ export class SelectTool extends BaseTool {
   private readonly handleSelectionCreated = (e: SelectionEvent) => this.onSelectionCreated(e);
   private readonly handleSelectionCleared = (e: SelectionClearedEvent) => this.onSelectionCleared(e);
 
-  activate(overlay: FabricOverlay, imageId: ImageId, callbacks: ToolCallbacks): void {
-    super.activate(overlay, imageId, callbacks);
+  activate(overlay: FabricOverlay, imageId: ImageId, callbacks: ToolCallbacks, shortcuts: KeyboardShortcutMap): void {
+    super.activate(overlay, imageId, callbacks, shortcuts);
     if (!this.overlay) return;
 
     this.overlay.canvas.on('selection:created', this.handleSelectionCreated);

@@ -2,8 +2,9 @@ import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { LineTool } from '../../../src/core/tools/line-tool.js';
 import { FabricOverlay } from '../../../src/overlay/fabric-overlay.js';
 import { ToolCallbacks, AddAnnotationParams } from '../../../src/core/tools/base-tool.js';
-import { createAnnotationContextId, createImageId } from '../../../src/core/types.js';
+import { createAnnotationContextId, createImageId, KeyboardShortcutMap } from '../../../src/core/types.js';
 import { Line } from 'fabric';
+import { DEFAULT_KEYBOARD_SHORTCUTS } from '../../../src/hooks/useKeyboard.js';
 
 describe('LineTool', () => {
   let tool: LineTool;
@@ -18,6 +19,7 @@ describe('LineTool', () => {
   let addedParams: AddAnnotationParams[];
   const imageId = createImageId('test-image');
   const contextId = createAnnotationContextId('test-context');
+  const mockShortcuts: KeyboardShortcutMap = { ...DEFAULT_KEYBOARD_SHORTCUTS };
 
   beforeEach(() => {
     vi.clearAllMocks();
@@ -48,7 +50,7 @@ describe('LineTool', () => {
 
   it('should create a preview line on pointer down', () => {
     tool = new LineTool();
-    tool.activate(mockOverlay, imageId, mockCallbacks);
+    tool.activate(mockOverlay, imageId, mockCallbacks, mockShortcuts);
 
     const event = { type: 'pointerdown' } as PointerEvent;
     tool.onPointerDown(event, { x: 10, y: 10 });
@@ -64,7 +66,7 @@ describe('LineTool', () => {
 
   it('should update preview line on pointer move', () => {
     tool = new LineTool();
-    tool.activate(mockOverlay, imageId, mockCallbacks);
+    tool.activate(mockOverlay, imageId, mockCallbacks, mockShortcuts);
 
     tool.onPointerDown({ type: 'pointerdown' } as PointerEvent, { x: 10, y: 10 });
 
@@ -79,7 +81,7 @@ describe('LineTool', () => {
 
   it('should commit annotation on pointer up with fabricObject', () => {
     tool = new LineTool();
-    tool.activate(mockOverlay, imageId, mockCallbacks);
+    tool.activate(mockOverlay, imageId, mockCallbacks, mockShortcuts);
 
     tool.onPointerDown({ type: 'pointerdown' } as PointerEvent, { x: 10, y: 10 });
     tool.onPointerMove({ type: 'pointermove' } as PointerEvent, { x: 50, y: 50 });
@@ -104,7 +106,7 @@ describe('LineTool', () => {
     };
 
     tool = new LineTool();
-    tool.activate(mockOverlay, imageId, noContextCallbacks);
+    tool.activate(mockOverlay, imageId, noContextCallbacks, mockShortcuts);
 
     tool.onPointerDown({ type: 'pointerdown' } as PointerEvent, { x: 10, y: 10 });
     tool.onPointerMove({ type: 'pointermove' } as PointerEvent, { x: 50, y: 50 });

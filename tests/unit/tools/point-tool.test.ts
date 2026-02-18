@@ -2,8 +2,9 @@ import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { PointTool } from '../../../src/core/tools/point-tool.js';
 import { FabricOverlay } from '../../../src/overlay/fabric-overlay.js';
 import { ToolCallbacks, AddAnnotationParams } from '../../../src/core/tools/base-tool.js';
-import { createAnnotationContextId, createImageId } from '../../../src/core/types.js';
+import { createAnnotationContextId, createImageId, KeyboardShortcutMap } from '../../../src/core/types.js';
 import { Circle } from 'fabric';
+import { DEFAULT_KEYBOARD_SHORTCUTS } from '../../../src/hooks/useKeyboard.js';
 
 describe('PointTool', () => {
   let tool: PointTool;
@@ -18,6 +19,7 @@ describe('PointTool', () => {
   let addedParams: AddAnnotationParams[];
   const imageId = createImageId('test-image');
   const contextId = createAnnotationContextId('test-context');
+  const mockShortcuts: KeyboardShortcutMap = { ...DEFAULT_KEYBOARD_SHORTCUTS };
 
   beforeEach(() => {
     vi.clearAllMocks();
@@ -48,7 +50,7 @@ describe('PointTool', () => {
 
   it('should create preview on pointer down and add to canvas', () => {
     tool = new PointTool();
-    tool.activate(mockOverlay, imageId, mockCallbacks);
+    tool.activate(mockOverlay, imageId, mockCallbacks, mockShortcuts);
 
     tool.onPointerDown({ type: 'pointerdown' } as PointerEvent, { x: 30, y: 30 });
 
@@ -65,7 +67,7 @@ describe('PointTool', () => {
 
   it('should update position on pointer move (drag)', () => {
     tool = new PointTool();
-    tool.activate(mockOverlay, imageId, mockCallbacks);
+    tool.activate(mockOverlay, imageId, mockCallbacks, mockShortcuts);
 
     tool.onPointerDown({ type: 'pointerdown' } as PointerEvent, { x: 10, y: 10 });
 
@@ -80,7 +82,7 @@ describe('PointTool', () => {
 
   it('should commit annotation on pointer up with fabricObject', () => {
     tool = new PointTool();
-    tool.activate(mockOverlay, imageId, mockCallbacks);
+    tool.activate(mockOverlay, imageId, mockCallbacks, mockShortcuts);
 
     tool.onPointerDown({ type: 'pointerdown' } as PointerEvent, { x: 30, y: 30 });
     tool.onPointerUp({ type: 'pointerup' } as PointerEvent, { x: 30, y: 30 });
@@ -99,7 +101,7 @@ describe('PointTool', () => {
 
   it('should allow drag-to-reposition before commit', () => {
     tool = new PointTool();
-    tool.activate(mockOverlay, imageId, mockCallbacks);
+    tool.activate(mockOverlay, imageId, mockCallbacks, mockShortcuts);
 
     tool.onPointerDown({ type: 'pointerdown' } as PointerEvent, { x: 10, y: 10 });
     tool.onPointerMove({ type: 'pointermove' } as PointerEvent, { x: 50, y: 50 });
@@ -118,7 +120,7 @@ describe('PointTool', () => {
     };
 
     tool = new PointTool();
-    tool.activate(mockOverlay, imageId, noContextCallbacks);
+    tool.activate(mockOverlay, imageId, noContextCallbacks, mockShortcuts);
 
     tool.onPointerDown({ type: 'pointerdown' } as PointerEvent, { x: 30, y: 30 });
 
@@ -128,7 +130,7 @@ describe('PointTool', () => {
 
   it('should cancel and remove preview on cancel()', () => {
     tool = new PointTool();
-    tool.activate(mockOverlay, imageId, mockCallbacks);
+    tool.activate(mockOverlay, imageId, mockCallbacks, mockShortcuts);
 
     tool.onPointerDown({ type: 'pointerdown' } as PointerEvent, { x: 30, y: 30 });
     expect(mockCanvas.add).toHaveBeenCalled();

@@ -2,8 +2,9 @@ import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { PathTool } from '../../../src/core/tools/path-tool.js';
 import { FabricOverlay } from '../../../src/overlay/fabric-overlay.js';
 import { ToolCallbacks, AddAnnotationParams } from '../../../src/core/tools/base-tool.js';
-import { createAnnotationContextId, createImageId } from '../../../src/core/types.js';
+import { createAnnotationContextId, createImageId, KeyboardShortcutMap } from '../../../src/core/types.js';
 import { Polyline, Polygon } from 'fabric';
+import { DEFAULT_KEYBOARD_SHORTCUTS } from '../../../src/hooks/useKeyboard.js';
 
 describe('PathTool', () => {
   let tool: PathTool;
@@ -18,6 +19,9 @@ describe('PathTool', () => {
   let addedParams: AddAnnotationParams[];
   const imageId = createImageId('test-image');
   const contextId = createAnnotationContextId('test-context');
+  const mockShortcuts: KeyboardShortcutMap = {
+    ...DEFAULT_KEYBOARD_SHORTCUTS,
+  };
 
   beforeEach(() => {
     vi.clearAllMocks();
@@ -49,7 +53,7 @@ describe('PathTool', () => {
 
   it('should start a preview path on first pointer down', () => {
     tool = new PathTool();
-    tool.activate(mockOverlay, imageId, mockCallbacks);
+    tool.activate(mockOverlay, imageId, mockCallbacks, mockShortcuts);
 
     const event = { type: 'pointerdown' } as PointerEvent;
     tool.onPointerDown(event, { x: 10, y: 10 });
@@ -64,7 +68,7 @@ describe('PathTool', () => {
 
   it('should update the cursor point on pointer move', () => {
     tool = new PathTool();
-    tool.activate(mockOverlay, imageId, mockCallbacks);
+    tool.activate(mockOverlay, imageId, mockCallbacks, mockShortcuts);
 
     tool.onPointerDown({ type: 'pointerdown' } as PointerEvent, { x: 10, y: 10 });
 
@@ -80,7 +84,7 @@ describe('PathTool', () => {
 
   it('should add a new vertex on subsequent pointer down', () => {
     tool = new PathTool();
-    tool.activate(mockOverlay, imageId, mockCallbacks);
+    tool.activate(mockOverlay, imageId, mockCallbacks, mockShortcuts);
 
     tool.onPointerDown({ type: 'pointerdown' } as PointerEvent, { x: 10, y: 10 });
     tool.onPointerMove({ type: 'pointermove' } as PointerEvent, { x: 50, y: 50 });
@@ -96,7 +100,7 @@ describe('PathTool', () => {
 
   it('should finish open path on double click with fabricObject', () => {
     tool = new PathTool();
-    tool.activate(mockOverlay, imageId, mockCallbacks);
+    tool.activate(mockOverlay, imageId, mockCallbacks, mockShortcuts);
 
     tool.onPointerDown({ type: 'pointerdown' } as PointerEvent, { x: 10, y: 10 });
     tool.onPointerMove({ type: 'pointermove' } as PointerEvent, { x: 50, y: 50 });
@@ -121,13 +125,14 @@ describe('PathTool', () => {
 
   it('should finish open path on Enter key', () => {
     tool = new PathTool();
-    tool.activate(mockOverlay, imageId, mockCallbacks);
+    tool.activate(mockOverlay, imageId, mockCallbacks, mockShortcuts);
 
     tool.onPointerDown({ type: 'pointerdown' } as PointerEvent, { x: 10, y: 10 });
     tool.onPointerMove({ type: 'pointermove' } as PointerEvent, { x: 50, y: 50 });
     tool.onPointerDown({ type: 'pointerdown' } as PointerEvent, { x: 50, y: 50 });
 
-    tool.onKeyDown({ key: 'Enter' } as KeyboardEvent);
+    const result = tool.onKeyDown({ key: 'Enter' } as KeyboardEvent);
+    expect(result).toBe(true);
 
     expect(addedParams).toHaveLength(1);
     const params = addedParams[0]!;
@@ -137,13 +142,14 @@ describe('PathTool', () => {
 
   it('should close polygon with C key when >= 3 vertices', () => {
     tool = new PathTool();
-    tool.activate(mockOverlay, imageId, mockCallbacks);
+    tool.activate(mockOverlay, imageId, mockCallbacks, mockShortcuts);
 
     tool.onPointerDown({ type: 'pointerdown' } as PointerEvent, { x: 10, y: 10 });
     tool.onPointerDown({ type: 'pointerdown' } as PointerEvent, { x: 50, y: 10 });
     tool.onPointerDown({ type: 'pointerdown' } as PointerEvent, { x: 50, y: 50 });
 
-    tool.onKeyDown({ key: 'c' } as KeyboardEvent);
+    const result = tool.onKeyDown({ key: 'c' } as KeyboardEvent);
+    expect(result).toBe(true);
 
     expect(addedParams).toHaveLength(1);
     const params = addedParams[0]!;
@@ -151,21 +157,22 @@ describe('PathTool', () => {
     expect(params.fabricObject).toBeInstanceOf(Polygon);
   });
 
-  it('should not close polygon with C key when < 3 vertices', () => {
+  it('should not close polygon with C key when < 3 vertices, but consume event', () => {
     tool = new PathTool();
-    tool.activate(mockOverlay, imageId, mockCallbacks);
+    tool.activate(mockOverlay, imageId, mockCallbacks, mockShortcuts);
 
     tool.onPointerDown({ type: 'pointerdown' } as PointerEvent, { x: 10, y: 10 });
     tool.onPointerDown({ type: 'pointerdown' } as PointerEvent, { x: 50, y: 10 });
 
-    tool.onKeyDown({ key: 'c' } as KeyboardEvent);
+    const result = tool.onKeyDown({ key: 'c' } as KeyboardEvent);
+    expect(result).toBe(true); // Consumed
 
     expect(addedParams).toHaveLength(0);
   });
 
   it('should close polygon when clicking near first point', () => {
     tool = new PathTool();
-    tool.activate(mockOverlay, imageId, mockCallbacks);
+    tool.activate(mockOverlay, imageId, mockCallbacks, mockShortcuts);
 
     tool.onPointerDown({ type: 'pointerdown' } as PointerEvent, { x: 100, y: 100 });
     tool.onPointerDown({ type: 'pointerdown' } as PointerEvent, { x: 200, y: 100 });
@@ -180,10 +187,11 @@ describe('PathTool', () => {
 
   it('should cancel path with only one point on Enter', () => {
     tool = new PathTool();
-    tool.activate(mockOverlay, imageId, mockCallbacks);
+    tool.activate(mockOverlay, imageId, mockCallbacks, mockShortcuts);
 
     tool.onPointerDown({ type: 'pointerdown' } as PointerEvent, { x: 10, y: 10 });
-    tool.onKeyDown({ key: 'Enter' } as KeyboardEvent);
+    const result = tool.onKeyDown({ key: 'Enter' } as KeyboardEvent);
+    expect(result).toBe(true);
 
     expect(addedParams).toHaveLength(0);
     expect(mockCanvas.remove).toHaveBeenCalled();
@@ -196,7 +204,7 @@ describe('PathTool', () => {
     };
 
     tool = new PathTool();
-    tool.activate(mockOverlay, imageId, noContextCallbacks);
+    tool.activate(mockOverlay, imageId, noContextCallbacks, mockShortcuts);
 
     tool.onPointerDown({ type: 'pointerdown' } as PointerEvent, { x: 10, y: 10 });
     tool.onPointerMove({ type: 'pointermove' } as PointerEvent, { x: 50, y: 50 });
@@ -204,5 +212,31 @@ describe('PathTool', () => {
     tool.onPointerDown({ type: 'pointerdown', detail: 2 } as PointerEvent, { x: 50, y: 50 });
 
     expect(addedParams).toHaveLength(0);
+  });
+
+  it('should pass through keys when not drawing', () => {
+    tool = new PathTool();
+    tool.activate(mockOverlay, imageId, mockCallbacks, mockShortcuts);
+
+    // Not drawing, so 'c' should return false (not consumed)
+    const result = tool.onKeyDown({ key: 'c' } as KeyboardEvent);
+    expect(result).toBe(false);
+
+    const resultEsc = tool.onKeyDown({ key: 'Escape' } as KeyboardEvent);
+    expect(resultEsc).toBe(false);
+  });
+
+  it('should consume keys when drawing', () => {
+    tool = new PathTool();
+    tool.activate(mockOverlay, imageId, mockCallbacks, mockShortcuts);
+
+    tool.onPointerDown({ type: 'pointerdown' } as PointerEvent, { x: 10, y: 10 });
+
+    // Drawing, so 'c' should return true (consumed, even if not enough points)
+    const result = tool.onKeyDown({ key: 'c' } as KeyboardEvent);
+    expect(result).toBe(true);
+
+    const resultEsc = tool.onKeyDown({ key: 'Escape' } as KeyboardEvent);
+    expect(resultEsc).toBe(true);
   });
 });

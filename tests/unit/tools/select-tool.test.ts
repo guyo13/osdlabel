@@ -2,8 +2,9 @@ import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { SelectTool } from '../../../src/core/tools/select-tool.js';
 import { FabricOverlay } from '../../../src/overlay/fabric-overlay.js';
 import { ToolCallbacks } from '../../../src/core/tools/base-tool.js';
-import { createImageId, createAnnotationContextId, createAnnotationId } from '../../../src/core/types.js';
+import { createImageId, createAnnotationContextId, createAnnotationId, KeyboardShortcutMap } from '../../../src/core/types.js';
 import { FabricObject } from 'fabric';
+import { DEFAULT_KEYBOARD_SHORTCUTS } from '../../../src/hooks/useKeyboard.js';
 
 describe('SelectTool', () => {
   let tool: SelectTool;
@@ -21,6 +22,7 @@ describe('SelectTool', () => {
   let capturedHandlers: Record<string, (...args: unknown[]) => void>;
   const imageId = createImageId('test-image-select');
   const contextId = createAnnotationContextId('test-context');
+  const mockShortcuts: KeyboardShortcutMap = { ...DEFAULT_KEYBOARD_SHORTCUTS };
 
   beforeEach(() => {
     vi.clearAllMocks();
@@ -57,13 +59,13 @@ describe('SelectTool', () => {
   });
 
   it('should attach event listeners on activate', () => {
-    tool.activate(mockOverlay, imageId, mockCallbacks);
+    tool.activate(mockOverlay, imageId, mockCallbacks, mockShortcuts);
     expect(mockCanvas.on).toHaveBeenCalledWith('selection:created', expect.any(Function));
     expect(mockCanvas.on).toHaveBeenCalledWith('selection:cleared', expect.any(Function));
   });
 
   it('should detach event listeners on deactivate', () => {
-    tool.activate(mockOverlay, imageId, mockCallbacks);
+    tool.activate(mockOverlay, imageId, mockCallbacks, mockShortcuts);
     tool.deactivate();
     expect(mockCanvas.off).toHaveBeenCalledWith('selection:created', expect.any(Function));
     expect(mockCanvas.off).toHaveBeenCalledWith('selection:cleared', expect.any(Function));
@@ -71,7 +73,7 @@ describe('SelectTool', () => {
   });
 
   it('should trigger setSelectedAnnotation on selection:created with single object', () => {
-    tool.activate(mockOverlay, imageId, mockCallbacks);
+    tool.activate(mockOverlay, imageId, mockCallbacks, mockShortcuts);
 
     const annId = createAnnotationId('ann-1');
     const mockObj = { id: annId } as unknown as FabricObject;
@@ -82,7 +84,7 @@ describe('SelectTool', () => {
   });
 
   it('should trigger setSelectedAnnotation(null) on selection:created with multiple objects', () => {
-    tool.activate(mockOverlay, imageId, mockCallbacks);
+    tool.activate(mockOverlay, imageId, mockCallbacks, mockShortcuts);
 
     const mockObj1 = { id: createAnnotationId('ann-1') } as unknown as FabricObject;
     const mockObj2 = { id: createAnnotationId('ann-2') } as unknown as FabricObject;
@@ -93,7 +95,7 @@ describe('SelectTool', () => {
   });
 
   it('should trigger setSelectedAnnotation(null) on selection:cleared', () => {
-    tool.activate(mockOverlay, imageId, mockCallbacks);
+    tool.activate(mockOverlay, imageId, mockCallbacks, mockShortcuts);
 
     capturedHandlers['selection:cleared']({ deselected: [] });
 
@@ -101,7 +103,7 @@ describe('SelectTool', () => {
   });
 
   it('should trigger deleteAnnotation on Delete key', () => {
-    tool.activate(mockOverlay, imageId, mockCallbacks);
+    tool.activate(mockOverlay, imageId, mockCallbacks, mockShortcuts);
 
     const annId = createAnnotationId('ann-1');
     const mockObj = { id: annId, type: 'rect' } as unknown as FabricObject;
@@ -115,7 +117,7 @@ describe('SelectTool', () => {
   });
 
   it('should trigger deleteAnnotation on Backspace key', () => {
-    tool.activate(mockOverlay, imageId, mockCallbacks);
+    tool.activate(mockOverlay, imageId, mockCallbacks, mockShortcuts);
 
     const annId = createAnnotationId('ann-2');
     const mockObj = { id: annId, type: 'circle' } as unknown as FabricObject;

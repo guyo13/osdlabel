@@ -17,19 +17,26 @@ import { createActions } from './actions.js';
 import { getAllAnnotationsFlat } from '../core/annotations/serialization.js';
 import { DEFAULT_KEYBOARD_SHORTCUTS, useKeyboard } from '../hooks/useKeyboard.js';
 
+export interface ActiveToolKeyHandlerRef {
+  handler: ((event: KeyboardEvent) => boolean) | null;
+}
+
 interface AnnotatorContextValue {
   annotationState: AnnotationState;
   uiState: UIState;
   contextState: ContextState;
   constraintStatus: Accessor<ConstraintStatus>;
   actions: ReturnType<typeof createActions>;
+  activeToolKeyHandlerRef: ActiveToolKeyHandlerRef;
+  shortcuts: KeyboardShortcutMap;
 }
 
 const KeyboardHandler = (props: {
   shortcuts: KeyboardShortcutMap;
-  shouldSkipTargetPredicate?: (target: HTMLElement) => boolean;
+  activeToolKeyHandlerRef: ActiveToolKeyHandlerRef;
+  shouldSkipTargetPredicate?: ((target: HTMLElement) => boolean) | undefined;
 }) => {
-  useKeyboard(props.shortcuts, props.shouldSkipTargetPredicate);
+  useKeyboard(props.shortcuts, props.activeToolKeyHandlerRef, props.shouldSkipTargetPredicate);
   return null;
 };
 
@@ -55,6 +62,9 @@ export function AnnotatorProvider(props: AnnotatorProviderProps) {
 
   const actions = createActions(setAnnotationState, setUIState, setContextState);
   const constraintStatus = createConstraintStatus(contextState, annotationState);
+
+  const activeToolKeyHandlerRef: ActiveToolKeyHandlerRef = { handler: null };
+  const mergedShortcuts = { ...DEFAULT_KEYBOARD_SHORTCUTS, ...props.keyboardShortcuts };
 
   // Load initial annotations if provided
   if (props.initialAnnotations) {
@@ -94,14 +104,15 @@ export function AnnotatorProvider(props: AnnotatorProviderProps) {
     contextState,
     constraintStatus,
     actions,
+    activeToolKeyHandlerRef,
+    shortcuts: mergedShortcuts,
   };
-
-  const mergedShortcuts = { ...DEFAULT_KEYBOARD_SHORTCUTS, ...props.keyboardShortcuts };
 
   return (
     <AnnotatorContext.Provider value={value}>
       <KeyboardHandler
         shortcuts={mergedShortcuts}
+        activeToolKeyHandlerRef={activeToolKeyHandlerRef}
         shouldSkipTargetPredicate={props.shouldSkipKeyboardShortcutPredicate}
       />
       {props.children}

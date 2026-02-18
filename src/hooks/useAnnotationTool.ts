@@ -25,7 +25,7 @@ export function useAnnotationTool(
   imageId: () => ImageId | undefined,
   isActive: () => boolean
 ) {
-  const { uiState, contextState, annotationState, constraintStatus, actions } = useAnnotator();
+  const { uiState, contextState, annotationState, constraintStatus, actions, activeToolKeyHandlerRef, shortcuts } = useAnnotator();
 
   // Auto-switch to select tool when active drawing tool becomes disabled (limit reached)
   createEffect(() => {
@@ -163,7 +163,10 @@ export function useAnnotationTool(
 
     // Activate tool
     ov.setMode('annotation');
-    tool.activate(ov, imgId, callbacks);
+    tool.activate(ov, imgId, callbacks, shortcuts);
+
+    const keyHandler = (e: KeyboardEvent) => tool!.onKeyDown(e);
+    activeToolKeyHandlerRef.handler = keyHandler;
 
     const isDrawingTool = type !== 'select';
 
@@ -202,23 +205,17 @@ export function useAnnotationTool(
         tool.onPointerUp(opt.e as PointerEvent, p);
     };
 
-    const handleKeyDown = (e: KeyboardEvent) => {
-        if (tool && tool.onKeyDown) {
-            tool.onKeyDown(e);
-        }
-    };
-
     ov.canvas.on('mouse:down', handleDown);
     ov.canvas.on('mouse:move', handleMove);
     ov.canvas.on('mouse:up', handleUp);
 
-    window.addEventListener('keydown', handleKeyDown);
-
     onCleanup(() => {
+        if (activeToolKeyHandlerRef.handler === keyHandler) {
+            activeToolKeyHandlerRef.handler = null;
+        }
         ov.canvas.off('mouse:down', handleDown);
         ov.canvas.off('mouse:move', handleMove);
         ov.canvas.off('mouse:up', handleUp);
-        window.removeEventListener('keydown', handleKeyDown);
         if (tool) {
             tool.deactivate();
         }

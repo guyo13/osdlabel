@@ -2,8 +2,9 @@ import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { CircleTool } from '../../../src/core/tools/circle-tool.js';
 import { FabricOverlay } from '../../../src/overlay/fabric-overlay.js';
 import { ToolCallbacks, AddAnnotationParams } from '../../../src/core/tools/base-tool.js';
-import { createAnnotationContextId, createImageId } from '../../../src/core/types.js';
+import { createAnnotationContextId, createImageId, KeyboardShortcutMap } from '../../../src/core/types.js';
 import { Circle } from 'fabric';
+import { DEFAULT_KEYBOARD_SHORTCUTS } from '../../../src/hooks/useKeyboard.js';
 
 describe('CircleTool', () => {
   let tool: CircleTool;
@@ -18,6 +19,7 @@ describe('CircleTool', () => {
   let addedParams: AddAnnotationParams[];
   const imageId = createImageId('test-image');
   const contextId = createAnnotationContextId('test-context');
+  const mockShortcuts: KeyboardShortcutMap = { ...DEFAULT_KEYBOARD_SHORTCUTS };
 
   beforeEach(() => {
     vi.clearAllMocks();
@@ -48,7 +50,7 @@ describe('CircleTool', () => {
 
   it('should create a preview circle on pointer down', () => {
     tool = new CircleTool();
-    tool.activate(mockOverlay, imageId, mockCallbacks);
+    tool.activate(mockOverlay, imageId, mockCallbacks, mockShortcuts);
 
     const event = { type: 'pointerdown' } as PointerEvent;
     tool.onPointerDown(event, { x: 10, y: 10 });
@@ -63,7 +65,7 @@ describe('CircleTool', () => {
 
   it('should update preview circle on pointer move', () => {
     tool = new CircleTool();
-    tool.activate(mockOverlay, imageId, mockCallbacks);
+    tool.activate(mockOverlay, imageId, mockCallbacks, mockShortcuts);
 
     const event = { type: 'pointerdown' } as PointerEvent;
     tool.onPointerDown(event, { x: 10, y: 10 });
@@ -79,7 +81,7 @@ describe('CircleTool', () => {
 
   it('should commit annotation on pointer up with fabricObject', () => {
     tool = new CircleTool();
-    tool.activate(mockOverlay, imageId, mockCallbacks);
+    tool.activate(mockOverlay, imageId, mockCallbacks, mockShortcuts);
 
     tool.onPointerDown({ type: 'pointerdown' } as PointerEvent, { x: 10, y: 10 });
     tool.onPointerMove({ type: 'pointermove' } as PointerEvent, { x: 30, y: 30 });
@@ -105,7 +107,7 @@ describe('CircleTool', () => {
     };
 
     tool = new CircleTool();
-    tool.activate(mockOverlay, imageId, noContextCallbacks);
+    tool.activate(mockOverlay, imageId, noContextCallbacks, mockShortcuts);
 
     tool.onPointerDown({ type: 'pointerdown' } as PointerEvent, { x: 10, y: 10 });
     tool.onPointerMove({ type: 'pointermove' } as PointerEvent, { x: 30, y: 30 });
