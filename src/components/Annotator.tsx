@@ -88,6 +88,7 @@ const Annotator: Component<AnnotatorProps> = (props) => {
       onAnnotationsChange={props.onAnnotationsChange}
       onConstraintChange={props.onConstraintChange}
       keyboardShortcuts={props.keyboardShortcuts}
+      shouldSkipKeyboardShortcutPredicate={props.shouldSkipKeyboardShortcutPredicate}
     >
       <AnnotatorSetup contexts={props.contexts} />
       <AnnotatorInner

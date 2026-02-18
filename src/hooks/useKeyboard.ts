@@ -27,7 +27,10 @@ export const DEFAULT_KEYBOARD_SHORTCUTS: KeyboardShortcutMap = {
   decreaseGridColumns: '-',
 } as const;
 
-export function useKeyboard(shortcuts: KeyboardShortcutMap) {
+export function useKeyboard(
+  shortcuts: KeyboardShortcutMap,
+  shouldSkipTargetPredicate?: (target: HTMLElement) => boolean
+) {
   const { actions, uiState } = useAnnotator();
   const { isToolEnabled } = useConstraints();
 
@@ -37,7 +40,8 @@ export function useKeyboard(shortcuts: KeyboardShortcutMap) {
     if (
       target.tagName === 'INPUT' ||
       target.tagName === 'TEXTAREA' ||
-      target.isContentEditable
+      target.isContentEditable ||
+      shouldSkipTargetPredicate?.(target)
     ) {
       return;
     }
