@@ -1,4 +1,5 @@
 import { describe, it, expect } from 'vitest';
+import { version as FABRIC_VERSION } from 'fabric';
 import { createRoot } from 'solid-js';
 import { createAnnotationStore } from '../../../src/state/annotation-store';
 import { createUIStore } from '../../../src/state/ui-store';
@@ -49,6 +50,7 @@ describe('Constraint Enforcement', () => {
 
   const baseRawData = {
     format: 'fabric' as const,
+    fabricVersion: FABRIC_VERSION,
     data: { type: 'Rect', stroke: 'red', strokeWidth: 1, fill: 'transparent', opacity: 1 },
   };
 

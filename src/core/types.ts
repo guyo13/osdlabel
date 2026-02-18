@@ -63,7 +63,7 @@ export interface AnnotationStyle {
 
 /** Discriminated union for raw annotation data from rendering libraries */
 export type RawAnnotationData =
-  | { readonly format: 'fabric'; readonly data: Record<string, unknown> };
+  | { readonly format: 'fabric'; readonly fabricVersion: string; readonly data: Record<string, unknown> };
 
 // ── Annotation Entity ────────────────────────────────────────────────────
 

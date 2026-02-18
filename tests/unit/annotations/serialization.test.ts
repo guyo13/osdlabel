@@ -1,4 +1,5 @@
 import { describe, it, expect } from 'vitest';
+import { version as FABRIC_VERSION } from 'fabric';
 import {
   serialize,
   deserialize,
@@ -25,6 +26,7 @@ describe('Serialization', () => {
 
   const baseRawAnnotationData = {
     format: 'fabric' as const,
+    fabricVersion: FABRIC_VERSION,
     data: { type: 'Rect', stroke: 'red', strokeWidth: 2, fill: 'rgba(0,0,255,0.3)', opacity: 1 },
   };
 

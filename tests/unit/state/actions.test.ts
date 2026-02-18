@@ -1,4 +1,5 @@
 import { describe, it, expect } from 'vitest';
+import { version as FABRIC_VERSION } from 'fabric';
 import { createRoot } from 'solid-js';
 import { createAnnotationStore } from '../../../src/state/annotation-store';
 import { createUIStore } from '../../../src/state/ui-store';
@@ -36,7 +37,7 @@ describe('State Management', () => {
     imageId: dummyImageId,
     contextId: dummyContextId,
     geometry: { type: 'rectangle', origin: { x: 0, y: 0 }, width: 10, height: 10, rotation: 0 },
-    rawAnnotationData: { format: 'fabric' as const, data: { type: 'Rect', left: 0, top: 0, width: 10, height: 10 } },
+    rawAnnotationData: { format: 'fabric' as const, fabricVersion: FABRIC_VERSION, data: { type: 'Rect', left: 0, top: 0, width: 10, height: 10 } },
   };
 
   it('addAnnotation adds to the correct image bucket and sets timestamps', () => {

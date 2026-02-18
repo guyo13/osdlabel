@@ -1,4 +1,4 @@
-import { Rect, Circle, Line, Polyline, Polygon, util, FabricObject, Color } from 'fabric';
+import { Rect, Circle, Line, Polyline, Polygon, util, FabricObject, Color, version as FABRIC_VERSION } from 'fabric';
 import './fabric-module.js';
 import { Annotation, AnnotationStyle, Geometry, AnnotationType, RawAnnotationData } from './types.js';
 
@@ -26,6 +26,7 @@ export function getFabricOptions(style: AnnotationStyle, id: string) {
 export function serializeFabricObject(obj: FabricObject): RawAnnotationData {
     return {
         format: 'fabric',
+        fabricVersion: FABRIC_VERSION,
         data: obj.toObject() as Record<string, unknown>,
     };
 }
