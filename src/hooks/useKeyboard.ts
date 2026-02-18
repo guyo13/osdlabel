@@ -1,5 +1,5 @@
 import { onMount, onCleanup } from 'solid-js';
-import { useAnnotator } from '../state/annotator-context.js';
+import { useAnnotator, ActiveToolKeyHandlerRef } from '../state/annotator-context.js';
 import { useConstraints } from './useConstraints.js';
 import { KeyboardShortcutMap } from '../core/types.js';
 import { MAX_GRID_SIZE } from '../core/constants.js';
@@ -25,10 +25,14 @@ export const DEFAULT_KEYBOARD_SHORTCUTS: KeyboardShortcutMap = {
   gridCell9: '9',
   increaseGridColumns: '=',
   decreaseGridColumns: '-',
+  pathFinish: 'Enter',
+  pathClose: 'c',
+  pathCancel: 'Escape',
 } as const;
 
 export function useKeyboard(
   shortcuts: KeyboardShortcutMap,
+  activeToolKeyHandlerRef: ActiveToolKeyHandlerRef,
   shouldSkipTargetPredicate?: (target: HTMLElement) => boolean
 ) {
   const { actions, uiState } = useAnnotator();
@@ -44,6 +48,11 @@ export function useKeyboard(
       shouldSkipTargetPredicate?.(target)
     ) {
       return;
+    }
+
+    if (activeToolKeyHandlerRef.handler) {
+      const consumed = activeToolKeyHandlerRef.handler(e);
+      if (consumed) return;
     }
 
     const key = e.key;

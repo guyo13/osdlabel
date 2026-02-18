@@ -80,19 +80,25 @@ export class PathTool extends BaseTool {
     // No-op — path tool uses click (not drag) to add points
   }
 
-  onKeyDown(event: KeyboardEvent): void {
-      if (event.key === 'Enter') {
-          this.finish(false);
-      } else if (event.key === 'c' || event.key === 'C') {
-          // Close the path and finish
-          if (this.vertices.length >= 3) {
-              this.finish(true);
-          }
-      } else if (event.key === 'Escape') {
-          this.cancel();
-      } else {
-        super.onKeyDown(event);
+  onKeyDown(event: KeyboardEvent): boolean {
+    const shortcuts = this.shortcuts;
+    const isDrawing = this.vertices.length > 0;
+
+    if (isDrawing && shortcuts) {
+      if (event.key === shortcuts.pathFinish) {
+        this.finish(false);
+        return true;
       }
+      if (event.key.toLowerCase() === shortcuts.pathClose.toLowerCase()) {
+        if (this.vertices.length >= 3) this.finish(true);
+        return true; // always consume 'c' during drawing (prevent CircleTool switch)
+      }
+      if (event.key === shortcuts.pathCancel) {
+        this.cancel();
+        return true; // prevent global Escape from also deactivating the tool
+      }
+    }
+    return super.onKeyDown(event);
   }
 
   private isNearFirstPoint(imagePoint: Point): boolean {

@@ -1,6 +1,6 @@
 import { FabricObject } from 'fabric';
 import type { FabricOverlay } from '../../overlay/fabric-overlay.js';
-import { AnnotationType, Point, ImageId, AnnotationContextId, AnnotationId, ToolConstraint } from '../types.js';
+import { AnnotationType, Point, ImageId, AnnotationContextId, AnnotationId, ToolConstraint, KeyboardShortcutMap } from '../types.js';
 import '../fabric-module.js';
 
 /** Parameters for adding an annotation via a tool */
@@ -30,7 +30,7 @@ export interface AnnotationTool {
   readonly type: AnnotationType | 'select';
 
   /** Called when the tool becomes active */
-  activate(overlay: FabricOverlay, imageId: ImageId, callbacks: ToolCallbacks): void;
+  activate(overlay: FabricOverlay, imageId: ImageId, callbacks: ToolCallbacks, shortcuts: KeyboardShortcutMap): void;
 
   /** Called when the tool is deactivated */
   deactivate(): void;
@@ -44,8 +44,8 @@ export interface AnnotationTool {
   /** Handle pointer up — commit the annotation */
   onPointerUp(event: PointerEvent, imagePoint: Point): void;
 
-  /** Handle key down */
-  onKeyDown(event: KeyboardEvent): void;
+  /** Handle key down - returns true if the key was consumed */
+  onKeyDown(event: KeyboardEvent): boolean;
 
   /** Cancel the current drawing interaction */
   cancel(): void;
@@ -56,17 +56,21 @@ export abstract class BaseTool implements AnnotationTool {
   protected overlay: FabricOverlay | null = null;
   protected imageId: ImageId | null = null;
   protected callbacks: ToolCallbacks | null = null;
+  protected shortcuts: KeyboardShortcutMap | null = null;
 
-  activate(overlay: FabricOverlay, imageId: ImageId, callbacks: ToolCallbacks): void {
+  activate(overlay: FabricOverlay, imageId: ImageId, callbacks: ToolCallbacks, shortcuts: KeyboardShortcutMap): void {
     this.overlay = overlay;
     this.imageId = imageId;
     this.callbacks = callbacks;
+    this.shortcuts = shortcuts;
   }
 
-  onKeyDown(event: KeyboardEvent): void {
-    if (event.key === 'Delete' || event.key === 'Backspace') {
+  onKeyDown(event: KeyboardEvent): boolean {
+    if (this.shortcuts && (event.key === this.shortcuts.delete || event.key === this.shortcuts.deleteAlt)) {
         this.deleteSelected();
+        return true;
     }
+    return false;
   }
 
   deactivate(): void {
@@ -74,6 +78,7 @@ export abstract class BaseTool implements AnnotationTool {
     this.overlay = null;
     this.imageId = null;
     this.callbacks = null;
+    this.shortcuts = null;
   }
 
   abstract onPointerDown(event: PointerEvent, imagePoint: Point): void;

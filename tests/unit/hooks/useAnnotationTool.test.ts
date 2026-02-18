@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { createRoot, createSignal } from 'solid-js';
 import { useAnnotationTool } from '../../../src/hooks/useAnnotationTool.js';
 import { FabricOverlay } from '../../../src/overlay/fabric-overlay.js';
+import { DEFAULT_KEYBOARD_SHORTCUTS } from '../../../src/hooks/useKeyboard.js';
 
 // Mock useAnnotator
 const mockActions = {
@@ -21,6 +22,8 @@ const mockState = {
     rectangle: { enabled: true },
   }),
   actions: mockActions,
+  activeToolKeyHandlerRef: { handler: null },
+  shortcuts: DEFAULT_KEYBOARD_SHORTCUTS,
 };
 
 vi.mock('../../../src/state/annotator-context.js', () => ({
