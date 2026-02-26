@@ -2,7 +2,11 @@ import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { RectangleTool } from '../../../src/core/tools/rectangle-tool.js';
 import { FabricOverlay } from '../../../src/overlay/fabric-overlay.js';
 import { ToolCallbacks, AddAnnotationParams } from '../../../src/core/tools/base-tool.js';
-import { createAnnotationContextId, createImageId, KeyboardShortcutMap } from '../../../src/core/types.js';
+import {
+  createAnnotationContextId,
+  createImageId,
+  KeyboardShortcutMap,
+} from '../../../src/core/types.js';
 import { Rect } from 'fabric';
 import { DEFAULT_KEYBOARD_SHORTCUTS } from '../../../src/hooks/useKeyboard.js';
 
@@ -40,7 +44,9 @@ describe('RectangleTool', () => {
       getActiveContextId: () => contextId,
       getToolConstraint: (type) => ({ type }),
       canAddAnnotation: () => true,
-      addAnnotation: (params) => { addedParams.push(params); },
+      addAnnotation: (params) => {
+        addedParams.push(params);
+      },
       updateAnnotation: vi.fn(),
       deleteAnnotation: vi.fn(),
       setSelectedAnnotation: vi.fn(),

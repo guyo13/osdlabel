@@ -18,9 +18,15 @@ export class SelectTool extends BaseTool {
   readonly type = 'select' as const;
 
   private readonly handleSelectionCreated = (e: SelectionEvent) => this.onSelectionCreated(e);
-  private readonly handleSelectionCleared = (e: SelectionClearedEvent) => this.onSelectionCleared(e);
+  private readonly handleSelectionCleared = (e: SelectionClearedEvent) =>
+    this.onSelectionCleared(e);
 
-  activate(overlay: FabricOverlay, imageId: ImageId, callbacks: ToolCallbacks, shortcuts: KeyboardShortcutMap): void {
+  activate(
+    overlay: FabricOverlay,
+    imageId: ImageId,
+    callbacks: ToolCallbacks,
+    shortcuts: KeyboardShortcutMap,
+  ): void {
     super.activate(overlay, imageId, callbacks, shortcuts);
     if (!this.overlay) return;
 
@@ -31,12 +37,12 @@ export class SelectTool extends BaseTool {
 
   deactivate(): void {
     if (this.overlay) {
-        this.overlay.canvas.off('selection:created', this.handleSelectionCreated);
-        this.overlay.canvas.off('selection:updated', this.handleSelectionCreated);
-        this.overlay.canvas.off('selection:cleared', this.handleSelectionCleared);
+      this.overlay.canvas.off('selection:created', this.handleSelectionCreated);
+      this.overlay.canvas.off('selection:updated', this.handleSelectionCreated);
+      this.overlay.canvas.off('selection:cleared', this.handleSelectionCleared);
 
-        this.overlay.canvas.discardActiveObject();
-        this.overlay.canvas.requestRenderAll();
+      this.overlay.canvas.discardActiveObject();
+      this.overlay.canvas.requestRenderAll();
     }
     super.deactivate();
   }
@@ -46,26 +52,26 @@ export class SelectTool extends BaseTool {
   onPointerUp(_event: PointerEvent, _imagePoint: Point): void {}
 
   cancel(): void {
-      this.overlay?.canvas.discardActiveObject();
-      this.overlay?.canvas.requestRenderAll();
+    this.overlay?.canvas.discardActiveObject();
+    this.overlay?.canvas.requestRenderAll();
   }
 
   private onSelectionCreated(e: SelectionEvent) {
-      if (!this.callbacks) return;
-      const selected = e.selected || [];
-      if (selected.length === 1) {
-          const obj = selected[0]!;
-          const annotationId = obj.id as AnnotationId | undefined;
-          if (annotationId) {
-              this.callbacks.setSelectedAnnotation(annotationId);
-          }
-      } else {
-          this.callbacks.setSelectedAnnotation(null);
+    if (!this.callbacks) return;
+    const selected = e.selected || [];
+    if (selected.length === 1) {
+      const obj = selected[0]!;
+      const annotationId = obj.id as AnnotationId | undefined;
+      if (annotationId) {
+        this.callbacks.setSelectedAnnotation(annotationId);
       }
+    } else {
+      this.callbacks.setSelectedAnnotation(null);
+    }
   }
 
   private onSelectionCleared(_e: SelectionClearedEvent) {
-      if (!this.callbacks) return;
-      this.callbacks.setSelectedAnnotation(null);
+    if (!this.callbacks) return;
+    this.callbacks.setSelectedAnnotation(null);
   }
 }

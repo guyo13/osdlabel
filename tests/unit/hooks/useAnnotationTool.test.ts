@@ -44,8 +44,12 @@ describe('useAnnotationTool', () => {
     vi.clearAllMocks();
     listeners = {};
     mockCanvas = {
-      on: vi.fn((e, cb) => { listeners[e] = cb; }),
-      off: vi.fn((e, cb) => { if (listeners[e] === cb) delete listeners[e]; }),
+      on: vi.fn((e, cb) => {
+        listeners[e] = cb;
+      }),
+      off: vi.fn((e, cb) => {
+        if (listeners[e] === cb) delete listeners[e];
+      }),
       setMode: vi.fn(),
       requestRenderAll: vi.fn(),
       discardActiveObject: vi.fn(),
@@ -87,10 +91,14 @@ describe('useAnnotationTool', () => {
           }
 
           // Verify action called
-          expect(mockActions.updateAnnotation).toHaveBeenCalledWith('ann-1', 'img-1', expect.objectContaining({
-            geometry: expect.anything(),
-            rawAnnotationData: expect.anything(),
-          }));
+          expect(mockActions.updateAnnotation).toHaveBeenCalledWith(
+            'ann-1',
+            'img-1',
+            expect.objectContaining({
+              geometry: expect.anything(),
+              rawAnnotationData: expect.anything(),
+            }),
+          );
 
           dispose();
           resolve();

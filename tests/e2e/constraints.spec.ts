@@ -54,19 +54,19 @@ test.describe('Constraint System', () => {
 
     // Draw 3 lines
     for (let i = 0; i < 3; i++) {
-        const yStart = box.y + 100 + i * 60;
-        const xStart = box.x + 100;
-        const xEnd = box.x + 300;
-        
-        // Start
-        await page.mouse.move(xStart, yStart);
-        await page.mouse.down();
-        // Drag
-        await page.mouse.move(xEnd, yStart, { steps: 5 });
-        // End
-        await page.mouse.up();
+      const yStart = box.y + 100 + i * 60;
+      const xStart = box.x + 100;
+      const xEnd = box.x + 300;
 
-        await page.waitForTimeout(300);
+      // Start
+      await page.mouse.move(xStart, yStart);
+      await page.mouse.down();
+      // Drag
+      await page.mouse.move(xEnd, yStart, { steps: 5 });
+      // End
+      await page.mouse.up();
+
+      await page.waitForTimeout(300);
     }
 
     // Checking disabled state
@@ -94,7 +94,7 @@ test.describe('Constraint System', () => {
       const yStart = box.y + 100 + i * 60;
       const xStart = box.x + 100;
       const xEnd = box.x + 300;
-      
+
       await page.mouse.move(xStart, yStart);
       await page.mouse.down();
       await page.mouse.move(xEnd, yStart, { steps: 5 });
@@ -112,7 +112,7 @@ test.describe('Constraint System', () => {
     // Line 1 was at box.y + 100
     const clickY = box.y + 100;
     const clickX = box.x + 200; // Midpoint
-    
+
     await page.mouse.click(clickX, clickY);
     await page.waitForTimeout(300);
 

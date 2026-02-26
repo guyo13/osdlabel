@@ -33,11 +33,21 @@ const TableSelector: Component<{
     const isSelected = c <= targetCols && r <= targetRows;
     return isSelected ? '#2196F3' : '#444';
   };
-  
+
   // Icon for the grid button
   const GridIcon = () => (
-    <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
-      <path d="M1 1h14v14H1V1zm2 2v4h4V3H3zm6 0v4h4V3H9zM3 9v4h4V9H3zm6 0v4h4V9H9z" fill-rule="evenodd" clip-rule="evenodd"/>
+    <svg
+      width="16"
+      height="16"
+      viewBox="0 0 16 16"
+      fill="currentColor"
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      <path
+        d="M1 1h14v14H1V1zm2 2v4h4V3H3zm6 0v4h4V3H9zM3 9v4h4V9H3zm6 0v4h4V9H9z"
+        fill-rule="evenodd"
+        clip-rule="evenodd"
+      />
     </svg>
   );
 
@@ -61,7 +71,9 @@ const TableSelector: Component<{
         title="Change Grid Layout"
       >
         <GridIcon />
-        <span data-testid="grid-size">{props.currentColumns}x{props.currentRows}</span>
+        <span data-testid="grid-size">
+          {props.currentColumns}x{props.currentRows}
+        </span>
       </button>
 
       <Show when={isOpen()}>
@@ -77,19 +89,28 @@ const TableSelector: Component<{
             'z-index': 1000,
           }}
           onMouseLeave={() => {
-              setHoverCols(null);
-              setHoverRows(null);
+            setHoverCols(null);
+            setHoverRows(null);
           }}
         >
-          <div style={{
-            background: '#2a2a2a',
-            border: '1px solid #444',
-            'border-radius': '4px',
-            padding: '8px',
-            'box-shadow': '0 4px 6px rgba(0,0,0,0.3)',
-          }}>
-            <div style={{ 'margin-bottom': '6px', 'font-size': '11px', color: '#aaa', 'text-align': 'center' }}>
-                {(hoverCols() ?? props.currentColumns)} x {(hoverRows() ?? props.currentRows)}
+          <div
+            style={{
+              background: '#2a2a2a',
+              border: '1px solid #444',
+              'border-radius': '4px',
+              padding: '8px',
+              'box-shadow': '0 4px 6px rgba(0,0,0,0.3)',
+            }}
+          >
+            <div
+              style={{
+                'margin-bottom': '6px',
+                'font-size': '11px',
+                color: '#aaa',
+                'text-align': 'center',
+              }}
+            >
+              {hoverCols() ?? props.currentColumns} x {hoverRows() ?? props.currentRows}
             </div>
             <div
               style={{

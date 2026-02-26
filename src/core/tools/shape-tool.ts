@@ -1,6 +1,12 @@
 import { FabricObject } from 'fabric';
 import { BaseTool } from './base-tool.js';
-import { AnnotationType, Point, AnnotationStyle, AnnotationContextId, createAnnotationId } from '../types.js';
+import {
+  AnnotationType,
+  Point,
+  AnnotationStyle,
+  AnnotationContextId,
+  createAnnotationId,
+} from '../types.js';
 import { DEFAULT_ANNOTATION_STYLE } from '../constants.js';
 import { FabricShapeOptions, getFabricOptions } from '../fabric-utils.js';
 import { generateId } from '../../utils/id.js';
@@ -55,7 +61,14 @@ export abstract class ShapeTool<T extends FabricObject> extends BaseTool {
   protected abstract updatePreview(imagePoint: Point, startPoint: Point): void;
 
   onPointerUp(_event: PointerEvent, _imagePoint: Point): void {
-    if (!this.overlay || !this.preview || !this.startPoint || !this.imageId || !this.callbacks || !this.activeContextId) {
+    if (
+      !this.overlay ||
+      !this.preview ||
+      !this.startPoint ||
+      !this.imageId ||
+      !this.callbacks ||
+      !this.activeContextId
+    ) {
       this.cancel();
       return;
     }

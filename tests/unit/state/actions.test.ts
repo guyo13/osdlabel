@@ -11,7 +11,7 @@ import {
   createAnnotationContextId,
   Annotation,
   AnnotationContext,
-  AnnotationContextId
+  AnnotationContextId,
 } from '../../../src/core/types';
 
 describe('State Management', () => {
@@ -37,7 +37,11 @@ describe('State Management', () => {
     imageId: dummyImageId,
     contextId: dummyContextId,
     geometry: { type: 'rectangle', origin: { x: 0, y: 0 }, width: 10, height: 10, rotation: 0 },
-    rawAnnotationData: { format: 'fabric' as const, fabricVersion: FABRIC_VERSION, data: { type: 'Rect', left: 0, top: 0, width: 10, height: 10 } },
+    rawAnnotationData: {
+      format: 'fabric' as const,
+      fabricVersion: FABRIC_VERSION,
+      data: { type: 'Rect', left: 0, top: 0, width: 10, height: 10 },
+    },
   };
 
   it('addAnnotation adds to the correct image bucket and sets timestamps', () => {
@@ -97,8 +101,8 @@ describe('State Management', () => {
       label: 'Test Context',
       tools: [
         { type: 'rectangle', maxCount: 1 },
-        { type: 'circle' } // unlimited
-      ]
+        { type: 'circle' }, // unlimited
+      ],
     };
 
     actions.setContexts([context]);
@@ -115,7 +119,7 @@ describe('State Management', () => {
       ...dummyAnnotation,
       id: createAnnotationId('rect1'),
       contextId: dummyContextId,
-      geometry: { type: 'rectangle', origin: { x: 0, y: 0 }, width: 10, height: 10, rotation: 0 }
+      geometry: { type: 'rectangle', origin: { x: 0, y: 0 }, width: 10, height: 10, rotation: 0 },
     });
 
     status = constraintStatus();
@@ -167,7 +171,7 @@ describe('State Management', () => {
     const context: AnnotationContext = {
       id: dummyContextId,
       label: 'Test Context',
-      tools: []
+      tools: [],
     };
     actions.setContexts([context]);
     expect(contextState.contexts).toHaveLength(1);
@@ -200,5 +204,4 @@ describe('State Management', () => {
     expect(status.circle.enabled).toBe(false);
     dispose();
   });
-
 });

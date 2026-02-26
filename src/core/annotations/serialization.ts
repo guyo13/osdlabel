@@ -24,8 +24,11 @@ const ANNOTATION_TYPES: readonly string[] = ['rectangle', 'circle', 'line', 'poi
 /**
  * Serialize annotation state into a portable JSON document.
  */
-export function serialize(state: AnnotationState, images: readonly ImageSource[]): AnnotationDocument {
-  const imageAnnotations: ImageAnnotations[] = images.map(image => {
+export function serialize(
+  state: AnnotationState,
+  images: readonly ImageSource[],
+): AnnotationDocument {
+  const imageAnnotations: ImageAnnotations[] = images.map((image) => {
     const annMap = state.byImage[image.id];
     const annotations: Annotation[] = annMap ? Object.values(annMap) : [];
     return {
@@ -55,7 +58,7 @@ export function deserialize(doc: unknown): Record<ImageId, Record<AnnotationId, 
 
   if (d.version !== SUPPORTED_VERSION) {
     throw new SerializationError(
-      `Unsupported document version: ${String(d.version)}. Expected ${SUPPORTED_VERSION}`
+      `Unsupported document version: ${String(d.version)}. Expected ${SUPPORTED_VERSION}`,
     );
   }
 
@@ -140,10 +143,12 @@ function validateGeometry(value: unknown): boolean {
 
   switch (g.type as AnnotationType) {
     case 'rectangle':
-      return validatePoint(g.origin) &&
+      return (
+        validatePoint(g.origin) &&
         isFiniteNumber(g.width) &&
         isFiniteNumber(g.height) &&
-        isFiniteNumber(g.rotation);
+        isFiniteNumber(g.rotation)
+      );
 
     case 'circle':
       return validatePoint(g.center) && isFiniteNumber(g.radius);

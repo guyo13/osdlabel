@@ -1,44 +1,64 @@
 import { SetStoreFunction, produce } from 'solid-js/store';
-import { Annotation, AnnotationId, ImageId, AnnotationType, AnnotationState, UIState, AnnotationContext, AnnotationContextId, ContextState } from '../core/types.js';
+import {
+  Annotation,
+  AnnotationId,
+  ImageId,
+  AnnotationType,
+  AnnotationState,
+  UIState,
+  AnnotationContext,
+  AnnotationContextId,
+  ContextState,
+} from '../core/types.js';
 
 export function createActions(
   setAnnotationState: SetStoreFunction<AnnotationState>,
   setUIState: SetStoreFunction<UIState>,
-  setContextState: SetStoreFunction<ContextState>
+  setContextState: SetStoreFunction<ContextState>,
 ) {
   function addAnnotation(annotation: Omit<Annotation, 'createdAt' | 'updatedAt'>): void {
-    setAnnotationState(produce((state) => {
-      const imageAnns = state.byImage[annotation.imageId] ?? {};
-      const now = new Date().toISOString();
-      imageAnns[annotation.id] = {
-        ...annotation,
-        createdAt: now,
-        updatedAt: now,
-      };
-      state.byImage[annotation.imageId] = imageAnns;
-    }));
+    setAnnotationState(
+      produce((state) => {
+        const imageAnns = state.byImage[annotation.imageId] ?? {};
+        const now = new Date().toISOString();
+        imageAnns[annotation.id] = {
+          ...annotation,
+          createdAt: now,
+          updatedAt: now,
+        };
+        state.byImage[annotation.imageId] = imageAnns;
+      }),
+    );
   }
 
-  function updateAnnotation(id: AnnotationId, imageId: ImageId, patch: Partial<Omit<Annotation, 'id' | 'imageId' | 'createdAt' | 'updatedAt'>>): void {
-    setAnnotationState(produce((state) => {
-      const imageAnns = state.byImage[imageId];
-      if (imageAnns && imageAnns[id]) {
-        imageAnns[id] = {
-          ...imageAnns[id],
-          ...patch,
-          updatedAt: new Date().toISOString(),
-        };
-      }
-    }));
+  function updateAnnotation(
+    id: AnnotationId,
+    imageId: ImageId,
+    patch: Partial<Omit<Annotation, 'id' | 'imageId' | 'createdAt' | 'updatedAt'>>,
+  ): void {
+    setAnnotationState(
+      produce((state) => {
+        const imageAnns = state.byImage[imageId];
+        if (imageAnns && imageAnns[id]) {
+          imageAnns[id] = {
+            ...imageAnns[id],
+            ...patch,
+            updatedAt: new Date().toISOString(),
+          };
+        }
+      }),
+    );
   }
 
   function deleteAnnotation(id: AnnotationId, imageId: ImageId): void {
-    setAnnotationState(produce((state) => {
-      const imageAnns = state.byImage[imageId];
-      if (imageAnns) {
-        delete imageAnns[id];
-      }
-    }));
+    setAnnotationState(
+      produce((state) => {
+        const imageAnns = state.byImage[imageId];
+        if (imageAnns) {
+          delete imageAnns[id];
+        }
+      }),
+    );
   }
 
   function setActiveTool(tool: AnnotationType | 'select' | null): void {
@@ -58,10 +78,12 @@ export function createActions(
   }
 
   function setGridDimensions(columns: number, rows: number): void {
-    setUIState(produce((state) => {
-      state.gridColumns = columns;
-      state.gridRows = rows;
-    }));
+    setUIState(
+      produce((state) => {
+        state.gridColumns = columns;
+        state.gridRows = rows;
+      }),
+    );
   }
 
   function setContexts(contexts: AnnotationContext[]): void {
@@ -73,9 +95,11 @@ export function createActions(
   }
 
   function triggerReload(): void {
-    setAnnotationState(produce((state) => {
-      state.reloadGeneration += 1;
-    }));
+    setAnnotationState(
+      produce((state) => {
+        state.reloadGeneration += 1;
+      }),
+    );
   }
 
   return {
@@ -90,6 +114,6 @@ export function createActions(
     setContexts,
     setActiveContext,
     triggerReload,
-    setAnnotationState
+    setAnnotationState,
   };
 }

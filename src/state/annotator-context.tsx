@@ -68,35 +68,41 @@ export function AnnotatorProvider(props: AnnotatorProviderProps) {
 
   // Load initial annotations if provided
   if (props.initialAnnotations) {
-    setAnnotationState(produce((state) => {
-      for (const [imageId, annMap] of Object.entries(props.initialAnnotations!)) {
-        state.byImage[imageId as ImageId] = { ...annMap };
-      }
-    }));
+    setAnnotationState(
+      produce((state) => {
+        for (const [imageId, annMap] of Object.entries(props.initialAnnotations!)) {
+          state.byImage[imageId as ImageId] = { ...annMap };
+        }
+      }),
+    );
   }
 
   // Fire onAnnotationsChange when annotations change (defer: skip initial mount)
-  createEffect(on(
-    () => JSON.stringify(annotationState.byImage),
-    () => {
-      if (props.onAnnotationsChange) {
-        const allAnnotations = getAllAnnotationsFlat(annotationState);
-        props.onAnnotationsChange(allAnnotations);
-      }
-    },
-    { defer: true }
-  ));
+  createEffect(
+    on(
+      () => JSON.stringify(annotationState.byImage),
+      () => {
+        if (props.onAnnotationsChange) {
+          const allAnnotations = getAllAnnotationsFlat(annotationState);
+          props.onAnnotationsChange(allAnnotations);
+        }
+      },
+      { defer: true },
+    ),
+  );
 
   // Fire onConstraintChange when constraint status changes (defer: skip initial mount)
-  createEffect(on(
-    constraintStatus,
-    (status) => {
-      if (props.onConstraintChange) {
-        props.onConstraintChange(status);
-      }
-    },
-    { defer: true }
-  ));
+  createEffect(
+    on(
+      constraintStatus,
+      (status) => {
+        if (props.onConstraintChange) {
+          props.onConstraintChange(status);
+        }
+      },
+      { defer: true },
+    ),
+  );
 
   const value: AnnotatorContextValue = {
     annotationState,

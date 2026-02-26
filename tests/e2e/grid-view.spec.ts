@@ -16,7 +16,7 @@ test.describe('Grid View', () => {
     await page.getByTestId('grid-selector-trigger').click();
     // Select 2x2
     await page.getByTestId('grid-cell-2-2').click();
-    
+
     await expect(page.getByTestId('grid-size')).toContainText('2x2');
 
     // Verify 4 cells exist (3 empty placeholders + 1 with image)

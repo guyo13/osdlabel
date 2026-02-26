@@ -12,7 +12,7 @@ const Filmstrip: Component<FilmstripProps> = (props) => {
   const { uiState, actions } = useAnnotator();
 
   const isAssigned = (imageId: string): boolean => {
-    return Object.values(uiState.gridAssignments).some(id => id === imageId);
+    return Object.values(uiState.gridAssignments).some((id) => id === imageId);
   };
 
   const handleClick = (image: ImageSource) => {

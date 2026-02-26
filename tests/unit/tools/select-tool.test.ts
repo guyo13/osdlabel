@@ -2,7 +2,12 @@ import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { SelectTool } from '../../../src/core/tools/select-tool.js';
 import { FabricOverlay } from '../../../src/overlay/fabric-overlay.js';
 import { ToolCallbacks } from '../../../src/core/tools/base-tool.js';
-import { createImageId, createAnnotationContextId, createAnnotationId, KeyboardShortcutMap } from '../../../src/core/types.js';
+import {
+  createImageId,
+  createAnnotationContextId,
+  createAnnotationId,
+  KeyboardShortcutMap,
+} from '../../../src/core/types.js';
 import { FabricObject } from 'fabric';
 import { DEFAULT_KEYBOARD_SHORTCUTS } from '../../../src/hooks/useKeyboard.js';
 
