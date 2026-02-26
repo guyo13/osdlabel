@@ -22,6 +22,12 @@ const SUPPORTED_VERSION = '1.0.0';
 const ANNOTATION_TYPES: readonly string[] = ['rectangle', 'circle', 'line', 'point', 'path'];
 
 /**
+ * Whitelist of allowed Fabric.js object types.
+ * Note: 'circle' covers our 'point' type, and 'polyline'/'polygon' cover our 'path' type.
+ */
+const SUPPORTED_FABRIC_TYPES: readonly string[] = ['rect', 'circle', 'line', 'polyline', 'polygon'];
+
+/**
  * Serialize annotation state into a portable JSON document.
  */
 export function serialize(state: AnnotationState, images: readonly ImageSource[]): AnnotationDocument {
@@ -128,7 +134,39 @@ function validateRawAnnotationData(value: unknown): boolean {
   if (!isObject(value)) return false;
   const r = value as Record<string, unknown>;
   if (r.format !== 'fabric') return false;
+  if (typeof r.fabricVersion !== 'string') return false;
   if (!isObject(r.data)) return false;
+
+  const data = r.data as Record<string, unknown>;
+  if (typeof data.type !== 'string') return false;
+
+  const type = data.type.toLowerCase();
+  if (!SUPPORTED_FABRIC_TYPES.includes(type)) return false;
+
+  // Basic properties validation
+  const numericProps = ['left', 'top', 'width', 'height', 'scaleX', 'scaleY', 'angle', 'opacity'];
+  for (const prop of numericProps) {
+    if (prop in data && data[prop] !== undefined && !isFiniteNumber(data[prop])) return false;
+  }
+
+  // Type-specific validation
+  if (type === 'line') {
+    if (!isFiniteNumber(data.x1) || !isFiniteNumber(data.y1) || !isFiniteNumber(data.x2) || !isFiniteNumber(data.y2)) {
+      return false;
+    }
+  }
+
+  if (type === 'polyline' || type === 'polygon') {
+    if (!Array.isArray(data.points)) return false;
+    for (const p of data.points) {
+      if (!validatePoint(p)) return false;
+    }
+  }
+
+  if (type === 'circle') {
+    if (!isFiniteNumber(data.radius)) return false;
+  }
+
   return true;
 }
 
