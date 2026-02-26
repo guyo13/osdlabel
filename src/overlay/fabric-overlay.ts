@@ -255,7 +255,7 @@ export class FabricOverlay {
    * container div, where the OSD MouseTracker would re-intercept it.
    */
   private _forwardToFabric(
-    type: typeof POINTER_DOWN | typeof POINTER_MOVE | typeof POINTER_UP,
+    type: typeof POINTER_DOWN | typeof POINTER_MOVE | typeof POINTER_UP | typeof POINTER_CANCEL,
     originalEvent: PointerEvent,
   ): void {
     if (this._forwarding) return;
