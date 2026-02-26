@@ -127,3 +127,7 @@ export function getGeometryFromFabricObject(obj: FabricObject, type: AnnotationT
 
   return null;
 }
+
+/** The options object produced by getFabricOptions. */
+export type FabricShapeOptions = ReturnType<typeof getFabricOptions>;
+
