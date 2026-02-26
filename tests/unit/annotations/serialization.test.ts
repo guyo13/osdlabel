@@ -17,6 +17,11 @@ import {
   AnnotationId,
   ImageId,
 } from '../../../src/core/types';
+import {
+  MAX_COORDINATE,
+  MAX_STRING_LENGTH,
+  MAX_POINTS_COUNT,
+} from '../../../src/core/fabric-data-sanitizer';
 
 describe('Serialization', () => {
   const imageId = createImageId('img1');
@@ -24,10 +29,12 @@ describe('Serialization', () => {
   const annId1 = createAnnotationId('ann1');
   const annId2 = createAnnotationId('ann2');
 
+  // Use capitalized 'Rect' — matches Fabric v7's toObject() output.
+  // width/height are required by the stricter validation for Rect type.
   const baseRawAnnotationData = {
     format: 'fabric' as const,
     fabricVersion: FABRIC_VERSION,
-    data: { type: 'rect', stroke: 'red', strokeWidth: 2, fill: 'rgba(0,0,255,0.3)', opacity: 1 },
+    data: { type: 'Rect', width: 100, height: 50, stroke: 'red', strokeWidth: 2, fill: 'rgba(0,0,255,0.3)', opacity: 1 },
   };
 
   const annotation1: Annotation = {
@@ -285,12 +292,14 @@ describe('Serialization', () => {
     });
 
     it('should reject rawAnnotationData missing fabricVersion', () => {
+      // Intentionally omit fabricVersion to test structural validation.
+      // No cast needed — validateAnnotation accepts unknown.
       const badAnn = {
         ...annotation1,
         rawAnnotationData: {
-          format: 'fabric' as const,
-          data: { type: 'rect' },
-        } as any,
+          format: 'fabric',
+          data: { type: 'Rect', width: 100, height: 50 },
+        },
       };
       expect(validateAnnotation(badAnn)).toBe(false);
     });
@@ -299,10 +308,97 @@ describe('Serialization', () => {
       const badAnn = {
         ...annotation1,
         rawAnnotationData: {
+          format: 'fabric',
+          fabricVersion: FABRIC_VERSION,
+          data: { type: 'Rect', width: 100, height: 50, left: 'invalid' },
+        },
+      };
+      expect(validateAnnotation(badAnn)).toBe(false);
+    });
+
+    it('should accept rawAnnotationData with lowercase type (backward compat)', () => {
+      const ann = {
+        ...annotation1,
+        rawAnnotationData: {
           format: 'fabric' as const,
           fabricVersion: FABRIC_VERSION,
-          data: { type: 'rect', left: 'invalid' },
-        } as any,
+          data: { type: 'rect', width: 100, height: 50 },
+        },
+      };
+      expect(validateAnnotation(ann)).toBe(true);
+    });
+
+    it('should reject Rect rawAnnotationData missing width', () => {
+      const badAnn = {
+        ...annotation1,
+        rawAnnotationData: {
+          format: 'fabric',
+          fabricVersion: FABRIC_VERSION,
+          data: { type: 'Rect', height: 50 },
+        },
+      };
+      expect(validateAnnotation(badAnn)).toBe(false);
+    });
+
+    it('should reject Rect rawAnnotationData missing height', () => {
+      const badAnn = {
+        ...annotation1,
+        rawAnnotationData: {
+          format: 'fabric',
+          fabricVersion: FABRIC_VERSION,
+          data: { type: 'Rect', width: 100 },
+        },
+      };
+      expect(validateAnnotation(badAnn)).toBe(false);
+    });
+
+    it('should reject negative radius in Circle rawAnnotationData', () => {
+      const badAnn = {
+        ...annotation1,
+        rawAnnotationData: {
+          format: 'fabric',
+          fabricVersion: FABRIC_VERSION,
+          data: { type: 'Circle', radius: -5 },
+        },
+      };
+      expect(validateAnnotation(badAnn)).toBe(false);
+    });
+
+    it('should reject rawAnnotationData with coordinate exceeding MAX_COORDINATE', () => {
+      const badAnn = {
+        ...annotation1,
+        rawAnnotationData: {
+          format: 'fabric',
+          fabricVersion: FABRIC_VERSION,
+          data: { type: 'Rect', width: 100, height: 50, left: MAX_COORDINATE + 1 },
+        },
+      };
+      expect(validateAnnotation(badAnn)).toBe(false);
+    });
+
+    it('should reject rawAnnotationData with oversized string property', () => {
+      const badAnn = {
+        ...annotation1,
+        rawAnnotationData: {
+          format: 'fabric',
+          fabricVersion: FABRIC_VERSION,
+          data: { type: 'Rect', width: 100, height: 50, fill: 'x'.repeat(MAX_STRING_LENGTH + 1) },
+        },
+      };
+      expect(validateAnnotation(badAnn)).toBe(false);
+    });
+
+    it('should reject Polyline rawAnnotationData with oversized points array', () => {
+      const badAnn = {
+        ...annotation1,
+        rawAnnotationData: {
+          format: 'fabric',
+          fabricVersion: FABRIC_VERSION,
+          data: {
+            type: 'Polyline',
+            points: Array.from({ length: MAX_POINTS_COUNT + 1 }, (_, i) => ({ x: i, y: i })),
+          },
+        },
       };
       expect(validateAnnotation(badAnn)).toBe(false);
     });

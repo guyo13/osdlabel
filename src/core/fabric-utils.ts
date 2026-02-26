@@ -1,6 +1,7 @@
 import { Rect, Circle, Line, Polyline, Polygon, util, FabricObject, Color, version as FABRIC_VERSION } from 'fabric';
 import './fabric-module.js';
 import { Annotation, AnnotationStyle, Geometry, AnnotationType, RawAnnotationData } from './types.js';
+import { sanitizeFabricData } from './fabric-data-sanitizer.js';
 
 export function getFabricOptions(style: AnnotationStyle, id: string) {
     const fill = new Color(style.fillColor);
@@ -33,12 +34,19 @@ export function serializeFabricObject(obj: FabricObject): RawAnnotationData {
 
 /**
  * Deserialize a RawAnnotationData envelope back into a Fabric object.
+ * Sanitizes the data through the property allowlist before passing to
+ * util.enlivenObjects() to prevent untrusted data from reaching Fabric.
  */
 export async function deserializeFabricObject(raw: RawAnnotationData): Promise<FabricObject | null> {
     if (raw.format !== 'fabric') return null;
 
-    const data = raw.data;
-    const objects = await util.enlivenObjects([data]);
+    const sanitized = sanitizeFabricData(raw.data);
+    if (sanitized === null) {
+        console.warn('deserializeFabricObject: data failed sanitization, rejecting');
+        return null;
+    }
+
+    const objects = await util.enlivenObjects([sanitized]);
     if (objects.length === 0) return null;
 
     return objects[0] as FabricObject;
