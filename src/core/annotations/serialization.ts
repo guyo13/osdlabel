@@ -9,6 +9,15 @@ import type {
   ImageSource,
 } from '../types.js';
 import { createImageId } from '../types.js';
+import {
+  normalizeFabricType,
+  isFiniteNumber,
+  isObject,
+  validatePointValue,
+  MAX_COORDINATE,
+  MAX_STRING_LENGTH,
+  MAX_POINTS_COUNT,
+} from '../fabric-data-sanitizer.js';
 
 /** Error type for serialization/deserialization failures */
 export class SerializationError extends Error {
@@ -20,12 +29,6 @@ export class SerializationError extends Error {
 
 const SUPPORTED_VERSION = '1.0.0';
 const ANNOTATION_TYPES: readonly string[] = ['rectangle', 'circle', 'line', 'point', 'path'];
-
-/**
- * Whitelist of allowed Fabric.js object types.
- * Note: 'circle' covers our 'point' type, and 'polyline'/'polygon' cover our 'path' type.
- */
-const SUPPORTED_FABRIC_TYPES: readonly string[] = ['rect', 'circle', 'line', 'polyline', 'polygon'];
 
 /**
  * Serialize annotation state into a portable JSON document.
@@ -140,31 +143,64 @@ function validateRawAnnotationData(value: unknown): boolean {
   const data = r.data as Record<string, unknown>;
   if (typeof data.type !== 'string') return false;
 
-  const type = data.type.toLowerCase();
-  if (!SUPPORTED_FABRIC_TYPES.includes(type)) return false;
+  // Normalize type (case-insensitive) and check against whitelist.
+  const normalizedType = normalizeFabricType(data.type);
+  if (normalizedType === null) return false;
 
-  // Basic properties validation
-  const numericProps = ['left', 'top', 'width', 'height', 'scaleX', 'scaleY', 'angle', 'opacity'];
+  // Numeric property validation: must be finite and within coordinate bounds.
+  const numericProps = ['left', 'top', 'scaleX', 'scaleY', 'angle', 'opacity'];
   for (const prop of numericProps) {
-    if (prop in data && data[prop] !== undefined && !isFiniteNumber(data[prop])) return false;
-  }
-
-  // Type-specific validation
-  if (type === 'line') {
-    if (!isFiniteNumber(data.x1) || !isFiniteNumber(data.y1) || !isFiniteNumber(data.x2) || !isFiniteNumber(data.y2)) {
-      return false;
+    const v = data[prop];
+    if (v !== undefined) {
+      if (!isFiniteNumber(v)) return false;
+      if (Math.abs(v as number) > MAX_COORDINATE) return false;
     }
   }
 
-  if (type === 'polyline' || type === 'polygon') {
-    if (!Array.isArray(data.points)) return false;
-    for (const p of data.points) {
-      if (!validatePoint(p)) return false;
+  // Dimension properties: must be finite, non-negative.
+  for (const prop of ['width', 'height'] as const) {
+    const v = data[prop];
+    if (v !== undefined) {
+      if (!isFiniteNumber(v)) return false;
+      const n = v as number;
+      if (n < 0 || n > MAX_COORDINATE) return false;
     }
   }
 
-  if (type === 'circle') {
+  // String property length check (fill, stroke, backgroundColor).
+  for (const prop of ['fill', 'stroke', 'backgroundColor'] as const) {
+    const v = data[prop];
+    if (v !== undefined && v !== null && typeof v === 'string') {
+      if (v.length > MAX_STRING_LENGTH) return false;
+    }
+  }
+
+  // Type-specific validation.
+  if (normalizedType === 'Rect') {
+    // Rect requires width and height.
+    if (!isFiniteNumber(data.width) || !isFiniteNumber(data.height)) return false;
+    if ((data.width as number) < 0 || (data.height as number) < 0) return false;
+  }
+
+  if (normalizedType === 'Circle') {
     if (!isFiniteNumber(data.radius)) return false;
+    if ((data.radius as number) < 0) return false;
+  }
+
+  if (normalizedType === 'Line') {
+    if (!isFiniteNumber(data.x1) || !isFiniteNumber(data.y1) ||
+        !isFiniteNumber(data.x2) || !isFiniteNumber(data.y2)) return false;
+    for (const v of [data.x1, data.y1, data.x2, data.y2] as number[]) {
+      if (Math.abs(v) > MAX_COORDINATE) return false;
+    }
+  }
+
+  if (normalizedType === 'Polyline' || normalizedType === 'Polygon') {
+    if (!Array.isArray(data.points)) return false;
+    if (data.points.length > MAX_POINTS_COUNT) return false;
+    for (const p of data.points) {
+      if (!validatePointValue(p)) return false;
+    }
   }
 
   return true;
@@ -178,43 +214,29 @@ function validateGeometry(value: unknown): boolean {
 
   switch (g.type as AnnotationType) {
     case 'rectangle':
-      return validatePoint(g.origin) &&
+      return validatePointValue(g.origin) &&
         isFiniteNumber(g.width) &&
         isFiniteNumber(g.height) &&
         isFiniteNumber(g.rotation);
 
     case 'circle':
-      return validatePoint(g.center) && isFiniteNumber(g.radius);
+      return validatePointValue(g.center) && isFiniteNumber(g.radius);
 
     case 'line':
-      return validatePoint(g.start) && validatePoint(g.end);
+      return validatePointValue(g.start) && validatePointValue(g.end);
 
     case 'point':
-      return validatePoint(g.position);
+      return validatePointValue(g.position);
 
     case 'path':
       if (typeof g.closed !== 'boolean') return false;
       if (!Array.isArray(g.points)) return false;
       if (g.points.length < 2) return false;
-      return g.points.every((p: unknown) => validatePoint(p));
+      return g.points.every((p: unknown) => validatePointValue(p));
 
     default:
       return false;
   }
-}
-
-function validatePoint(value: unknown): boolean {
-  if (!isObject(value)) return false;
-  const p = value as Record<string, unknown>;
-  return isFiniteNumber(p.x) && isFiniteNumber(p.y);
-}
-
-function isFiniteNumber(value: unknown): boolean {
-  return typeof value === 'number' && isFinite(value);
-}
-
-function isObject(value: unknown): boolean {
-  return value !== null && typeof value === 'object' && !Array.isArray(value);
 }
 
 /**
