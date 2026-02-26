@@ -27,7 +27,7 @@ describe('Serialization', () => {
   const baseRawAnnotationData = {
     format: 'fabric' as const,
     fabricVersion: FABRIC_VERSION,
-    data: { type: 'Rect', stroke: 'red', strokeWidth: 2, fill: 'rgba(0,0,255,0.3)', opacity: 1 },
+    data: { type: 'rect', stroke: 'red', strokeWidth: 2, fill: 'rgba(0,0,255,0.3)', opacity: 1 },
   };
 
   const annotation1: Annotation = {
@@ -268,6 +268,41 @@ describe('Serialization', () => {
       const badAnn = {
         ...annotation1,
         rawAnnotationData: undefined,
+      };
+      expect(validateAnnotation(badAnn)).toBe(false);
+    });
+
+    it('should reject rawAnnotationData with unsupported fabric type', () => {
+      const badAnn = {
+        ...annotation1,
+        rawAnnotationData: {
+          format: 'fabric' as const,
+          fabricVersion: FABRIC_VERSION,
+          data: { type: 'malicious-type' },
+        },
+      };
+      expect(validateAnnotation(badAnn)).toBe(false);
+    });
+
+    it('should reject rawAnnotationData missing fabricVersion', () => {
+      const badAnn = {
+        ...annotation1,
+        rawAnnotationData: {
+          format: 'fabric' as const,
+          data: { type: 'rect' },
+        } as any,
+      };
+      expect(validateAnnotation(badAnn)).toBe(false);
+    });
+
+    it('should reject rawAnnotationData with invalid numeric properties', () => {
+      const badAnn = {
+        ...annotation1,
+        rawAnnotationData: {
+          format: 'fabric' as const,
+          fabricVersion: FABRIC_VERSION,
+          data: { type: 'rect', left: 'invalid' },
+        } as any,
       };
       expect(validateAnnotation(badAnn)).toBe(false);
     });
