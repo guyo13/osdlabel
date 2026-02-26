@@ -2,7 +2,7 @@ import { FabricObject } from 'fabric';
 import { BaseTool } from './base-tool.js';
 import { AnnotationType, Point, AnnotationStyle, AnnotationContextId, createAnnotationId } from '../types.js';
 import { DEFAULT_ANNOTATION_STYLE } from '../constants.js';
-import { getFabricOptions } from '../fabric-utils.js';
+import { FabricShapeOptions, getFabricOptions } from '../fabric-utils.js';
 import { generateId } from '../../utils/id.js';
 
 /**
@@ -44,7 +44,7 @@ export abstract class ShapeTool<T extends FabricObject> extends BaseTool {
     this.overlay.canvas.requestRenderAll();
   }
 
-  protected abstract createPreview(imagePoint: Point, options: Record<string, any>): T;
+  protected abstract createPreview(imagePoint: Point, options: FabricShapeOptions): T;
 
   onPointerMove(_event: PointerEvent, imagePoint: Point): void {
     if (!this.overlay || !this.preview || !this.startPoint) return;
