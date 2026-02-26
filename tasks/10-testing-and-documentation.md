@@ -23,20 +23,24 @@ Run `pnpm test --coverage` and identify modules below 90% line coverage. Priorit
 Ensure all these scenarios have E2E coverage:
 
 **`tests/e2e/drawing.spec.ts`:**
+
 - Draw each annotation type and verify it persists across pan/zoom.
 - Draw on a zoomed-in view, zoom out, verify annotation is at the correct position.
 
 **`tests/e2e/editing.spec.ts`:**
+
 - Select and move an annotation, verify updated coordinates in state.
 - Select and resize, verify.
 - Select and rotate, verify.
 - Delete via keyboard and verify removal.
 
 **`tests/e2e/grid-view.spec.ts`:** (augment from Task 08)
+
 - 3x3 grid with all cells populated and annotated.
 - Resize to 2x2 and back to 3x3 — verify state preservation.
 
 **`tests/e2e/constraints.spec.ts`:** (augment from Task 06)
+
 - Full multi-context workflow: switch contexts, annotate, hit limits, switch back.
 
 ### 3. Visual regression tests
@@ -111,12 +115,19 @@ export type { AnnotatorProps } from './components/Annotator.js';
 
 // Types
 export type {
-  Annotation, AnnotationId, AnnotationType,
-  AnnotationContext, AnnotationContextId,
-  AnnotationStyle, AnnotationDocument,
-  Geometry, Point,
-  ImageSource, ImageId,
-  ToolConstraint, ConstraintStatus,
+  Annotation,
+  AnnotationId,
+  AnnotationType,
+  AnnotationContext,
+  AnnotationContextId,
+  AnnotationStyle,
+  AnnotationDocument,
+  Geometry,
+  Point,
+  ImageSource,
+  ImageId,
+  ToolConstraint,
+  ConstraintStatus,
   KeyboardShortcutMap,
 } from './core/types.js';
 
@@ -132,6 +143,7 @@ pnpm build
 ```
 
 Verify:
+
 - `dist/` contains `.js` and `.d.ts` files.
 - No `src/` paths leak into the declarations.
 - A consumer project can `import { Annotator } from '@guyo13/osdlabel'` and get full type information.

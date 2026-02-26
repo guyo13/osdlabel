@@ -29,6 +29,7 @@ interface GridViewProps {
 - Empty cells (no image assigned) show a placeholder: dashed border, "Assign an image" text.
 
 **Layout CSS:**
+
 ```css
 .grid-view {
   display: grid;
@@ -76,9 +77,7 @@ function Annotator(props: AnnotatorProps) {
       <div class="annotator-root" style={props.style}>
         <Toolbar />
         <div class="annotator-body">
-          {props.showFilmstrip !== false && (
-            <Filmstrip images={props.images} position="left" />
-          )}
+          {props.showFilmstrip !== false && <Filmstrip images={props.images} position="left" />}
           <GridView
             columns={uiState.gridColumns}
             rows={uiState.gridRows}
@@ -96,6 +95,7 @@ function Annotator(props: AnnotatorProps) {
 ### 5. Implement grid resize controls
 
 Add simple `+`/`-` buttons (or a dropdown) to change grid dimensions. When grid size changes:
+
 - Existing cell assignments are preserved where possible.
 - Cells that no longer exist (e.g., going from 3x3 to 2x2 loses cells 5-8) have their images unassigned and their OSD viewers destroyed.
 - The active cell index is clamped to the new valid range.
@@ -103,6 +103,7 @@ Add simple `+`/`-` buttons (or a dropdown) to change grid dimensions. When grid 
 ### 6. Update the dev app
 
 Provide 4+ sample images. The dev app should now show:
+
 - A filmstrip on the left with all available images.
 - A grid view (starting at 1x1) with image assignment working.
 - Grid resize controls.
@@ -111,6 +112,7 @@ Provide 4+ sample images. The dev app should now show:
 ### 7. Write tests
 
 **`tests/e2e/grid-view.spec.ts`:**
+
 - Start at 1x1, expand to 2x2.
 - Assign different images to each cell.
 - Draw an annotation on cell 0, switch to cell 1, draw there.
@@ -118,6 +120,7 @@ Provide 4+ sample images. The dev app should now show:
 - Shrink grid back to 1x1, verify cell 0's annotations are preserved.
 
 **`tests/e2e/filmstrip.spec.ts`:**
+
 - Click a filmstrip thumbnail, verify the active cell loads that image.
 - Click a different thumbnail, verify the image changes.
 - Verify the filmstrip highlights assigned images.

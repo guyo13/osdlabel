@@ -79,10 +79,11 @@ const viewportTransform = [dx, dy, -dy, dx, screenOrigin.x, screenOrigin.y];
 ```
 
 This works because in the affine matrix `[a, b, c, d, e, f]`:
-- a = scaleX * cos(θ)
-- b = scaleX * sin(θ)  (Fabric's matrix has b = skewY, which for rotation = sin)
-- c = -scaleY * sin(θ)  (skewX, which for rotation = -sin)
-- d = scaleY * cos(θ)
+
+- a = scaleX \* cos(θ)
+- b = scaleX \* sin(θ) (Fabric's matrix has b = skewY, which for rotation = sin)
+- c = -scaleY \* sin(θ) (skewX, which for rotation = -sin)
+- d = scaleY \* cos(θ)
 - e = translateX
 - f = translateY
 
@@ -107,7 +108,7 @@ function computeViewportTransform(viewer: OpenSeadragon.Viewer): number[] {
 // Called on every OSD 'animation' event:
 function sync() {
   if (!viewer || !fabricCanvas) return;
-  
+
   const vpt = computeViewportTransform(viewer);
   fabricCanvas.setViewportTransform(vpt as TMat2D);
   fabricCanvas.requestRenderAll();
@@ -119,14 +120,14 @@ function sync() {
 ```typescript
 function screenToImage(viewer: OpenSeadragon.Viewer, screenPoint: Point): Point {
   const osdPoint = viewer.viewport.viewerElementToImageCoordinates(
-    new OpenSeadragon.Point(screenPoint.x, screenPoint.y)
+    new OpenSeadragon.Point(screenPoint.x, screenPoint.y),
   );
   return { x: osdPoint.x, y: osdPoint.y };
 }
 
 function imageToScreen(viewer: OpenSeadragon.Viewer, imagePoint: Point): Point {
   const osdPoint = viewer.viewport.imageToViewerElementCoordinates(
-    new OpenSeadragon.Point(imagePoint.x, imagePoint.y)
+    new OpenSeadragon.Point(imagePoint.x, imagePoint.y),
   );
   return { x: osdPoint.x, y: osdPoint.y };
 }

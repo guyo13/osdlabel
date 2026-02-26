@@ -32,7 +32,7 @@ Create `tsconfig.json` exactly as specified in §3.1 of the spec. Then create `t
 ```jsonc
 {
   "extends": "./tsconfig.json",
-  "exclude": ["node_modules", "dist", "tests", "dev", "**/*.test.ts"]
+  "exclude": ["node_modules", "dist", "tests", "dev", "**/*.test.ts"],
 }
 ```
 
@@ -101,8 +101,8 @@ export default defineConfig({
     "test:watch": "vitest",
     "test:e2e": "playwright test",
     "lint": "eslint src/ tests/",
-    "format": "prettier --write \"src/**/*.{ts,tsx}\" \"tests/**/*.ts\""
-  }
+    "format": "prettier --write \"src/**/*.{ts,tsx}\" \"tests/**/*.ts\"",
+  },
 }
 ```
 
@@ -156,6 +156,7 @@ Create `dev/index.html` and `dev/App.tsx` with a minimal SolidJS app that render
 ### 13. Write initial type tests
 
 Create `tests/unit/core/types.test.ts` that verifies:
+
 - Branded types are not assignable from raw strings (compile-time check, use `@ts-expect-error`)
 - Geometry discriminated union narrows correctly
 - Helper functions produce correctly branded values

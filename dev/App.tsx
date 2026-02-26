@@ -34,7 +34,7 @@ const IMAGES: ImageSource[] = [
     id: createImageId('jpg'),
     dziUrl: './sample-data/test-image.jpg',
     label: 'JPG image',
-  }
+  },
 ];
 
 const CONTEXTS: AnnotationContext[] = [
@@ -86,13 +86,16 @@ function AppContent() {
 
   const copyAnnotationsToClipboard = () => {
     const json = JSON.stringify(annotationState.byImage, null, 2);
-    navigator.clipboard.writeText(json).then(() => {
-      setCopyLabel('Copied!');
-      setTimeout(() => setCopyLabel('Copy JSON'), 1500);
-    }).catch(() => {
-      setCopyLabel('Failed');
-      setTimeout(() => setCopyLabel('Copy JSON'), 1500);
-    });
+    navigator.clipboard
+      .writeText(json)
+      .then(() => {
+        setCopyLabel('Copied!');
+        setTimeout(() => setCopyLabel('Copy JSON'), 1500);
+      })
+      .catch(() => {
+        setCopyLabel('Failed');
+        setTimeout(() => setCopyLabel('Copy JSON'), 1500);
+      });
   };
 
   const handleExportJson = () => {
@@ -112,7 +115,7 @@ function AppContent() {
     try {
       const parsed: unknown = JSON.parse(json);
       const byImage = deserialize(parsed);
-      actions.setAnnotationState({byImage, reloadGeneration:0});
+      actions.setAnnotationState({ byImage, reloadGeneration: 0 });
       setShowImportPanel(false);
       setImportJsonText('');
     } catch (err) {
@@ -141,18 +144,20 @@ function AppContent() {
   return (
     <div style={{ width: '100vw', height: '100vh', display: 'flex', 'flex-direction': 'column' }}>
       {/* Top bar */}
-      <div style={{
-        padding: '8px 12px',
-        background: '#1a1a2e',
-        color: '#fff',
-        display: 'flex',
-        gap: '12px',
-        'align-items': 'center',
-        'font-family': 'system-ui, sans-serif',
-        'font-size': '14px',
-        'flex-shrink': '0',
-        'flex-wrap': 'wrap',
-      }}>
+      <div
+        style={{
+          padding: '8px 12px',
+          background: '#1a1a2e',
+          color: '#fff',
+          display: 'flex',
+          gap: '12px',
+          'align-items': 'center',
+          'font-family': 'system-ui, sans-serif',
+          'font-size': '14px',
+          'flex-shrink': '0',
+          'flex-wrap': 'wrap',
+        }}
+      >
         <select
           value={activeCtxIdx()}
           onChange={handleContextChange}
@@ -206,26 +211,38 @@ function AppContent() {
 
       {/* JSON import panel */}
       {showImportPanel() && (
-        <div style={{
-          position: 'fixed',
-          bottom: '40px',
-          left: '10px',
-          width: '400px',
-          'max-height': '340px',
-          background: '#1a1a2e',
-          border: '1px solid #555',
-          'border-radius': '8px',
-          padding: '8px',
-          'z-index': '1000',
-          display: 'flex',
-          'flex-direction': 'column',
-          gap: '6px',
-        }}>
-          <div style={{ display: 'flex', 'justify-content': 'space-between', 'align-items': 'center' }}>
-            <span style={{ color: '#fff', 'font-size': '12px', 'font-weight': 'bold' }}>Import JSON</span>
+        <div
+          style={{
+            position: 'fixed',
+            bottom: '40px',
+            left: '10px',
+            width: '400px',
+            'max-height': '340px',
+            background: '#1a1a2e',
+            border: '1px solid #555',
+            'border-radius': '8px',
+            padding: '8px',
+            'z-index': '1000',
+            display: 'flex',
+            'flex-direction': 'column',
+            gap: '6px',
+          }}
+        >
+          <div
+            style={{ display: 'flex', 'justify-content': 'space-between', 'align-items': 'center' }}
+          >
+            <span style={{ color: '#fff', 'font-size': '12px', 'font-weight': 'bold' }}>
+              Import JSON
+            </span>
             <button
               onClick={() => setShowImportPanel(false)}
-              style={{ background: 'none', border: 'none', color: '#aaa', cursor: 'pointer', 'font-size': '14px' }}
+              style={{
+                background: 'none',
+                border: 'none',
+                color: '#aaa',
+                cursor: 'pointer',
+                'font-size': '14px',
+              }}
             >
               X
             </button>
@@ -264,24 +281,36 @@ function AppContent() {
 
       {/* JSON export panel */}
       {exportedJson() && (
-        <div style={{
-          position: 'fixed',
-          bottom: '40px',
-          right: '10px',
-          width: '400px',
-          'max-height': '300px',
-          background: '#1a1a2e',
-          border: '1px solid #555',
-          'border-radius': '8px',
-          padding: '8px',
-          overflow: 'auto',
-          'z-index': '1000',
-        }}>
-          <div style={{ display: 'flex', 'justify-content': 'space-between', 'margin-bottom': '4px' }}>
-            <span style={{ color: '#fff', 'font-size': '12px', 'font-weight': 'bold' }}>Exported JSON</span>
+        <div
+          style={{
+            position: 'fixed',
+            bottom: '40px',
+            right: '10px',
+            width: '400px',
+            'max-height': '300px',
+            background: '#1a1a2e',
+            border: '1px solid #555',
+            'border-radius': '8px',
+            padding: '8px',
+            overflow: 'auto',
+            'z-index': '1000',
+          }}
+        >
+          <div
+            style={{ display: 'flex', 'justify-content': 'space-between', 'margin-bottom': '4px' }}
+          >
+            <span style={{ color: '#fff', 'font-size': '12px', 'font-weight': 'bold' }}>
+              Exported JSON
+            </span>
             <button
               onClick={() => setExportedJson('')}
-              style={{ background: 'none', border: 'none', color: '#aaa', cursor: 'pointer', 'font-size': '14px' }}
+              style={{
+                background: 'none',
+                border: 'none',
+                color: '#aaa',
+                cursor: 'pointer',
+                'font-size': '14px',
+              }}
             >
               X
             </button>

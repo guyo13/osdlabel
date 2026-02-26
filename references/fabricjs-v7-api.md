@@ -15,9 +15,9 @@ import * as fabric from 'fabric'; // alternative for utilities
 ```typescript
 // Create an interactive canvas from an existing <canvas> element
 const fabricCanvas = new Canvas(canvasElement, {
-  selection: true,           // enable object selection
-  renderOnAddRemove: false,  // manual render control for performance
-  skipOffscreen: true,       // skip rendering off-screen objects
+  selection: true, // enable object selection
+  renderOnAddRemove: false, // manual render control for performance
+  skipOffscreen: true, // skip rendering off-screen objects
 });
 
 // IMPORTANT: The canvasElement must be in the DOM and visible.
@@ -65,15 +65,12 @@ import { Point as FabricPoint, util } from 'fabric';
 // Transform a point from canvas-space to screen-space
 const screenPoint = util.transformPoint(
   new FabricPoint(canvasX, canvasY),
-  fabricCanvas.viewportTransform
+  fabricCanvas.viewportTransform,
 );
 
 // Inverse: screen-space to canvas-space
 const inverseVpt = util.invertTransform(fabricCanvas.viewportTransform);
-const canvasPoint = util.transformPoint(
-  new FabricPoint(screenX, screenY),
-  inverseVpt
-);
+const canvasPoint = util.transformPoint(new FabricPoint(screenX, screenY), inverseVpt);
 
 // Multiply two transform matrices
 const combined = util.multiplyTransformMatrices(matrixA, matrixB);
@@ -93,15 +90,15 @@ const rect = new Rect({
   fill: 'rgba(255, 0, 0, 0.3)',
   stroke: '#ff0000',
   strokeWidth: 2,
-  angle: 0,                    // rotation in degrees
+  angle: 0, // rotation in degrees
   selectable: true,
   evented: true,
 });
 
 // Circle
 const circle = new Circle({
-  left: 300,                   // left edge (not center!)
-  top: 200,                    // top edge (not center!)
+  left: 300, // left edge (not center!)
+  top: 200, // top edge (not center!)
   radius: 50,
   fill: 'rgba(0, 255, 0, 0.3)',
   stroke: '#00ff00',
@@ -117,12 +114,16 @@ const line = new Line([x1, y1, x2, y2], {
 
 // Polyline (open path — array of {x, y} points)
 const polyline = new Polyline(
-  [{ x: 10, y: 10 }, { x: 50, y: 80 }, { x: 100, y: 30 }],
+  [
+    { x: 10, y: 10 },
+    { x: 50, y: 80 },
+    { x: 100, y: 30 },
+  ],
   {
     fill: 'transparent',
     stroke: '#ff00ff',
     strokeWidth: 2,
-  }
+  },
 );
 
 // Path (SVG path string)
@@ -158,16 +159,16 @@ fabricCanvas.on('mouse:move', (event) => {
   const pointer = fabricCanvas.getScenePoint(event.e);
 });
 
-fabricCanvas.on('mouse:up', (event) => { });
+fabricCanvas.on('mouse:up', (event) => {});
 
-fabricCanvas.on('mouse:dblclick', (event) => { });
+fabricCanvas.on('mouse:dblclick', (event) => {});
 
 // Selection events
 fabricCanvas.on('selection:created', (event) => {
   // event.selected = array of selected objects
 });
 
-fabricCanvas.on('selection:cleared', () => { });
+fabricCanvas.on('selection:cleared', () => {});
 
 // Object modification (after move/resize/rotate completes)
 fabricCanvas.on('object:modified', (event) => {
@@ -178,7 +179,7 @@ fabricCanvas.on('object:modified', (event) => {
   const scaleX = obj.scaleX;
   const scaleY = obj.scaleY;
   const angle = obj.angle;
-  const width = obj.width * scaleX;   // scaled width
+  const width = obj.width * scaleX; // scaled width
   const height = obj.height * scaleY; // scaled height
 });
 ```

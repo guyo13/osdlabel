@@ -20,26 +20,28 @@ A SolidJS hook that registers global keyboard event listeners:
 
 ### 2. Implement all default shortcuts from §10
 
-| Key | Action function |
-|---|---|
-| `V` | `setActiveTool('select')` |
-| `R` | `setActiveTool('rectangle')` |
-| `C` | `setActiveTool('circle')` |
-| `L` | `setActiveTool('line')` |
-| `P` | `setActiveTool('point')` |
-| `D` | `setActiveTool('path')` |
-| `Escape` | Cancel current drawing OR deselect OR set tool to null |
-| `Delete` / `Backspace` | Delete selected annotation |
-| `1`–`9` | `setActiveCell(n - 1)` |
-| `+` / `=` | Increment grid columns (up to max) |
-| `-` | Decrement grid columns (down to 1) |
+| Key                    | Action function                                        |
+| ---------------------- | ------------------------------------------------------ |
+| `V`                    | `setActiveTool('select')`                              |
+| `R`                    | `setActiveTool('rectangle')`                           |
+| `C`                    | `setActiveTool('circle')`                              |
+| `L`                    | `setActiveTool('line')`                                |
+| `P`                    | `setActiveTool('point')`                               |
+| `D`                    | `setActiveTool('path')`                                |
+| `Escape`               | Cancel current drawing OR deselect OR set tool to null |
+| `Delete` / `Backspace` | Delete selected annotation                             |
+| `1`–`9`                | `setActiveCell(n - 1)`                                 |
+| `+` / `=`              | Increment grid columns (up to max)                     |
+| `-`                    | Decrement grid columns (down to 1)                     |
 
 **Escape behavior (cascading):**
+
 1. If currently drawing (tool in mid-interaction): cancel the drawing.
 2. Else if an annotation is selected: deselect it.
 3. Else if a tool is active: switch to navigation mode (tool = null).
 
 **Tool shortcuts + constraints:**
+
 - When the user presses a tool shortcut key (e.g., `R` for rectangle), check if that tool is enabled by the constraint system.
 - If disabled, ignore the keypress.
 
@@ -58,6 +60,7 @@ Register event listeners in `onMount`, remove in `onCleanup`. The hook should be
 ### 5. Write E2E tests
 
 **`tests/e2e/keyboard.spec.ts`:**
+
 - Press `R`, draw a rectangle, verify it works.
 - Press `V`, click an annotation, verify it's selected.
 - Press `Delete`, verify the annotation is removed.

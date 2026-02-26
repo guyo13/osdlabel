@@ -24,7 +24,7 @@
     "test:e2e": "playwright test",
     "test:all": "vitest run && playwright test",
     "lint": "eslint src/ tests/",
-    "format": "prettier --write \"src/**/*.{ts,tsx}\" \"tests/**/*.ts\""
+    "format": "prettier --write ."
   },
   "peerDependencies": {
     "solid-js": "^1.9.0"

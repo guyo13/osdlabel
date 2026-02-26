@@ -18,24 +18,24 @@ The library is built with SolidJS, Fabric.js (v7+), OpenSeaDragon, and TypeScrip
 
 ### 2.1 Core Dependencies
 
-| Dependency | Version | Purpose |
-|---|---|---|
-| **SolidJS** | ^1.9.x (stable 1.x line) | UI framework — fine-grained reactivity for performant canvas-heavy rendering |
-| **Fabric.js** | ^7.x | Canvas abstraction — annotation drawing, selection, manipulation (move, resize, rotate) |
-| **OpenSeaDragon** | ^5.x (latest stable) | DZI/tiled image viewer — pan, zoom, tile management |
-| **TypeScript** | ^5.7+ | Language — strict mode, ESNext target |
-| **Vite** | ^6.x | Dev server and SolidJS JSX compilation (dev only — not used for library build) |
+| Dependency        | Version                  | Purpose                                                                                 |
+| ----------------- | ------------------------ | --------------------------------------------------------------------------------------- |
+| **SolidJS**       | ^1.9.x (stable 1.x line) | UI framework — fine-grained reactivity for performant canvas-heavy rendering            |
+| **Fabric.js**     | ^7.x                     | Canvas abstraction — annotation drawing, selection, manipulation (move, resize, rotate) |
+| **OpenSeaDragon** | ^5.x (latest stable)     | DZI/tiled image viewer — pan, zoom, tile management                                     |
+| **TypeScript**    | ^5.7+                    | Language — strict mode, ESNext target                                                   |
+| **Vite**          | ^6.x                     | Dev server and SolidJS JSX compilation (dev only — not used for library build)          |
 
 ### 2.2 Build & Tooling
 
-| Tool | Purpose |
-|---|---|
-| **pnpm** | Package manager (latest stable) |
-| **tsc** | Library build — ESM-only output |
-| **Vitest** | Unit and integration testing |
+| Tool           | Purpose                                                    |
+| -------------- | ---------------------------------------------------------- |
+| **pnpm**       | Package manager (latest stable)                            |
+| **tsc**        | Library build — ESM-only output                            |
+| **Vitest**     | Unit and integration testing                               |
 | **Playwright** | End-to-end testing (canvas interaction, visual regression) |
-| **ESLint** | Linting (with `@typescript-eslint`) |
-| **Prettier** | Code formatting |
+| **ESLint**     | Linting (with `@typescript-eslint`)                        |
+| **Prettier**   | Code formatting                                            |
 
 ### 2.3 Key Decisions & Rationale
 
@@ -137,7 +137,7 @@ image-annotator/
     "target": "ESNext",
     "module": "ESNext",
     "moduleResolution": "bundler",
-    "jsx": "preserve",               // Solid JSX — transformed by Vite/babel plugin
+    "jsx": "preserve", // Solid JSX — transformed by Vite/babel plugin
     "jsxImportSource": "solid-js",
     "strict": true,
     "noUncheckedIndexedAccess": true,
@@ -152,10 +152,10 @@ image-annotator/
     "sourceMap": true,
     "outDir": "./dist",
     "rootDir": "./src",
-    "skipLibCheck": true
+    "skipLibCheck": true,
   },
   "include": ["src/**/*"],
-  "exclude": ["node_modules", "dist", "tests", "dev"]
+  "exclude": ["node_modules", "dist", "tests", "dev"],
 }
 ```
 
@@ -171,18 +171,18 @@ image-annotator/
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
-      "default": "./dist/index.js"
-    }
+      "default": "./dist/index.js",
+    },
   },
   "files": ["dist"],
   "sideEffects": false,
   "peerDependencies": {
-    "solid-js": "^1.9.0"
+    "solid-js": "^1.9.0",
   },
   "dependencies": {
     "fabric": "^7.0.0",
-    "openseadragon": "^5.0.0"
-  }
+    "openseadragon": "^5.0.0",
+  },
 }
 ```
 
@@ -212,7 +212,13 @@ interface Point {
 
 /** Discriminated union of annotation geometries */
 type Geometry =
-  | { readonly type: 'rectangle'; readonly origin: Point; readonly width: number; readonly height: number; readonly rotation: number }
+  | {
+      readonly type: 'rectangle';
+      readonly origin: Point;
+      readonly width: number;
+      readonly height: number;
+      readonly rotation: number;
+    }
   | { readonly type: 'circle'; readonly center: Point; readonly radius: number }
   | { readonly type: 'line'; readonly start: Point; readonly end: Point }
   | { readonly type: 'point'; readonly position: Point }
@@ -236,8 +242,8 @@ interface Annotation {
   readonly style: AnnotationStyle;
   readonly label?: string;
   readonly metadata?: Readonly<Record<string, unknown>>;
-  readonly createdAt: string;   // ISO 8601
-  readonly updatedAt: string;   // ISO 8601
+  readonly createdAt: string; // ISO 8601
+  readonly updatedAt: string; // ISO 8601
 }
 ```
 
@@ -249,7 +255,7 @@ Annotations are serialized as a JSON document. The schema is custom but designed
 /** Top-level serialization envelope */
 interface AnnotationDocument {
   readonly version: '1.0.0';
-  readonly exportedAt: string;  // ISO 8601
+  readonly exportedAt: string; // ISO 8601
   readonly images: readonly ImageAnnotations[];
 }
 
@@ -431,14 +437,16 @@ const contexts: AnnotationContext[] = [
 ];
 
 // Consumer switches contexts (e.g., via a dropdown):
-const [activeCtx, setActiveCtx] = createSignal<AnnotationContextId>('fracture' as AnnotationContextId);
+const [activeCtx, setActiveCtx] = createSignal<AnnotationContextId>(
+  'fracture' as AnnotationContextId,
+);
 
 <Annotator
   images={xrayImages}
   contexts={contexts}
   activeContextId={activeCtx()}
   onAnnotationsChange={(annotations) => saveToBackend(annotations)}
-/>
+/>;
 ```
 
 ---
@@ -568,6 +576,7 @@ interface AnnotatorProps {
 A single unit containing one OSD viewer + Fabric overlay. Manages its own OSD instance lifecycle and Fabric overlay synchronization. Receives its image source and annotations slice from the parent grid.
 
 Key behaviors:
+
 - Creates OSD viewer on mount, destroys on unmount.
 - Creates Fabric overlay attached to the OSD viewer.
 - Syncs Fabric canvas transform on every OSD viewport event.
@@ -581,6 +590,7 @@ Key behaviors:
 Renders an MxN grid of `ViewerCell` components. Manages layout (CSS Grid), cell activation on click, and grid resize behavior.
 
 **Performance considerations:**
+
 - Maximum recommended grid size is **4×4** (16 simultaneous OSD viewers). Beyond this, tile cache memory and animation loop overhead may degrade performance.
 - The `maxGridSize` prop allows consumers to set a lower cap. Default: 3×3.
 - Cells that are not assigned an image render as empty placeholders with a "drop image here" prompt.
@@ -591,6 +601,7 @@ Renders an MxN grid of `ViewerCell` components. Manages layout (CSS Grid), cell 
 A persistent sidebar (configurable: left, right, bottom) displaying thumbnail previews of all available images. Each thumbnail is a static image (using the `thumbnailUrl` if provided, otherwise the lowest-resolution DZI tile).
 
 Interactions:
+
 - Click a thumbnail to assign it to the active grid cell.
 - Drag a thumbnail onto a specific grid cell to assign it there (stretch goal — see §12).
 - Visual indicator showing which images are currently assigned to grid cells.
@@ -659,18 +670,18 @@ While drawing (between pointer down and pointer up), a temporary Fabric object i
 
 Default keyboard shortcuts (all overridable via the `keyboardShortcuts` prop):
 
-| Key | Action |
-|---|---|
-| `V` | Switch to Select tool |
-| `R` | Switch to Rectangle tool |
-| `C` | Switch to Circle tool |
-| `L` | Switch to Line tool |
-| `P` | Switch to Point tool |
-| `D` | Switch to Path (draw) tool |
-| `Escape` | Cancel current drawing / deselect annotation / exit tool to navigation mode |
-| `Delete` / `Backspace` | Delete selected annotation |
-| `1`–`9` | Activate grid cell 1–9 |
-| `+` / `-` | Increase/decrease grid columns |
+| Key                    | Action                                                                      |
+| ---------------------- | --------------------------------------------------------------------------- |
+| `V`                    | Switch to Select tool                                                       |
+| `R`                    | Switch to Rectangle tool                                                    |
+| `C`                    | Switch to Circle tool                                                       |
+| `L`                    | Switch to Line tool                                                         |
+| `P`                    | Switch to Point tool                                                        |
+| `D`                    | Switch to Path (draw) tool                                                  |
+| `Escape`               | Cancel current drawing / deselect annotation / exit tool to navigation mode |
+| `Delete` / `Backspace` | Delete selected annotation                                                  |
+| `1`–`9`                | Activate grid cell 1–9                                                      |
+| `+` / `-`              | Increase/decrease grid columns                                              |
 
 Shortcuts are suppressed when a text input or other focusable element has focus.
 
@@ -683,6 +694,7 @@ Shortcuts are suppressed when a text input or other focusable element has focus.
 Coverage targets: core logic at >90% line coverage.
 
 Tested modules:
+
 - **Annotation model:** Factory functions, validation, cloning.
 - **Serialization:** Round-trip serialize/deserialize, schema validation, version migration.
 - **Constraint engine:** Limit enforcement, tool enable/disable transitions, edge cases (delete re-enables tool, context switching resets availability).
@@ -714,6 +726,7 @@ Test real browser interactions against the dev application. Key test scenarios:
 ## 12. Implementation Phases
 
 ### Phase 1 — Core Foundation
+
 - Project scaffolding (pnpm, TypeScript, Vite, ESLint, Prettier).
 - Type definitions (§4).
 - OSD–Fabric overlay integration layer (§5).
@@ -722,6 +735,7 @@ Test real browser interactions against the dev application. Key test scenarios:
 - Input routing (navigation mode vs. annotation mode).
 
 ### Phase 2 — Annotation Tools
+
 - Implement all drawing tools (rectangle, circle, line, point, path) (§9).
 - Select tool with move, resize, rotate.
 - Drawing preview during interaction.
@@ -729,24 +743,28 @@ Test real browser interactions against the dev application. Key test scenarios:
 - Serialization (load initial state, export current state) (§4.2).
 
 ### Phase 3 — Constraint System
+
 - Annotation context model and constraint engine (§6).
 - Reactive tool availability based on limits.
 - Toolbar reflecting constraints.
 - Context switching.
 
 ### Phase 4 — Multi-Image & Grid
+
 - GridView component with configurable MxN layout (§8.3).
 - Cell activation and independent annotation per cell.
 - Filmstrip sidebar with thumbnail navigation (§8.4).
 - Image assignment to grid cells.
 
 ### Phase 5 — Keyboard Shortcuts & Polish
+
 - Keyboard shortcut system with overrides (§10).
 - StatusBar component showing context info and annotation counts.
 - Default style configuration.
 - Edge case handling (window resize, grid resize with existing assignments, rapid tool switching).
 
 ### Phase 6 — Testing & Documentation
+
 - Unit tests for all core modules (§11.1).
 - E2E tests for all interaction flows (§11.2).
 - API documentation (§3 `docs/` folder).
@@ -756,13 +774,13 @@ Test real browser interactions against the dev application. Key test scenarios:
 
 ## 13. Performance Budgets & Constraints
 
-| Metric | Target |
-|---|---|
-| Overlay transform sync latency | < 1 frame (16ms) after OSD viewport event |
-| Annotation render (100 annotations on one image) | < 32ms total Fabric render time |
-| Grid view: 4×4 viewers | Smooth pan/zoom on active cell; idle cells do not consume animation frames |
-| Library bundle size (minified, before gzip) | < 500KB (excluding peer deps) |
-| Time to interactive (single viewer, cold load) | < 2 seconds on modern hardware |
+| Metric                                           | Target                                                                     |
+| ------------------------------------------------ | -------------------------------------------------------------------------- |
+| Overlay transform sync latency                   | < 1 frame (16ms) after OSD viewport event                                  |
+| Annotation render (100 annotations on one image) | < 32ms total Fabric render time                                            |
+| Grid view: 4×4 viewers                           | Smooth pan/zoom on active cell; idle cells do not consume animation frames |
+| Library bundle size (minified, before gzip)      | < 500KB (excluding peer deps)                                              |
+| Time to interactive (single viewer, cold load)   | < 2 seconds on modern hardware                                             |
 
 **Documented maximum grid size:** 4×4 (16 viewers). Beyond this, performance is not guaranteed and is at the consumer's discretion. The `maxGridSize` prop defaults to `{ columns: 3, rows: 3 }`.
 
@@ -785,12 +803,12 @@ These items are explicitly **out of scope** for v1 but documented for future pla
 
 ## 15. Glossary
 
-| Term | Definition |
-|---|---|
-| **DZI** | Deep Zoom Image — a tiled image format for efficient display of very large images at multiple zoom levels |
-| **Image-space** | Coordinate system where (0,0) is the top-left of the full-resolution source image, measured in pixels |
-| **Viewport-space** | OpenSeaDragon's normalized coordinate system where the image width maps to 0–1 |
-| **Screen-space** | CSS pixel coordinates relative to the browser viewport |
+| Term                   | Definition                                                                                                                                   |
+| ---------------------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
+| **DZI**                | Deep Zoom Image — a tiled image format for efficient display of very large images at multiple zoom levels                                    |
+| **Image-space**        | Coordinate system where (0,0) is the top-left of the full-resolution source image, measured in pixels                                        |
+| **Viewport-space**     | OpenSeaDragon's normalized coordinate system where the image width maps to 0–1                                                               |
+| **Screen-space**       | CSS pixel coordinates relative to the browser viewport                                                                                       |
 | **Annotation context** | A named configuration defining which tools are available and annotation limits, typically representing a single pathology or annotation task |
-| **Overlay** | The Fabric.js canvas layered on top of the OSD viewer to render and interact with annotations |
-| **ViewerCell** | A single unit of OSD viewer + Fabric overlay, representing one image slot in the grid |
+| **Overlay**            | The Fabric.js canvas layered on top of the OSD viewer to render and interact with annotations                                                |
+| **ViewerCell**         | A single unit of OSD viewer + Fabric overlay, representing one image slot in the grid                                                        |

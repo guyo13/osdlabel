@@ -12,21 +12,25 @@ Implement the JSON serialization/deserialization layer and the external API for 
 ### 1. Create `src/core/annotations/serialization.ts`
 
 **`serialize(state: AnnotationState, images: ImageSource[]): AnnotationDocument`**
+
 - Iterate all images, collect their annotations, produce the `AnnotationDocument` envelope.
 - Include version string `'1.0.0'` and current timestamp.
 
 **`deserialize(doc: AnnotationDocument): Record<ImageId, Record<AnnotationId, Annotation>>`**
+
 - Validate the document structure (version, required fields).
 - Return the `byImage` map ready to be loaded into the store.
 - Throw a typed error (`SerializationError`) if validation fails.
 
 **`validateAnnotation(annotation: unknown): annotation is Annotation`**
+
 - Type guard that validates the shape of an annotation object.
 - Check: id is string, geometry has valid type discriminator, style has required fields, coordinates are finite numbers.
 
 ### 2. Wire `initialAnnotations` prop
 
 In the `AnnotatorProvider`, when `initialAnnotations` is provided:
+
 - On mount, call `deserialize` (or directly populate the store) with the initial data.
 - For each annotation, create the corresponding Fabric object on the correct ViewerCell's canvas.
 
@@ -37,16 +41,18 @@ Create a `createEffect` in the `AnnotatorProvider` that watches the annotation s
 **Important:** Use `createEffect` with `on()` to avoid firing on the initial mount (unless you want to — discuss in the code comments).
 
 ```typescript
-createEffect(on(
-  () => JSON.stringify(annotationState.byImage), // deep-ish tracking
-  () => {
-    if (props.onAnnotationsChange) {
-      const allAnnotations = getAllAnnotationsFlat(annotationState);
-      props.onAnnotationsChange(allAnnotations);
-    }
-  },
-  { defer: true } // skip initial
-));
+createEffect(
+  on(
+    () => JSON.stringify(annotationState.byImage), // deep-ish tracking
+    () => {
+      if (props.onAnnotationsChange) {
+        const allAnnotations = getAllAnnotationsFlat(annotationState);
+        props.onAnnotationsChange(allAnnotations);
+      }
+    },
+    { defer: true }, // skip initial
+  ),
+);
 ```
 
 ### 4. Wire `onConstraintChange` callback
@@ -62,6 +68,7 @@ Similarly, watch the `constraintStatus` memo and call `props.onConstraintChange`
 ### 6. Write unit tests
 
 **`tests/unit/annotations/serialization.test.ts`:**
+
 - Test serialize → deserialize round-trip preserves all data.
 - Test validation rejects malformed annotations (missing fields, invalid geometry type, NaN coordinates).
 - Test version check (reject documents with unknown version).
