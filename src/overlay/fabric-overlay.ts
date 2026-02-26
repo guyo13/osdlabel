@@ -2,6 +2,16 @@ import OpenSeadragon from 'openseadragon';
 import { Canvas as FabricCanvas } from 'fabric';
 import type { TMat2D } from 'fabric';
 import type { Point } from '../core/types.js';
+import {
+  POINTER_DOWN,
+  POINTER_MOVE,
+  POINTER_UP,
+  POINTER_CANCEL,
+  OSD_ANIMATION,
+  OSD_ANIMATION_FINISH,
+  OSD_RESIZE,
+  OSD_OPEN,
+} from './constants.js';
 
 /** Overlay interaction modes */
 export type OverlayMode = 'navigation' | 'annotation';
@@ -127,10 +137,10 @@ export class FabricOverlay {
     this._overlayTracker = this._createMouseTracker();
 
     // ── Attach OSD event handlers ────────────────────────────────
-    viewer.addHandler('animation', this._onAnimation);
-    viewer.addHandler('animation-finish', this._onAnimationFinish);
-    viewer.addHandler('resize', this._onResize);
-    viewer.addHandler('open', this._onOpen);
+    viewer.addHandler(OSD_ANIMATION, this._onAnimation);
+    viewer.addHandler(OSD_ANIMATION_FINISH, this._onAnimationFinish);
+    viewer.addHandler(OSD_RESIZE, this._onResize);
+    viewer.addHandler(OSD_OPEN, this._onOpen);
 
     // Initial sync if the viewer is already open
     if (viewer.isOpen()) {
@@ -223,10 +233,10 @@ export class FabricOverlay {
   /** Clean up all event listeners and DOM elements */
   destroy(): void {
     this._overlayTracker.destroy();
-    this._viewer.removeHandler('animation', this._onAnimation);
-    this._viewer.removeHandler('animation-finish', this._onAnimationFinish);
-    this._viewer.removeHandler('resize', this._onResize);
-    this._viewer.removeHandler('open', this._onOpen);
+    this._viewer.removeHandler(OSD_ANIMATION, this._onAnimation);
+    this._viewer.removeHandler(OSD_ANIMATION_FINISH, this._onAnimationFinish);
+    this._viewer.removeHandler(OSD_RESIZE, this._onResize);
+    this._viewer.removeHandler(OSD_OPEN, this._onOpen);
     this._fabricCanvas.dispose();
     this._canvasEl.remove();
   }
@@ -245,7 +255,7 @@ export class FabricOverlay {
    * container div, where the OSD MouseTracker would re-intercept it.
    */
   private _forwardToFabric(
-    type: string,
+    type: typeof POINTER_DOWN | typeof POINTER_MOVE | typeof POINTER_UP,
     originalEvent: PointerEvent,
   ): void {
     if (this._forwarding) return;
@@ -319,7 +329,7 @@ export class FabricOverlay {
         const eventType = eventInfo.eventType;
         const domEvent = eventInfo.originalEvent as PointerEvent;
 
-        if (eventType === 'pointerdown') {
+        if (eventType === POINTER_DOWN) {
           // Check for pan passthrough triggers
           if (this._isPanTrigger(domEvent)) {
             this._panGestureActive = true;
@@ -336,7 +346,7 @@ export class FabricOverlay {
           return;
         }
 
-        if (eventType === 'pointermove') {
+        if (eventType === POINTER_MOVE) {
           if (this._panGestureActive) {
             // Part of an OSD pan gesture — let it through
             return;
@@ -346,7 +356,7 @@ export class FabricOverlay {
           return;
         }
 
-        if (eventType === 'pointerup' || eventType === 'pointercancel') {
+        if (eventType === POINTER_UP || eventType === POINTER_CANCEL) {
           if (this._panGestureActive) {
             // End of OSD pan gesture
             this._panGestureActive = false;
@@ -364,7 +374,7 @@ export class FabricOverlay {
         if (this._panGestureActive) return;
 
         const originalEvent = event.originalEvent as PointerEvent;
-        this._forwardToFabric('pointerdown', originalEvent);
+        this._forwardToFabric(POINTER_DOWN, originalEvent);
       },
 
       moveHandler: (event: OpenSeadragon.MouseTrackerEvent) => {
@@ -372,7 +382,7 @@ export class FabricOverlay {
         if (this._panGestureActive) return;
 
         const originalEvent = event.originalEvent as PointerEvent;
-        this._forwardToFabric('pointermove', originalEvent);
+        this._forwardToFabric(POINTER_MOVE, originalEvent);
       },
 
       releaseHandler: (event: OpenSeadragon.MouseTrackerEvent) => {
@@ -380,7 +390,7 @@ export class FabricOverlay {
         if (this._panGestureActive) return;
 
         const originalEvent = event.originalEvent as PointerEvent;
-        this._forwardToFabric('pointerup', originalEvent);
+        this._forwardToFabric(POINTER_UP, originalEvent);
       },
 
       scrollHandler: (event: OpenSeadragon.MouseTrackerEvent) => {
