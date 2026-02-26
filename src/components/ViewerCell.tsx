@@ -59,24 +59,26 @@ const ViewerCell: Component<ViewerCellProps> = (props) => {
   });
 
   // Watch for image source changes
-  createEffect(on(
-    () => props.imageSource?.dziUrl,
-    (url, prevUrl) => {
-      if (url !== prevUrl && viewer) {
-        viewer.close();
-        if (props.imageSource) {
-          openImage(viewer, props.imageSource);
+  createEffect(
+    on(
+      () => props.imageSource?.dziUrl,
+      (url, prevUrl) => {
+        if (url !== prevUrl && viewer) {
+          viewer.close();
+          if (props.imageSource) {
+            openImage(viewer, props.imageSource);
+          }
         }
-      }
-    },
-    { defer: true },
-  ));
+      },
+      { defer: true },
+    ),
+  );
 
   // Use annotation tool hook
   useAnnotationTool(
-      overlay,
-      () => props.imageSource?.id,
-      () => props.isActive
+    overlay,
+    () => props.imageSource?.id,
+    () => props.isActive,
   );
 
   // Sync annotations from state to canvas (full clear-and-reload)
@@ -93,11 +95,11 @@ const ViewerCell: Component<ViewerCellProps> = (props) => {
     // Filter annotations by imageId + contextId
     const imageAnns = annotationState.byImage[imageId] || {};
     const matching = contextId
-      ? Object.values(imageAnns).filter(a => a.contextId === contextId)
+      ? Object.values(imageAnns).filter((a) => a.contextId === contextId)
       : Object.values(imageAnns);
 
     // Clear all existing annotation objects from canvas
-    const toRemove = ov.canvas.getObjects().filter(obj => obj.id);
+    const toRemove = ov.canvas.getObjects().filter((obj) => obj.id);
     if (toRemove.length > 0) ov.canvas.remove(...toRemove);
 
     // Async load from rawAnnotationData

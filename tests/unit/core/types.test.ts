@@ -124,7 +124,11 @@ describe('Geometry discriminated union', () => {
   it('narrows path geometry correctly', () => {
     const geom: Geometry = {
       type: 'path',
-      points: [{ x: 0, y: 0 }, { x: 50, y: 50 }, { x: 100, y: 0 }],
+      points: [
+        { x: 0, y: 0 },
+        { x: 50, y: 50 },
+        { x: 100, y: 0 },
+      ],
       closed: true,
     };
 
@@ -137,11 +141,16 @@ describe('Geometry discriminated union', () => {
   it('exhaustively handles all geometry types', () => {
     function getTypeName(geom: Geometry): string {
       switch (geom.type) {
-        case 'rectangle': return 'rectangle';
-        case 'circle': return 'circle';
-        case 'line': return 'line';
-        case 'point': return 'point';
-        case 'path': return 'path';
+        case 'rectangle':
+          return 'rectangle';
+        case 'circle':
+          return 'circle';
+        case 'line':
+          return 'line';
+        case 'point':
+          return 'point';
+        case 'path':
+          return 'path';
       }
     }
 

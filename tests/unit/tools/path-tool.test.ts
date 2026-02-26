@@ -2,7 +2,11 @@ import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { PathTool } from '../../../src/core/tools/path-tool.js';
 import { FabricOverlay } from '../../../src/overlay/fabric-overlay.js';
 import { ToolCallbacks, AddAnnotationParams } from '../../../src/core/tools/base-tool.js';
-import { createAnnotationContextId, createImageId, KeyboardShortcutMap } from '../../../src/core/types.js';
+import {
+  createAnnotationContextId,
+  createImageId,
+  KeyboardShortcutMap,
+} from '../../../src/core/types.js';
 import { Polyline, Polygon } from 'fabric';
 import { DEFAULT_KEYBOARD_SHORTCUTS } from '../../../src/hooks/useKeyboard.js';
 
@@ -43,7 +47,9 @@ describe('PathTool', () => {
       getActiveContextId: () => contextId,
       getToolConstraint: (type) => ({ type }),
       canAddAnnotation: () => true,
-      addAnnotation: (params) => { addedParams.push(params); },
+      addAnnotation: (params) => {
+        addedParams.push(params);
+      },
       updateAnnotation: vi.fn(),
       deleteAnnotation: vi.fn(),
       setSelectedAnnotation: vi.fn(),

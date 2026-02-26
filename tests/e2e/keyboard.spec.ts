@@ -90,26 +90,26 @@ test.describe('Keyboard Shortcuts', () => {
   });
 
   test('Grid cell selection shortcuts (1-9)', async ({ page }) => {
-     // Expand grid to 3x1 so we have cells 0, 1, 2
-     await page.keyboard.press('=');
-     await page.keyboard.press('=');
-     await expect(page.getByTestId('grid-size')).toContainText('3x1');
+    // Expand grid to 3x1 so we have cells 0, 1, 2
+    await page.keyboard.press('=');
+    await page.keyboard.press('=');
+    await expect(page.getByTestId('grid-size')).toContainText('3x1');
 
-     const cell0 = page.getByTestId('grid-cell-0');
-     const cell1 = page.getByTestId('grid-cell-1');
+    const cell0 = page.getByTestId('grid-cell-0');
+    const cell1 = page.getByTestId('grid-cell-1');
 
-     // Check initial active state
-     await expect(cell0).toHaveAttribute('data-active', 'true');
-     await expect(cell1).toHaveAttribute('data-active', 'false');
+    // Check initial active state
+    await expect(cell0).toHaveAttribute('data-active', 'true');
+    await expect(cell1).toHaveAttribute('data-active', 'false');
 
-     // Press '2' -> Activate cell 1
-     await page.keyboard.press('2');
-     await expect(cell1).toHaveAttribute('data-active', 'true');
-     await expect(cell0).toHaveAttribute('data-active', 'false');
+    // Press '2' -> Activate cell 1
+    await page.keyboard.press('2');
+    await expect(cell1).toHaveAttribute('data-active', 'true');
+    await expect(cell0).toHaveAttribute('data-active', 'false');
 
-     // Press '1' -> Activate cell 0
-     await page.keyboard.press('1');
-     await expect(cell0).toHaveAttribute('data-active', 'true');
+    // Press '1' -> Activate cell 0
+    await page.keyboard.press('1');
+    await expect(cell0).toHaveAttribute('data-active', 'true');
   });
 
   test('Shortcuts are suppressed in input fields', async ({ page }) => {
@@ -154,12 +154,10 @@ test.describe('Keyboard Shortcuts', () => {
     // Inject a script to modify the window.AnnotatorConfig or similar if we could,
     // but we can't easily modify the props passed to the running app from outside.
     // Instead, we can't test this easily without modifying the dev/App.tsx.
-
     // HOWEVER, the requirement is to add the prop. We've verified input suppression works.
     // Testing the prop specifically in E2E would require the dev app to expose a way to set it.
     // Let's assume unit/integration verification or manual verification via dev app is sufficient
     // given the constraints of the test environment (we can't re-render App with new props easily).
-
     // SKIP: E2E for custom predicate requires dev app changes.
     // We will verify the logic holds for inputs (which use the same suppression path logic-wise).
   });

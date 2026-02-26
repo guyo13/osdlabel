@@ -83,9 +83,15 @@ export class FabricOverlay {
   private _panGestureActive = false;
 
   // ── Bound OSD event handlers (for add/removeHandler) ─────────────
-  private readonly _onAnimation = (): void => { this.sync(); };
-  private readonly _onAnimationFinish = (): void => { this.sync(); };
-  private readonly _onOpen = (): void => { this.sync(); };
+  private readonly _onAnimation = (): void => {
+    this.sync();
+  };
+  private readonly _onAnimationFinish = (): void => {
+    this.sync();
+  };
+  private readonly _onOpen = (): void => {
+    this.sync();
+  };
   private readonly _onResize = (): void => {
     const size = this._viewer.viewport.getContainerSize();
     this._fabricCanvas.setDimensions({ width: size.x, height: size.y });
@@ -284,7 +290,6 @@ export class FabricOverlay {
       this._forwarding = false;
     }
   }
-
 
   /**
    * Determine whether a pointerdown event should trigger an OSD pan

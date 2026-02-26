@@ -15,13 +15,13 @@ const Toolbar: Component = () => {
 
   const activeContext = () => {
     if (!contextState.activeContextId) return undefined;
-    return contextState.contexts.find(c => c.id === contextState.activeContextId);
+    return contextState.contexts.find((c) => c.id === contextState.activeContextId);
   };
 
   const allowedTools = (): AnnotationType[] => {
     const ctx = activeContext();
     if (!ctx) return [];
-    return ctx.tools.map(t => t.type);
+    return ctx.tools.map((t) => t.type);
   };
 
   return (
@@ -70,7 +70,7 @@ const Toolbar: Component = () => {
       </button>
 
       {/* Drawing tool buttons — one per allowed tool in active context */}
-      {allowedTools().map(toolType => {
+      {allowedTools().map((toolType) => {
         const status = () => constraintStatus()[toolType];
         const isActive = () => uiState.activeTool === toolType;
         const enabled = () => status().enabled;

@@ -31,6 +31,7 @@ function useConstraints() {
 ### 2. Gate annotation creation on constraints
 
 Modify each tool's commit step (in `onPointerUp` or equivalent):
+
 - Before calling `addAnnotation`, check `canAddAnnotation(this.type)`.
 - If false, cancel the drawing and discard the preview object.
 - This is a safety net — the UI should prevent reaching this state by disabling the tool button.
@@ -51,6 +52,7 @@ createEffect(() => {
 ### 4. Build `src/components/Toolbar.tsx`
 
 A SolidJS component that renders tool buttons:
+
 - One button per tool type allowed by the active context.
 - The select tool button is always present.
 - A navigation mode button (sets tool to `null`).
@@ -63,6 +65,7 @@ A SolidJS component that renders tool buttons:
 ### 5. Build `src/components/StatusBar.tsx`
 
 A small bar (below or above the viewer) showing:
+
 - Active context label.
 - Active tool name.
 - Total annotation count for the current image.
@@ -97,6 +100,7 @@ Add a dropdown to switch between contexts.
 ### 7. Write unit tests
 
 **`tests/unit/constraints/enforcement.test.ts`:**
+
 - Set up a context with `rectangle` maxCount: 2.
 - Add 2 rectangles. Verify the tool is now disabled.
 - Delete 1 rectangle. Verify the tool is re-enabled.
@@ -106,6 +110,7 @@ Add a dropdown to switch between contexts.
 ### 8. Write E2E test
 
 **`tests/e2e/constraints.spec.ts`:**
+
 - Load the dev app with the test contexts.
 - Draw 3 lines (hitting the limit).
 - Verify the line tool button becomes visually disabled.

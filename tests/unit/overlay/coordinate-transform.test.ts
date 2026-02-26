@@ -40,12 +40,12 @@ describe('computeViewportTransform', () => {
     const vpt = computeViewportTransform(viewer);
 
     // [scaleX, skewY, skewX, scaleY, tx, ty]
-    expect(vpt[0]).toBeCloseTo(1);  // scaleX
-    expect(vpt[1]).toBeCloseTo(0);  // skewY (no rotation)
-    expect(vpt[2]).toBeCloseTo(0);  // skewX (no rotation)
-    expect(vpt[3]).toBeCloseTo(1);  // scaleY
-    expect(vpt[4]).toBeCloseTo(0);  // tx
-    expect(vpt[5]).toBeCloseTo(0);  // ty
+    expect(vpt[0]).toBeCloseTo(1); // scaleX
+    expect(vpt[1]).toBeCloseTo(0); // skewY (no rotation)
+    expect(vpt[2]).toBeCloseTo(0); // skewX (no rotation)
+    expect(vpt[3]).toBeCloseTo(1); // scaleY
+    expect(vpt[4]).toBeCloseTo(0); // tx
+    expect(vpt[5]).toBeCloseTo(0); // ty
   });
 
   it('returns correct matrix at 2x zoom with no pan', () => {
@@ -64,10 +64,10 @@ describe('computeViewportTransform', () => {
     const viewer = createMockViewer({ scale: 3, offsetX: 100, offsetY: -50 });
     const vpt = computeViewportTransform(viewer);
 
-    expect(vpt[0]).toBeCloseTo(3);   // scaleX
+    expect(vpt[0]).toBeCloseTo(3); // scaleX
     expect(vpt[1]).toBeCloseTo(0);
     expect(vpt[2]).toBeCloseTo(0);
-    expect(vpt[3]).toBeCloseTo(3);   // scaleY
+    expect(vpt[3]).toBeCloseTo(3); // scaleY
     expect(vpt[4]).toBeCloseTo(100); // tx
     expect(vpt[5]).toBeCloseTo(-50); // ty
   });
@@ -77,10 +77,10 @@ describe('computeViewportTransform', () => {
     const vpt = computeViewportTransform(viewer);
 
     // cos(90°) ≈ 0, sin(90°) = 1
-    expect(vpt[0]).toBeCloseTo(0);   // cos * scale
-    expect(vpt[1]).toBeCloseTo(1);   // sin * scale
-    expect(vpt[2]).toBeCloseTo(-1);  // -sin * scale
-    expect(vpt[3]).toBeCloseTo(0);   // cos * scale
+    expect(vpt[0]).toBeCloseTo(0); // cos * scale
+    expect(vpt[1]).toBeCloseTo(1); // sin * scale
+    expect(vpt[2]).toBeCloseTo(-1); // -sin * scale
+    expect(vpt[3]).toBeCloseTo(0); // cos * scale
     expect(vpt[4]).toBeCloseTo(0);
     expect(vpt[5]).toBeCloseTo(0);
   });
@@ -92,10 +92,10 @@ describe('computeViewportTransform', () => {
     const cos45 = Math.cos(Math.PI / 4);
     const sin45 = Math.sin(Math.PI / 4);
 
-    expect(vpt[0]).toBeCloseTo(cos45 * 2);  // a = cos * scale
-    expect(vpt[1]).toBeCloseTo(sin45 * 2);  // b = sin * scale
+    expect(vpt[0]).toBeCloseTo(cos45 * 2); // a = cos * scale
+    expect(vpt[1]).toBeCloseTo(sin45 * 2); // b = sin * scale
     expect(vpt[2]).toBeCloseTo(-sin45 * 2); // c = -sin * scale
-    expect(vpt[3]).toBeCloseTo(cos45 * 2);  // d = cos * scale
+    expect(vpt[3]).toBeCloseTo(cos45 * 2); // d = cos * scale
     expect(vpt[4]).toBeCloseTo(50);
     expect(vpt[5]).toBeCloseTo(50);
   });
@@ -111,7 +111,10 @@ describe('computeViewportTransform', () => {
     const screenY = vpt[1] * imgX + vpt[3] * imgY + vpt[5];
 
     // Compare with what the OSD mock would produce
-    const expected = viewer.viewport.imageToViewerElementCoordinates({ x: imgX, y: imgY } as OpenSeadragon.Point);
+    const expected = viewer.viewport.imageToViewerElementCoordinates({
+      x: imgX,
+      y: imgY,
+    } as OpenSeadragon.Point);
     expect(screenX).toBeCloseTo(expected.x);
     expect(screenY).toBeCloseTo(expected.y);
   });

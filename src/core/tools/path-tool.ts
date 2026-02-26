@@ -19,46 +19,49 @@ export class PathTool extends BaseTool {
 
     // Handle double click to finish as open polyline
     if (event.detail === 2) {
-        this.finish(false);
-        return;
+      this.finish(false);
+      return;
     }
 
     if (this.vertices.length === 0) {
-        // First point — start a new path
-        this.vertices.push({ x: imagePoint.x, y: imagePoint.y });
+      // First point — start a new path
+      this.vertices.push({ x: imagePoint.x, y: imagePoint.y });
 
-        this.preview = new Polyline(
-            [{ x: imagePoint.x, y: imagePoint.y }, { x: imagePoint.x, y: imagePoint.y }],
-            {
-                fill: 'transparent',
-                stroke: 'rgba(0,0,0,0.5)',
-                strokeWidth: 2 / this.overlay.canvas.getZoom(),
-                strokeDashArray: [5 / this.overlay.canvas.getZoom(), 5 / this.overlay.canvas.getZoom()],
-                selectable: false,
-                evented: false,
-                strokeUniform: true,
-                objectCaching: false,
-            },
-        );
-        this.overlay.canvas.add(this.preview);
+      this.preview = new Polyline(
+        [
+          { x: imagePoint.x, y: imagePoint.y },
+          { x: imagePoint.x, y: imagePoint.y },
+        ],
+        {
+          fill: 'transparent',
+          stroke: 'rgba(0,0,0,0.5)',
+          strokeWidth: 2 / this.overlay.canvas.getZoom(),
+          strokeDashArray: [5 / this.overlay.canvas.getZoom(), 5 / this.overlay.canvas.getZoom()],
+          selectable: false,
+          evented: false,
+          strokeUniform: true,
+          objectCaching: false,
+        },
+      );
+      this.overlay.canvas.add(this.preview);
     } else {
-        // Check if clicking near the first point to close
-        if (this.vertices.length >= 3 && this.isNearFirstPoint(imagePoint)) {
-            this.finish(true);
-            return;
-        }
+      // Check if clicking near the first point to close
+      if (this.vertices.length >= 3 && this.isNearFirstPoint(imagePoint)) {
+        this.finish(true);
+        return;
+      }
 
-        // Add new vertex
-        this.vertices.push({ x: imagePoint.x, y: imagePoint.y });
+      // Add new vertex
+      this.vertices.push({ x: imagePoint.x, y: imagePoint.y });
 
-        // Update preview: all committed vertices + a live cursor point
-        if (this.preview) {
-            const previewPoints = [
-                ...this.vertices.map(p => ({ x: p.x, y: p.y })),
-                { x: imagePoint.x, y: imagePoint.y },
-            ];
-            this.preview.set({ points: previewPoints });
-        }
+      // Update preview: all committed vertices + a live cursor point
+      if (this.preview) {
+        const previewPoints = [
+          ...this.vertices.map((p) => ({ x: p.x, y: p.y })),
+          { x: imagePoint.x, y: imagePoint.y },
+        ];
+        this.preview.set({ points: previewPoints });
+      }
     }
 
     this.overlay.canvas.requestRenderAll();
@@ -69,8 +72,8 @@ export class PathTool extends BaseTool {
 
     // Update the last (live cursor) point in the preview
     const previewPoints = [
-        ...this.vertices.map(p => ({ x: p.x, y: p.y })),
-        { x: imagePoint.x, y: imagePoint.y },
+      ...this.vertices.map((p) => ({ x: p.x, y: p.y })),
+      { x: imagePoint.x, y: imagePoint.y },
     ];
     this.preview.set({ points: previewPoints, dirty: true });
     this.overlay.canvas.requestRenderAll();
@@ -102,88 +105,88 @@ export class PathTool extends BaseTool {
   }
 
   private isNearFirstPoint(imagePoint: Point): boolean {
-      if (this.vertices.length === 0 || !this.overlay) return false;
-      const first = this.vertices[0]!;
+    if (this.vertices.length === 0 || !this.overlay) return false;
+    const first = this.vertices[0]!;
 
-      const firstScreen = this.overlay.imageToScreen(first);
-      const currentScreen = this.overlay.imageToScreen(imagePoint);
+    const firstScreen = this.overlay.imageToScreen(first);
+    const currentScreen = this.overlay.imageToScreen(imagePoint);
 
-      const dx = currentScreen.x - firstScreen.x;
-      const dy = currentScreen.y - firstScreen.y;
-      const dist = Math.sqrt(dx * dx + dy * dy);
+    const dx = currentScreen.x - firstScreen.x;
+    const dy = currentScreen.y - firstScreen.y;
+    const dist = Math.sqrt(dx * dx + dy * dy);
 
-      return dist < CLOSE_THRESHOLD_SCREEN_PX;
+    return dist < CLOSE_THRESHOLD_SCREEN_PX;
   }
 
   private finish(closed: boolean) {
-      if (!this.overlay || !this.imageId || !this.callbacks) {
-          this.cancel();
-          return;
-      }
+    if (!this.overlay || !this.imageId || !this.callbacks) {
+      this.cancel();
+      return;
+    }
 
-      // Need at least 2 points for an open path, 3 for a closed polygon
-      const minPoints = closed ? 3 : 2;
-      if (this.vertices.length < minPoints) {
-          this.cancel();
-          return;
-      }
+    // Need at least 2 points for an open path, 3 for a closed polygon
+    const minPoints = closed ? 3 : 2;
+    if (this.vertices.length < minPoints) {
+      this.cancel();
+      return;
+    }
 
-      const activeContextId = this.callbacks.getActiveContextId();
-      if (!activeContextId) {
-        console.warn('No active context, cannot create annotation');
-        this.cancel();
-        return;
-      }
+    const activeContextId = this.callbacks.getActiveContextId();
+    if (!activeContextId) {
+      console.warn('No active context, cannot create annotation');
+      this.cancel();
+      return;
+    }
 
-      if (!this.callbacks.canAddAnnotation(this.type)) {
-        this.cancel();
-        return;
-      }
+    if (!this.callbacks.canAddAnnotation(this.type)) {
+      this.cancel();
+      return;
+    }
 
-      const toolConstraint = this.callbacks.getToolConstraint(this.type);
-      const style: AnnotationStyle = {
-        ...DEFAULT_ANNOTATION_STYLE,
-        ...toolConstraint?.defaultStyle,
-      };
+    const toolConstraint = this.callbacks.getToolConstraint(this.type);
+    const style: AnnotationStyle = {
+      ...DEFAULT_ANNOTATION_STYLE,
+      ...toolConstraint?.defaultStyle,
+    };
 
-      const id = createAnnotationId(generateId());
-      const options = getFabricOptions(style, id);
-      const pts = this.vertices.map(p => ({ x: p.x, y: p.y }));
+    const id = createAnnotationId(generateId());
+    const options = getFabricOptions(style, id);
+    const pts = this.vertices.map((p) => ({ x: p.x, y: p.y }));
 
-      // Remove preview polyline
-      if (this.preview) {
-          this.overlay.canvas.remove(this.preview);
-      }
+    // Remove preview polyline
+    if (this.preview) {
+      this.overlay.canvas.remove(this.preview);
+    }
 
-      // Create the final object (Polygon for closed, Polyline for open)
-      let finalObj: Polyline;
-      if (closed) {
-          finalObj = new Polygon(pts, {
-              ...options,
-              selectable: true,
-              evented: true,
-          });
-      } else {
-          finalObj = new Polyline(pts, {
-              ...options,
-              fill: 'transparent',
-              selectable: true,
-              evented: true,
-          });
-      }
-
-      this.overlay.canvas.add(finalObj);
-      this.overlay.canvas.requestRenderAll();
-
-      this.callbacks.addAnnotation({
-          fabricObject: finalObj,
-          imageId: this.imageId,
-          contextId: activeContextId,
-          type: this.type,
+    // Create the final object (Polygon for closed, Polyline for open)
+    let finalObj: Polyline;
+    if (closed) {
+      finalObj = new Polygon(pts, {
+        ...options,
+        selectable: true,
+        evented: true,
       });
+    } else {
+      finalObj = new Polyline(pts, {
+        ...options,
+        fill: 'transparent',
+        selectable: true,
+        evented: true,
+      });
+    }
 
-      this.preview = null;
-      this.vertices = [];
+    this.overlay.canvas.add(finalObj);
+    this.overlay.canvas.requestRenderAll();
+
+    this.callbacks.addAnnotation({
+      fabricObject: finalObj,
+      imageId: this.imageId,
+      contextId: activeContextId,
+      type: this.type,
+    });
+
+    this.preview = null;
+    this.vertices = [];
   }
 
   cancel(): void {

@@ -14,12 +14,14 @@ Implement the input routing mechanism that switches between OSD navigation and F
 Extend the overlay to manage the navigation ↔ annotation mode switching using an OSD `MouseTracker` attached to Fabric's container element. CSS `pointer-events` stays `none`; event routing is handled entirely by the tracker. A re-entrancy guard prevents infinite recursion from synthetic PointerEvents bubbling back.
 
 **Navigation mode (default):**
+
 - Overlay `MouseTracker` disabled (`setTracking(false)`) — events fall through to OSD.
 - `canvas.selection = false`, all objects `selectable = false`, `evented = false`.
 - OSD handles all pointer events for pan/zoom.
 - `discardActiveObject()` is called to clear any lingering Fabric selection.
 
 **Annotation mode (a tool is active or user is selecting/editing):**
+
 - Overlay `MouseTracker` enabled — intercepts pointer events, forwards to Fabric as synthetic `PointerEvent`s.
 - `canvas.selection = true`, all objects `selectable = true`, `evented = true`.
 - OSD mouse navigation disabled: `viewer.setMouseNavEnabled(false)`.
@@ -28,6 +30,7 @@ Extend the overlay to manage the navigation ↔ annotation mode switching using 
 - **Zoom passthrough:** `Ctrl+scroll` (or `Cmd+scroll`) manually calls `viewport.zoomBy()` around the pointer position. Plain scroll is blocked to prevent page scrolling.
 
 Add a method to the overlay:
+
 ```typescript
 setMode(mode: 'navigation' | 'annotation'): void;
 ```
@@ -46,6 +49,7 @@ interface ViewerCellProps {
 ```
 
 **Implementation:**
+
 - Render a `<div>` container with a ref.
 - On `onMount`: initialize OSD viewer inside the div. Open the `imageSource` tile source.
 - On `onMount`: create a `FabricOverlay` attached to the viewer.
@@ -55,6 +59,7 @@ interface ViewerCellProps {
 - On click of the container div, call `props.onActivate`.
 
 **IMPORTANT SolidJS patterns:**
+
 - Do NOT destructure props.
 - Initialize OSD and Fabric in `onMount`, not in the component body.
 - Clean up in `onCleanup`.
@@ -63,6 +68,7 @@ interface ViewerCellProps {
 ### 3. Update the dev app
 
 Replace the direct OSD initialization with:
+
 ```tsx
 <ViewerCell
   imageSource={{

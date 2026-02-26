@@ -23,9 +23,17 @@ interface FabricPointerEvent {
 export function useAnnotationTool(
   overlay: () => FabricOverlay | undefined,
   imageId: () => ImageId | undefined,
-  isActive: () => boolean
+  isActive: () => boolean,
 ) {
-  const { uiState, contextState, annotationState, constraintStatus, actions, activeToolKeyHandlerRef, shortcuts } = useAnnotator();
+  const {
+    uiState,
+    contextState,
+    annotationState,
+    constraintStatus,
+    actions,
+    activeToolKeyHandlerRef,
+    shortcuts,
+  } = useAnnotator();
 
   // Auto-switch to select tool when active drawing tool becomes disabled (limit reached)
   createEffect(() => {
@@ -77,29 +85,42 @@ export function useAnnotationTool(
     const imgId = imageId();
 
     if (!ov || !imgId) {
-        return;
+      return;
     }
 
     if (!active || !type) {
-        ov.setMode('navigation');
-        return;
+      ov.setMode('navigation');
+      return;
     }
 
     // Determine tool type
     let tool: AnnotationTool | null = null;
     switch (type) {
-      case 'rectangle': tool = new RectangleTool(); break;
-      case 'circle': tool = new CircleTool(); break;
-      case 'line': tool = new LineTool(); break;
-      case 'point': tool = new PointTool(); break;
-      case 'path': tool = new PathTool(); break;
-      case 'select': tool = new SelectTool(); break;
-      default: tool = null;
+      case 'rectangle':
+        tool = new RectangleTool();
+        break;
+      case 'circle':
+        tool = new CircleTool();
+        break;
+      case 'line':
+        tool = new LineTool();
+        break;
+      case 'point':
+        tool = new PointTool();
+        break;
+      case 'path':
+        tool = new PathTool();
+        break;
+      case 'select':
+        tool = new SelectTool();
+        break;
+      default:
+        tool = null;
     }
 
     if (!tool) {
-        ov.setMode('navigation');
-        return;
+      ov.setMode('navigation');
+      return;
     }
 
     // Construct callbacks from context
@@ -108,15 +129,22 @@ export function useAnnotationTool(
       getToolConstraint: (toolType) => {
         const activeContextId = contextState.activeContextId;
         if (!activeContextId) return undefined;
-        const activeContext = contextState.contexts.find(c => c.id === activeContextId);
-        return activeContext?.tools.find(t => t.type === toolType);
+        const activeContext = contextState.contexts.find((c) => c.id === activeContextId);
+        return activeContext?.tools.find((t) => t.type === toolType);
       },
       canAddAnnotation: (toolType: AnnotationType) => {
         const status = constraintStatus();
         return status[toolType].enabled;
       },
       addAnnotation: (params: AddAnnotationParams) => {
-        const { fabricObject, imageId: imgIdParam, contextId, type: annType, label, metadata } = params;
+        const {
+          fabricObject,
+          imageId: imgIdParam,
+          contextId,
+          type: annType,
+          label,
+          metadata,
+        } = params;
 
         // Read the annotation ID set by the tool via module augmentation
         const id = fabricObject.id as AnnotationId;
@@ -175,34 +203,34 @@ export function useAnnotationTool(
 
     // Handlers
     const handleDown = (opt: FabricPointerEvent) => {
-        if (!tool) return;
+      if (!tool) return;
 
-        // For drawing tools, skip if the click landed on an existing annotation object.
-        if (isDrawingTool && opt.target) {
-            if (opt.target.id) {
-                suppressedDown = true;
-                return;
-            }
+      // For drawing tools, skip if the click landed on an existing annotation object.
+      if (isDrawingTool && opt.target) {
+        if (opt.target.id) {
+          suppressedDown = true;
+          return;
         }
+      }
 
-        suppressedDown = false;
-        const p = getScenePoint(ov, opt);
-        tool.onPointerDown(opt.e as PointerEvent, p);
+      suppressedDown = false;
+      const p = getScenePoint(ov, opt);
+      tool.onPointerDown(opt.e as PointerEvent, p);
     };
 
     const handleMove = (opt: FabricPointerEvent) => {
-        if (!tool || suppressedDown) return;
-        const p = getScenePoint(ov, opt);
-        tool.onPointerMove(opt.e as PointerEvent, p);
+      if (!tool || suppressedDown) return;
+      const p = getScenePoint(ov, opt);
+      tool.onPointerMove(opt.e as PointerEvent, p);
     };
 
     const handleUp = (opt: FabricPointerEvent) => {
-        if (!tool || suppressedDown) {
-            suppressedDown = false;
-            return;
-        }
-        const p = getScenePoint(ov, opt);
-        tool.onPointerUp(opt.e as PointerEvent, p);
+      if (!tool || suppressedDown) {
+        suppressedDown = false;
+        return;
+      }
+      const p = getScenePoint(ov, opt);
+      tool.onPointerUp(opt.e as PointerEvent, p);
     };
 
     ov.canvas.on('mouse:down', handleDown);
@@ -210,26 +238,26 @@ export function useAnnotationTool(
     ov.canvas.on('mouse:up', handleUp);
 
     onCleanup(() => {
-        if (activeToolKeyHandlerRef.handler === keyHandler) {
-            activeToolKeyHandlerRef.handler = null;
-        }
-        ov.canvas.off('mouse:down', handleDown);
-        ov.canvas.off('mouse:move', handleMove);
-        ov.canvas.off('mouse:up', handleUp);
-        if (tool) {
-            tool.deactivate();
-        }
+      if (activeToolKeyHandlerRef.handler === keyHandler) {
+        activeToolKeyHandlerRef.handler = null;
+      }
+      ov.canvas.off('mouse:down', handleDown);
+      ov.canvas.off('mouse:move', handleMove);
+      ov.canvas.off('mouse:up', handleUp);
+      if (tool) {
+        tool.deactivate();
+      }
     });
   });
 }
 
 function getScenePoint(overlay: FabricOverlay, opt: FabricPointerEvent): Point {
-    if (opt.scenePoint) {
-        return opt.scenePoint;
-    }
-    if (opt.absolutePointer) {
-        return opt.absolutePointer;
-    }
-    const mouseEvent = opt.e as MouseEvent;
-    return overlay.screenToImage({ x: mouseEvent.offsetX, y: mouseEvent.offsetY });
+  if (opt.scenePoint) {
+    return opt.scenePoint;
+  }
+  if (opt.absolutePointer) {
+    return opt.absolutePointer;
+  }
+  const mouseEvent = opt.e as MouseEvent;
+  return overlay.screenToImage({ x: mouseEvent.offsetX, y: mouseEvent.offsetY });
 }

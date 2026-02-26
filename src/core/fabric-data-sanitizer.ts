@@ -80,7 +80,7 @@ export function normalizeFabricType(raw: string): FabricTypeName | null {
   if (raw.length === 0) return null;
   // Capitalize first char, lowercase the rest: 'rect' → 'Rect', 'POLYLINE' → 'Polyline'
   const capitalized = raw.charAt(0).toUpperCase() + raw.slice(1).toLowerCase();
-  return SUPPORTED_FABRIC_TYPES.find(t => t === capitalized) ?? null;
+  return SUPPORTED_FABRIC_TYPES.find((t) => t === capitalized) ?? null;
 }
 
 // ---------------------------------------------------------------------------
@@ -96,26 +96,26 @@ export function normalizeFabricType(raw: string): FabricTypeName | null {
  * schema (e.g., 'coordinate' → z.number().finite().min(-MAX_COORDINATE).max(MAX_COORDINATE)).
  */
 type PropValidator =
-  | 'coordinate'    // finite number, abs <= MAX_COORDINATE
-  | 'dimension'     // finite number, 0 <= x <= MAX_DIMENSION
-  | 'scale'         // finite number, abs <= MAX_SCALE
-  | 'angle'         // finite number, -360 <= x <= 360
-  | 'opacity'       // finite number, 0 <= x <= 1
-  | 'strokeWidth'   // finite number, 0 <= x <= MAX_STROKE_WIDTH
-  | 'miterLimit'    // finite number, 0 <= x <= 100
-  | 'boolean'       // strict boolean
-  | 'colorOrNull'   // string (len <= MAX_STRING_LENGTH) or null
-  | 'idString'      // string (len <= MAX_STRING_LENGTH)
-  | 'originX'       // 'left' | 'center' | 'right' or finite number
-  | 'originY'       // 'top' | 'center' | 'bottom' or finite number
-  | 'paintFirst'    // 'fill' | 'stroke'
-  | 'fillRule'      // 'nonzero' | 'evenodd'
-  | 'lineCap'       // 'butt' | 'round' | 'square'
-  | 'lineJoin'      // 'bevel' | 'round' | 'miter'
-  | 'compositeOp'   // known canvas composite operation string
-  | 'numberArray'   // number[] | null, max MAX_STROKE_DASH_ARRAY_LENGTH elements
-  | 'forceNull'     // always output null (strips nested objects like shadow/clipPath)
-  | 'pointsArray';  // {x,y}[] with bounds, max MAX_POINTS_COUNT elements
+  | 'coordinate' // finite number, abs <= MAX_COORDINATE
+  | 'dimension' // finite number, 0 <= x <= MAX_DIMENSION
+  | 'scale' // finite number, abs <= MAX_SCALE
+  | 'angle' // finite number, -360 <= x <= 360
+  | 'opacity' // finite number, 0 <= x <= 1
+  | 'strokeWidth' // finite number, 0 <= x <= MAX_STROKE_WIDTH
+  | 'miterLimit' // finite number, 0 <= x <= 100
+  | 'boolean' // strict boolean
+  | 'colorOrNull' // string (len <= MAX_STRING_LENGTH) or null
+  | 'idString' // string (len <= MAX_STRING_LENGTH)
+  | 'originX' // 'left' | 'center' | 'right' or finite number
+  | 'originY' // 'top' | 'center' | 'bottom' or finite number
+  | 'paintFirst' // 'fill' | 'stroke'
+  | 'fillRule' // 'nonzero' | 'evenodd'
+  | 'lineCap' // 'butt' | 'round' | 'square'
+  | 'lineJoin' // 'bevel' | 'round' | 'miter'
+  | 'compositeOp' // known canvas composite operation string
+  | 'numberArray' // number[] | null, max MAX_STROKE_DASH_ARRAY_LENGTH elements
+  | 'forceNull' // always output null (strips nested objects like shadow/clipPath)
+  | 'pointsArray'; // {x,y}[] with bounds, max MAX_POINTS_COUNT elements
 
 type PropMap = Readonly<Record<string, PropValidator>>;
 
@@ -190,11 +190,16 @@ const REQUIRED_FIELDS: Readonly<Record<FabricTypeName, readonly string[]>> = {
 
 function getTypeExtraProps(type: FabricTypeName): PropMap {
   switch (type) {
-    case 'Rect': return RECT_EXTRA_PROPS;
-    case 'Circle': return CIRCLE_EXTRA_PROPS;
-    case 'Line': return LINE_EXTRA_PROPS;
-    case 'Polyline': return POLYLINE_EXTRA_PROPS;
-    case 'Polygon': return POLYLINE_EXTRA_PROPS;
+    case 'Rect':
+      return RECT_EXTRA_PROPS;
+    case 'Circle':
+      return CIRCLE_EXTRA_PROPS;
+    case 'Line':
+      return LINE_EXTRA_PROPS;
+    case 'Polyline':
+      return POLYLINE_EXTRA_PROPS;
+    case 'Polygon':
+      return POLYLINE_EXTRA_PROPS;
   }
 }
 
@@ -205,7 +210,9 @@ function getTypeExtraProps(type: FabricTypeName): PropMap {
 /** Result type for per-property validation — mirrors the shape of zod.safeParse. */
 type ParseResult = { readonly ok: true; readonly value: unknown } | { readonly ok: false };
 
-function ok(value: unknown): ParseResult { return { ok: true, value }; }
+function ok(value: unknown): ParseResult {
+  return { ok: true, value };
+}
 const FAIL: ParseResult = { ok: false };
 
 const ORIGIN_X_VALUES = ['left', 'center', 'right'] as const;
@@ -215,11 +222,32 @@ const FILL_RULE_VALUES = ['nonzero', 'evenodd'] as const;
 const LINE_CAP_VALUES = ['butt', 'round', 'square'] as const;
 const LINE_JOIN_VALUES = ['bevel', 'round', 'miter'] as const;
 const COMPOSITE_OP_VALUES = [
-  'source-over', 'source-in', 'source-out', 'source-atop',
-  'destination-over', 'destination-in', 'destination-out', 'destination-atop',
-  'lighter', 'copy', 'xor', 'multiply', 'screen', 'overlay', 'darken', 'lighten',
-  'color-dodge', 'color-burn', 'hard-light', 'soft-light', 'difference', 'exclusion',
-  'hue', 'saturation', 'color', 'luminosity',
+  'source-over',
+  'source-in',
+  'source-out',
+  'source-atop',
+  'destination-over',
+  'destination-in',
+  'destination-out',
+  'destination-atop',
+  'lighter',
+  'copy',
+  'xor',
+  'multiply',
+  'screen',
+  'overlay',
+  'darken',
+  'lighten',
+  'color-dodge',
+  'color-burn',
+  'hard-light',
+  'soft-light',
+  'difference',
+  'exclusion',
+  'hue',
+  'saturation',
+  'color',
+  'luminosity',
 ] as const;
 
 function sanitizeValue(value: unknown, validator: PropValidator): ParseResult {
@@ -286,23 +314,28 @@ function sanitizeValue(value: unknown, validator: PropValidator): ParseResult {
       return FAIL;
     }
     case 'paintFirst': {
-      if (typeof value !== 'string' || !(PAINT_FIRST_VALUES as readonly string[]).includes(value)) return FAIL;
+      if (typeof value !== 'string' || !(PAINT_FIRST_VALUES as readonly string[]).includes(value))
+        return FAIL;
       return ok(value);
     }
     case 'fillRule': {
-      if (typeof value !== 'string' || !(FILL_RULE_VALUES as readonly string[]).includes(value)) return FAIL;
+      if (typeof value !== 'string' || !(FILL_RULE_VALUES as readonly string[]).includes(value))
+        return FAIL;
       return ok(value);
     }
     case 'lineCap': {
-      if (typeof value !== 'string' || !(LINE_CAP_VALUES as readonly string[]).includes(value)) return FAIL;
+      if (typeof value !== 'string' || !(LINE_CAP_VALUES as readonly string[]).includes(value))
+        return FAIL;
       return ok(value);
     }
     case 'lineJoin': {
-      if (typeof value !== 'string' || !(LINE_JOIN_VALUES as readonly string[]).includes(value)) return FAIL;
+      if (typeof value !== 'string' || !(LINE_JOIN_VALUES as readonly string[]).includes(value))
+        return FAIL;
       return ok(value);
     }
     case 'compositeOp': {
-      if (typeof value !== 'string' || !(COMPOSITE_OP_VALUES as readonly string[]).includes(value)) return FAIL;
+      if (typeof value !== 'string' || !(COMPOSITE_OP_VALUES as readonly string[]).includes(value))
+        return FAIL;
       return ok(value);
     }
     case 'numberArray': {

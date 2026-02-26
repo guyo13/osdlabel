@@ -34,7 +34,15 @@ describe('Serialization', () => {
   const baseRawAnnotationData = {
     format: 'fabric' as const,
     fabricVersion: FABRIC_VERSION,
-    data: { type: 'Rect', width: 100, height: 50, stroke: 'red', strokeWidth: 2, fill: 'rgba(0,0,255,0.3)', opacity: 1 },
+    data: {
+      type: 'Rect',
+      width: 100,
+      height: 50,
+      stroke: 'red',
+      strokeWidth: 2,
+      fill: 'rgba(0,0,255,0.3)',
+      opacity: 1,
+    },
   };
 
   const annotation1: Annotation = {
@@ -140,44 +148,56 @@ describe('Serialization', () => {
     });
 
     it('should reject documents with unknown version', () => {
-      expect(() => deserialize({
-        version: '2.0.0',
-        exportedAt: '2024-01-01T00:00:00.000Z',
-        images: [],
-      })).toThrow(/Unsupported document version/);
+      expect(() =>
+        deserialize({
+          version: '2.0.0',
+          exportedAt: '2024-01-01T00:00:00.000Z',
+          images: [],
+        }),
+      ).toThrow(/Unsupported document version/);
     });
 
     it('should reject documents with missing version', () => {
-      expect(() => deserialize({
-        exportedAt: '2024-01-01T00:00:00.000Z',
-        images: [],
-      })).toThrow(/Unsupported document version/);
+      expect(() =>
+        deserialize({
+          exportedAt: '2024-01-01T00:00:00.000Z',
+          images: [],
+        }),
+      ).toThrow(/Unsupported document version/);
     });
 
     it('should reject documents with missing images array', () => {
-      expect(() => deserialize({
-        version: '1.0.0',
-        exportedAt: '2024-01-01T00:00:00.000Z',
-      })).toThrow(/Missing or invalid images array/);
+      expect(() =>
+        deserialize({
+          version: '1.0.0',
+          exportedAt: '2024-01-01T00:00:00.000Z',
+        }),
+      ).toThrow(/Missing or invalid images array/);
     });
 
     it('should reject documents with missing exportedAt', () => {
-      expect(() => deserialize({
-        version: '1.0.0',
-        images: [],
-      })).toThrow(/Missing or invalid exportedAt/);
+      expect(() =>
+        deserialize({
+          version: '1.0.0',
+          images: [],
+        }),
+      ).toThrow(/Missing or invalid exportedAt/);
     });
 
     it('should reject images with invalid annotations', () => {
-      expect(() => deserialize({
-        version: '1.0.0',
-        exportedAt: '2024-01-01T00:00:00.000Z',
-        images: [{
-          imageId: 'img1',
-          sourceUrl: 'https://example.com',
-          annotations: [{ id: 'bad' }], // incomplete annotation
-        }],
-      })).toThrow(/Invalid annotation/);
+      expect(() =>
+        deserialize({
+          version: '1.0.0',
+          exportedAt: '2024-01-01T00:00:00.000Z',
+          images: [
+            {
+              imageId: 'img1',
+              sourceUrl: 'https://example.com',
+              annotations: [{ id: 'bad' }], // incomplete annotation
+            },
+          ],
+        }),
+      ).toThrow(/Invalid annotation/);
     });
   });
 
@@ -211,7 +231,11 @@ describe('Serialization', () => {
         ...annotation1,
         geometry: {
           type: 'path',
-          points: [{ x: 0, y: 0 }, { x: 10, y: 10 }, { x: 20, y: 0 }],
+          points: [
+            { x: 0, y: 0 },
+            { x: 10, y: 10 },
+            { x: 20, y: 0 },
+          ],
           closed: true,
         },
       };
@@ -242,7 +266,13 @@ describe('Serialization', () => {
     it('should reject NaN coordinates', () => {
       const badAnn = {
         ...annotation1,
-        geometry: { type: 'rectangle', origin: { x: NaN, y: 20 }, width: 100, height: 50, rotation: 0 },
+        geometry: {
+          type: 'rectangle',
+          origin: { x: NaN, y: 20 },
+          width: 100,
+          height: 50,
+          rotation: 0,
+        },
       };
       expect(validateAnnotation(badAnn)).toBe(false);
     });
@@ -410,7 +440,7 @@ describe('Serialization', () => {
       const flat = getAllAnnotationsFlat(state);
 
       expect(flat).toHaveLength(2);
-      expect(flat.map(a => a.id).sort()).toEqual([annId1, annId2].sort());
+      expect(flat.map((a) => a.id).sort()).toEqual([annId1, annId2].sort());
     });
 
     it('should return empty array for empty state', () => {

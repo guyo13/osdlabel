@@ -20,4 +20,3 @@ export const MAX_GRID_SIZE = {
   columns: 4,
   rows: 4,
 } as const;
-

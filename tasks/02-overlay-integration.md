@@ -14,18 +14,21 @@ Build the custom overlay layer that positions a Fabric.js canvas on top of an Op
 Implement the `FabricOverlay` interface from §5.4 of the spec. The implementation must:
 
 **Create the Fabric canvas:**
+
 - Create a `<canvas>` DOM element.
 - Position it absolutely on top of the OSD viewer's canvas element (`viewer.canvas`).
 - Set its CSS to `pointer-events: none` initially (navigation mode).
 - Instantiate a Fabric `Canvas` on this element.
 
 **Subscribe to OSD viewport events:**
+
 - Listen to `'animation'` (fires every frame during pan/zoom — this is for smooth sync).
 - Listen to `'resize'` (viewer container resized).
 - Listen to `'open'` (tile source loaded — needed to compute initial image dimensions).
 - On each event, call the internal `sync()` method.
 
 **Implement `sync()`:**
+
 - Read OSD viewport state: `viewer.viewport.getCenter(true)`, `viewer.viewport.getZoom(true)`, `viewer.viewport.getRotation()`.
 - Compute the affine transform matrix that maps image-space coordinates to the Fabric canvas's screen-space.
 - The key formula: for a point `P` in image-space, its screen position is `viewer.viewport.imageToViewerElementCoordinates(P)`.
@@ -34,6 +37,7 @@ Implement the `FabricOverlay` interface from §5.4 of the spec. The implementati
 - Call `this.canvas.requestRenderAll()`.
 
 **The transform derivation (critical):**
+
 ```
 // Get two reference points in image-space and their screen positions
 const imgOrigin = new OpenSeadragon.Point(0, 0);
@@ -51,6 +55,7 @@ const vpt = [scale, 0, 0, scale, screenOrigin.x, screenOrigin.y];
 ```
 
 For rotation support, the matrix becomes:
+
 ```
 const rotation = viewer.viewport.getRotation() * Math.PI / 180;
 const cos = Math.cos(rotation) * scale;
@@ -59,14 +64,17 @@ const vpt = [cos, sin, -sin, cos, screenOrigin.x, screenOrigin.y];
 ```
 
 **Implement `setInteractive()`:**
+
 - When `true`: set `pointer-events: auto` on the Fabric canvas element, enable Fabric selection.
 - When `false`: set `pointer-events: none`, disable Fabric selection.
 
 **Implement coordinate conversion:**
+
 - `screenToImage(point)`: use `viewer.viewport.viewerElementToImageCoordinates()`.
 - `imageToScreen(point)`: use `viewer.viewport.imageToViewerElementCoordinates()`.
 
 **Implement `destroy()`:**
+
 - Remove all OSD event handlers.
 - Dispose the Fabric canvas.
 - Remove the canvas DOM element.
@@ -74,6 +82,7 @@ const vpt = [cos, sin, -sin, cos, screenOrigin.x, screenOrigin.y];
 ### 2. Create `src/overlay/overlay-manager.ts`
 
 A simple registry that tracks active overlays by cell index. Methods:
+
 - `create(viewer, options) → FabricOverlay`
 - `get(cellIndex) → FabricOverlay | undefined`
 - `destroy(cellIndex) → void`
@@ -82,6 +91,7 @@ A simple registry that tracks active overlays by cell index. Methods:
 ### 3. Update the dev app
 
 Modify `dev/App.tsx` to:
+
 - Create a `<div>` container for the OSD viewer.
 - Initialize an OSD viewer on mount (use `type: 'image'` tile source with a local test image — add a sample JPEG to `dev/sample-data/`).
 - Create a `FabricOverlay` attached to the viewer.
@@ -91,6 +101,7 @@ Modify `dev/App.tsx` to:
 ### 4. Write unit tests
 
 Create `tests/unit/overlay/coordinate-transform.test.ts`:
+
 - Test the affine matrix computation for known inputs (identity zoom, 2x zoom, zoom + pan offset).
 - Mock the OSD viewport methods to return predictable values.
 - Verify that `screenToImage(imageToScreen(point))` round-trips correctly.

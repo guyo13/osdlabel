@@ -40,7 +40,13 @@ export interface Point {
 
 /** Discriminated union of annotation geometries */
 export type Geometry =
-  | { readonly type: 'rectangle'; readonly origin: Point; readonly width: number; readonly height: number; readonly rotation: number }
+  | {
+      readonly type: 'rectangle';
+      readonly origin: Point;
+      readonly width: number;
+      readonly height: number;
+      readonly rotation: number;
+    }
   | { readonly type: 'circle'; readonly center: Point; readonly radius: number }
   | { readonly type: 'line'; readonly start: Point; readonly end: Point }
   | { readonly type: 'point'; readonly position: Point }
@@ -62,8 +68,11 @@ export interface AnnotationStyle {
 // ── Raw Annotation Data ──────────────────────────────────────────────────
 
 /** Discriminated union for raw annotation data from rendering libraries */
-export type RawAnnotationData =
-  | { readonly format: 'fabric'; readonly fabricVersion: string; readonly data: Record<string, unknown> };
+export type RawAnnotationData = {
+  readonly format: 'fabric';
+  readonly fabricVersion: string;
+  readonly data: Record<string, unknown>;
+};
 
 // ── Annotation Entity ────────────────────────────────────────────────────
 
@@ -154,11 +163,14 @@ export interface ContextState {
 // ── Constraint Status ────────────────────────────────────────────────────
 
 /** Derived state showing which tools are enabled/disabled for the active context */
-export type ConstraintStatus = Record<AnnotationType, {
-  readonly enabled: boolean;
-  readonly currentCount: number;
-  readonly maxCount: number | null;
-}>;
+export type ConstraintStatus = Record<
+  AnnotationType,
+  {
+    readonly enabled: boolean;
+    readonly currentCount: number;
+    readonly maxCount: number | null;
+  }
+>;
 
 // ── Keyboard Shortcuts ───────────────────────────────────────────────────
 

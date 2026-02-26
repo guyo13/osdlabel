@@ -11,7 +11,7 @@ const StatusBar: Component<StatusBarProps> = (props) => {
 
   const activeContextLabel = () => {
     if (!contextState.activeContextId) return 'No context';
-    const ctx = contextState.contexts.find(c => c.id === contextState.activeContextId);
+    const ctx = contextState.contexts.find((c) => c.id === contextState.activeContextId);
     return ctx?.label ?? 'Unknown';
   };
 

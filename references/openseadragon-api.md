@@ -7,10 +7,10 @@ import OpenSeadragon from 'openseadragon';
 
 // Create viewer attached to a DOM element
 const viewer = OpenSeadragon({
-  element: containerDiv,            // DOM element (not id string)
-  prefixUrl: '',                    // disable default button images
-  showNavigationControl: false,     // disable default zoom buttons
-  animationTime: 0.3,              // pan/zoom animation duration (seconds)
+  element: containerDiv, // DOM element (not id string)
+  prefixUrl: '', // disable default button images
+  showNavigationControl: false, // disable default zoom buttons
+  animationTime: 0.3, // pan/zoom animation duration (seconds)
   minZoomLevel: 0.5,
   maxZoomLevel: 40,
   visibilityRatio: 0.5,
@@ -55,10 +55,10 @@ const imagePoint = viewer.viewport.viewerElementToImageCoordinates(webPoint);
 
 // Direct image ↔ web element:
 const webFromImage = viewer.viewport.imageToViewerElementCoordinates(
-  new OpenSeadragon.Point(imgX, imgY)
+  new OpenSeadragon.Point(imgX, imgY),
 );
 const imageFromWeb = viewer.viewport.viewerElementToImageCoordinates(
-  new OpenSeadragon.Point(webX, webY)
+  new OpenSeadragon.Point(webX, webY),
 );
 ```
 
@@ -68,13 +68,13 @@ const imageFromWeb = viewer.viewport.viewerElementToImageCoordinates(
 // Fires every animation frame during pan/zoom — use this for overlay sync
 viewer.addHandler('animation', () => {
   // Called on every frame while animating
-  const center = viewer.viewport.getCenter(true);  // true = current (not target)
+  const center = viewer.viewport.getCenter(true); // true = current (not target)
   const zoom = viewer.viewport.getZoom(true);
   const rotation = viewer.viewport.getRotation();
 });
 
 // Fires when animation completes
-viewer.addHandler('animation-finish', () => { });
+viewer.addHandler('animation-finish', () => {});
 
 // Fires on viewer resize
 viewer.addHandler('resize', (event) => {

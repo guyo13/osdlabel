@@ -92,12 +92,14 @@ In `src/state/context-store.ts` or a separate file, create a `createMemo` that c
 
 ```typescript
 const constraintStatus = createMemo(() => {
-  const activeContext = contextState.contexts.find(c => c.id === contextState.activeContextId);
+  const activeContext = contextState.contexts.find((c) => c.id === contextState.activeContextId);
   if (!activeContext) return { enabledTools: [], disabledTools: [] };
-  
-  return activeContext.tools.map(toolConstraint => {
+
+  return activeContext.tools.map((toolConstraint) => {
     const currentCount = countAnnotationsForContextAndType(
-      annotationState, activeContext.id, toolConstraint.type
+      annotationState,
+      activeContext.id,
+      toolConstraint.type,
     );
     return {
       type: toolConstraint.type,
@@ -112,6 +114,7 @@ const constraintStatus = createMemo(() => {
 ### 7. Write unit tests
 
 Create `tests/unit/state/actions.test.ts`:
+
 - Test `addAnnotation` adds to the correct image bucket.
 - Test `updateAnnotation` updates the correct annotation and sets `updatedAt`.
 - Test `deleteAnnotation` removes the annotation.

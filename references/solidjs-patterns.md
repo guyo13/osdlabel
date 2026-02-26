@@ -48,17 +48,19 @@ function ViewerCell(props) {
 
   // Watch for image source changes
   // IMPORTANT: Do NOT destructure props — it breaks reactivity
-  createEffect(on(
-    () => props.imageSource?.dziUrl,  // tracked getter
-    (url, prevUrl) => {
-      if (url !== prevUrl && viewer) {
-        viewer.close();
-        if (url) {
-          viewer.open(/* ... */);
+  createEffect(
+    on(
+      () => props.imageSource?.dziUrl, // tracked getter
+      (url, prevUrl) => {
+        if (url !== prevUrl && viewer) {
+          viewer.close();
+          if (url) {
+            viewer.open(/* ... */);
+          }
         }
-      }
-    }
-  ));
+      },
+    ),
+  );
 
   // Watch for active state changes
   createEffect(() => {
@@ -101,10 +103,12 @@ const [state, setState] = createStore({
 });
 
 // Update with produce (Immer-like syntax)
-setState(produce((draft) => {
-  draft.byImage['img-1'] ??= {};
-  draft.byImage['img-1']['ann-1'] = newAnnotation;
-}));
+setState(
+  produce((draft) => {
+    draft.byImage['img-1'] ??= {};
+    draft.byImage['img-1']['ann-1'] = newAnnotation;
+  }),
+);
 
 // Read reactively — accessing nested paths creates subscriptions
 createEffect(() => {
@@ -156,15 +160,13 @@ import { createMemo } from 'solid-js';
 
 // Computed value that re-evaluates only when its dependencies change
 const constraintStatus = createMemo(() => {
-  const activeCtx = contextState.contexts.find(
-    c => c.id === contextState.activeContextId
-  );
+  const activeCtx = contextState.contexts.find((c) => c.id === contextState.activeContextId);
   if (!activeCtx) return [];
 
-  return activeCtx.tools.map(tc => ({
+  return activeCtx.tools.map((tc) => ({
     type: tc.type,
-    enabled: tc.maxCount === undefined ||
-      countAnnotations(state, activeCtx.id, tc.type) < tc.maxCount,
+    enabled:
+      tc.maxCount === undefined || countAnnotations(state, activeCtx.id, tc.type) < tc.maxCount,
   }));
 });
 

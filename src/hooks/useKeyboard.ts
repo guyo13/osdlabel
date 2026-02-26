@@ -33,7 +33,7 @@ export const DEFAULT_KEYBOARD_SHORTCUTS: KeyboardShortcutMap = {
 export function useKeyboard(
   shortcuts: KeyboardShortcutMap,
   activeToolKeyHandlerRef: ActiveToolKeyHandlerRef,
-  shouldSkipTargetPredicate?: (target: HTMLElement) => boolean
+  shouldSkipTargetPredicate?: (target: HTMLElement) => boolean,
 ) {
   const { actions, uiState } = useAnnotator();
   const { isToolEnabled } = useConstraints();
@@ -101,9 +101,11 @@ export function useKeyboard(
     else if (key === shortcuts.gridCell7) actions.setActiveCell(6);
     else if (key === shortcuts.gridCell8) actions.setActiveCell(7);
     else if (key === shortcuts.gridCell9) actions.setActiveCell(8);
-
     // Grid Columns
-    else if (key === shortcuts.increaseGridColumns || (shortcuts.increaseGridColumns === '=' && key === '+')) {
+    else if (
+      key === shortcuts.increaseGridColumns ||
+      (shortcuts.increaseGridColumns === '=' && key === '+')
+    ) {
       const maxCols = MAX_GRID_SIZE.columns;
       if (uiState.gridColumns < maxCols) {
         actions.setGridDimensions(uiState.gridColumns + 1, uiState.gridRows);

@@ -1,6 +1,14 @@
 import { FabricObject } from 'fabric';
 import type { FabricOverlay } from '../../overlay/fabric-overlay.js';
-import { AnnotationType, Point, ImageId, AnnotationContextId, AnnotationId, ToolConstraint, KeyboardShortcutMap } from '../types.js';
+import {
+  AnnotationType,
+  Point,
+  ImageId,
+  AnnotationContextId,
+  AnnotationId,
+  ToolConstraint,
+  KeyboardShortcutMap,
+} from '../types.js';
 import '../fabric-module.js';
 
 /** Parameters for adding an annotation via a tool */
@@ -19,10 +27,17 @@ export interface ToolCallbacks {
   readonly getToolConstraint: (type: AnnotationType) => ToolConstraint | undefined;
   readonly canAddAnnotation: (type: AnnotationType) => boolean;
   readonly addAnnotation: (params: AddAnnotationParams) => void;
-  readonly updateAnnotation: (id: AnnotationId, imageId: ImageId, fabricObject: FabricObject) => void;
+  readonly updateAnnotation: (
+    id: AnnotationId,
+    imageId: ImageId,
+    fabricObject: FabricObject,
+  ) => void;
   readonly deleteAnnotation: (id: AnnotationId, imageId: ImageId) => void;
   readonly setSelectedAnnotation: (id: AnnotationId | null) => void;
-  readonly getAnnotation: (id: AnnotationId, imageId: ImageId) => import('../types.js').Annotation | undefined;
+  readonly getAnnotation: (
+    id: AnnotationId,
+    imageId: ImageId,
+  ) => import('../types.js').Annotation | undefined;
 }
 
 export interface AnnotationTool {
@@ -30,7 +45,12 @@ export interface AnnotationTool {
   readonly type: AnnotationType | 'select';
 
   /** Called when the tool becomes active */
-  activate(overlay: FabricOverlay, imageId: ImageId, callbacks: ToolCallbacks, shortcuts: KeyboardShortcutMap): void;
+  activate(
+    overlay: FabricOverlay,
+    imageId: ImageId,
+    callbacks: ToolCallbacks,
+    shortcuts: KeyboardShortcutMap,
+  ): void;
 
   /** Called when the tool is deactivated */
   deactivate(): void;
@@ -58,7 +78,12 @@ export abstract class BaseTool implements AnnotationTool {
   protected callbacks: ToolCallbacks | null = null;
   protected shortcuts: KeyboardShortcutMap | null = null;
 
-  activate(overlay: FabricOverlay, imageId: ImageId, callbacks: ToolCallbacks, shortcuts: KeyboardShortcutMap): void {
+  activate(
+    overlay: FabricOverlay,
+    imageId: ImageId,
+    callbacks: ToolCallbacks,
+    shortcuts: KeyboardShortcutMap,
+  ): void {
     this.overlay = overlay;
     this.imageId = imageId;
     this.callbacks = callbacks;
@@ -66,9 +91,12 @@ export abstract class BaseTool implements AnnotationTool {
   }
 
   onKeyDown(event: KeyboardEvent): boolean {
-    if (this.shortcuts && (event.key === this.shortcuts.delete || event.key === this.shortcuts.deleteAlt)) {
-        this.deleteSelected();
-        return true;
+    if (
+      this.shortcuts &&
+      (event.key === this.shortcuts.delete || event.key === this.shortcuts.deleteAlt)
+    ) {
+      this.deleteSelected();
+      return true;
     }
     return false;
   }
@@ -96,10 +124,10 @@ export abstract class BaseTool implements AnnotationTool {
     this.overlay.canvas.requestRenderAll();
 
     for (const obj of activeObjects) {
-        const annotationId = obj.id as AnnotationId | undefined;
-        if (annotationId) {
-            this.callbacks.deleteAnnotation(annotationId, this.imageId);
-        }
+      const annotationId = obj.id as AnnotationId | undefined;
+      if (annotationId) {
+        this.callbacks.deleteAnnotation(annotationId, this.imageId);
+      }
     }
   }
 }

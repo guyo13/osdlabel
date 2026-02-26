@@ -1,6 +1,12 @@
 import { createStore } from 'solid-js/store';
 import { createMemo } from 'solid-js';
-import { ContextState, AnnotationContextId, AnnotationState, ConstraintStatus, AnnotationType } from '../core/types.js';
+import {
+  ContextState,
+  AnnotationContextId,
+  AnnotationState,
+  ConstraintStatus,
+  AnnotationType,
+} from '../core/types.js';
 
 export function createContextStore() {
   const [state, setState] = createStore<ContextState>({
@@ -10,9 +16,12 @@ export function createContextStore() {
   return { state, setState };
 }
 
-export function createConstraintStatus(contextState: ContextState, annotationState: AnnotationState) {
+export function createConstraintStatus(
+  contextState: ContextState,
+  annotationState: AnnotationState,
+) {
   return createMemo<ConstraintStatus>(() => {
-    const activeContext = contextState.contexts.find(c => c.id === contextState.activeContextId);
+    const activeContext = contextState.contexts.find((c) => c.id === contextState.activeContextId);
 
     const allTypes: AnnotationType[] = ['rectangle', 'circle', 'line', 'point', 'path'];
     const result: Partial<ConstraintStatus> = {};
@@ -25,12 +34,14 @@ export function createConstraintStatus(contextState: ContextState, annotationSta
     }
 
     for (const type of allTypes) {
-      const toolConstraint = activeContext.tools.find(t => t.type === type);
+      const toolConstraint = activeContext.tools.find((t) => t.type === type);
       if (!toolConstraint) {
         result[type] = { enabled: false, currentCount: 0, maxCount: null };
       } else {
         const currentCount = countAnnotationsForContextAndType(
-          annotationState, activeContext.id, type
+          annotationState,
+          activeContext.id,
+          type,
         );
         const maxCount = toolConstraint.maxCount ?? null;
         const enabled = maxCount === null || currentCount < maxCount;
@@ -38,7 +49,7 @@ export function createConstraintStatus(contextState: ContextState, annotationSta
         result[type] = {
           enabled,
           currentCount,
-          maxCount
+          maxCount,
         };
       }
     }
@@ -49,7 +60,7 @@ export function createConstraintStatus(contextState: ContextState, annotationSta
 function countAnnotationsForContextAndType(
   annotationState: AnnotationState,
   contextId: AnnotationContextId,
-  type: AnnotationType
+  type: AnnotationType,
 ): number {
   let count = 0;
   for (const imageAnns of Object.values(annotationState.byImage)) {

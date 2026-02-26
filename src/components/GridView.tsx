@@ -20,7 +20,7 @@ const GridView: Component<GridViewProps> = (props) => {
   const getImageForCell = (cellIndex: number): ImageSource | undefined => {
     const imageId = uiState.gridAssignments[cellIndex];
     if (!imageId) return undefined;
-    return props.images.find(img => img.id === imageId);
+    return props.images.find((img) => img.id === imageId);
   };
 
   return (

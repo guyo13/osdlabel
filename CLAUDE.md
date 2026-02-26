@@ -7,6 +7,7 @@ This is `@guyo13/osdlabel`, a DZI image annotation library built with SolidJS, F
 ## Critical Rules
 
 ### TypeScript
+
 - **Never use `any`.** Use `unknown` with type guards, or a specific type. If you find yourself reaching for `any`, stop and define a proper type.
 - Always use `const` assertions for literal types: `as const`.
 - Prefer `readonly` properties on interfaces. All annotation data types must be immutable. **Exception:** SolidJS store shape interfaces (`AnnotationState`, `UIState`, `ContextState`) omit `readonly` because SolidJS enforces immutability at runtime via store proxies, and `readonly` conflicts with SolidJS's `SetStoreFunction` path-based API.
@@ -15,6 +16,7 @@ This is `@guyo13/osdlabel`, a DZI image annotation library built with SolidJS, F
 - Run `pnpm typecheck` after every file change. Fix all type errors before proceeding.
 
 ### SolidJS
+
 - **Components run once.** Do not write SolidJS components as if they re-render like React. The JSX function body executes once to set up the view. Reactive updates happen through signals and effects.
 - **Use `onMount` for imperative library initialization** (OSD viewer, Fabric canvas). Clean up with `onCleanup`. Never create OSD/Fabric instances inside `createMemo` or derived computations.
 - **Use `createEffect` to synchronize imperative libraries with reactive state.** When the active tool signal changes, update the Fabric canvas interaction mode inside a `createEffect`. Do NOT re-render the component tree.
@@ -22,6 +24,7 @@ This is `@guyo13/osdlabel`, a DZI image annotation library built with SolidJS, F
 - **Use `createStore` with `produce` for nested state updates.** This is Solid's equivalent of Immer — it provides immutable-style update semantics with fine-grained tracking.
 
 ### Fabric.js v7
+
 - **Import from `'fabric'` directly.** v7 uses named exports: `import { Canvas, Rect, Circle } from 'fabric'`. There is no `fabric.` namespace.
 - **Do NOT use `fabric.Canvas` in detached/offscreen mode.** The canvas must be attached to a visible DOM `<canvas>` element for event handling to work.
 - **`viewportTransform` is a 6-element array** `[scaleX, skewY, skewX, scaleY, translateX, translateY]`. Use `canvas.setViewportTransform(matrix)` to update it. After setting it, call `canvas.requestRenderAll()`.
@@ -29,6 +32,7 @@ This is `@guyo13/osdlabel`, a DZI image annotation library built with SolidJS, F
 - **All Fabric API calls must go through the overlay interface** (`FabricOverlay`). Components should never import from `'fabric'` directly or access the Fabric canvas instance except through the overlay.
 
 ### OpenSeaDragon
+
 - **OSD `viewportTransform` is NOT the same as Fabric's.** OSD uses its own coordinate system where image width maps to 0–1 in viewport coordinates. Use `viewer.viewport.viewportToImageCoordinates()` and `viewer.viewport.imageToViewerElementCoordinates()` for conversions.
 - **Subscribe to `'animation'` event for smooth overlay sync**, not `'animation-finish'`. The `animation` event fires on every frame during pan/zoom animations.
 - **Toggle mouse navigation** with `viewer.setMouseNavEnabled(boolean)`. Use this to switch between navigation mode (OSD handles input) and annotation mode (Fabric handles input).
@@ -36,24 +40,28 @@ This is `@guyo13/osdlabel`, a DZI image annotation library built with SolidJS, F
 - **For dev/testing, use OSD's `type: 'image'` tile source** with local images. This avoids needing a DZI tile server during development. The library should also support DZI for production.
 
 ### Architecture
+
 - **Core logic is framework-agnostic.** Everything in `src/core/` must have zero imports from `solid-js` or any UI framework. This includes the annotation model, serialization, constraints, coordinate transforms, and tool implementations.
 - **State mutations go through named action functions.** Never modify the store directly from components. All mutations are in `src/state/actions.ts`.
 - **One active cell at a time.** Only one grid cell can be in annotation mode at a time. All other cells display existing annotations in read-only mode.
 - **Constraint enforcement is reactive.** Use Solid's `createMemo` to derive whether each tool is enabled/disabled from the current annotation counts and the active context's limits. The toolbar reads this derived state. Do not imperatively enable/disable tools.
 
 ### Testing
+
 - Run `pnpm test` (Vitest) after implementing any core logic.
 - Run `pnpm test:e2e` (Playwright) after implementing any UI interaction.
 - Write tests for the module you just built before moving to the next task.
 - **For canvas E2E tests:** Use Playwright's `page.mouse.move()`, `page.mouse.down()`, `page.mouse.up()` for precise drawing simulation. Use `page.screenshot()` with `expect(screenshot).toMatchSnapshot()` for visual regression.
 
 ### File Conventions
+
 - One exported entity per file where practical. Exceptions: closely related types can share a file.
 - File names use kebab-case: `rectangle-tool.ts`, `annotation-store.ts`.
 - Test files mirror source structure: `src/core/annotations/model.ts` → `tests/unit/annotations/model.test.ts`.
 - All imports use explicit file extensions: `import { Foo } from './foo.js'` (required for ESM).
 
 ### Build Commands
+
 ```bash
 pnpm dev          # Start Vite dev server with demo app
 pnpm build        # Run tsc to emit ESM + declarations to dist/
@@ -65,9 +73,11 @@ pnpm format       # Run Prettier
 ```
 
 ### Incremental Verification
+
 After completing each task file, verify the acceptance criteria listed at the bottom of that task before proceeding to the next one. If a verification step fails, fix it before moving on — do not accumulate technical debt across tasks.
 
 ## Dependency Versions (pinned)
+
 ```
 solid-js@1.9.11
 fabric@7.1.0

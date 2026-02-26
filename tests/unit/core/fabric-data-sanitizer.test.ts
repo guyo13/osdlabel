@@ -177,7 +177,13 @@ describe('fabric-data-sanitizer', () => {
       });
 
       it('should accept mixed-case type and normalize', () => {
-        const result = sanitizeFabricData({ type: 'PoLyGoN', points: [{ x: 0, y: 0 }, { x: 1, y: 1 }] });
+        const result = sanitizeFabricData({
+          type: 'PoLyGoN',
+          points: [
+            { x: 0, y: 0 },
+            { x: 1, y: 1 },
+          ],
+        });
         expect(result).not.toBeNull();
         expect(result?.type).toBe('Polygon');
       });
@@ -246,7 +252,13 @@ describe('fabric-data-sanitizer', () => {
       });
 
       it('should accept null fill and stroke', () => {
-        const result = sanitizeFabricData({ type: 'Rect', width: 10, height: 10, fill: null, stroke: null });
+        const result = sanitizeFabricData({
+          type: 'Rect',
+          width: 10,
+          height: 10,
+          fill: null,
+          stroke: null,
+        });
         expect(result).not.toBeNull();
         expect(result?.fill).toBeNull();
         expect(result?.stroke).toBeNull();
@@ -268,21 +280,25 @@ describe('fabric-data-sanitizer', () => {
       });
 
       it('should reject coordinate values exceeding MAX_COORDINATE', () => {
-        expect(sanitizeFabricData({
-          type: 'Rect',
-          width: 10,
-          height: 10,
-          left: MAX_COORDINATE + 1,
-        })).toBeNull();
+        expect(
+          sanitizeFabricData({
+            type: 'Rect',
+            width: 10,
+            height: 10,
+            left: MAX_COORDINATE + 1,
+          }),
+        ).toBeNull();
       });
 
       it('should reject negative left coordinate beyond MAX_COORDINATE', () => {
-        expect(sanitizeFabricData({
-          type: 'Rect',
-          width: 10,
-          height: 10,
-          top: -(MAX_COORDINATE + 1),
-        })).toBeNull();
+        expect(
+          sanitizeFabricData({
+            type: 'Rect',
+            width: 10,
+            height: 10,
+            top: -(MAX_COORDINATE + 1),
+          }),
+        ).toBeNull();
       });
 
       it('should reject negative width', () => {
@@ -294,24 +310,36 @@ describe('fabric-data-sanitizer', () => {
       });
 
       it('should reject opacity below 0', () => {
-        expect(sanitizeFabricData({ type: 'Rect', width: 10, height: 10, opacity: -0.1 })).toBeNull();
+        expect(
+          sanitizeFabricData({ type: 'Rect', width: 10, height: 10, opacity: -0.1 }),
+        ).toBeNull();
       });
 
       it('should reject opacity above 1', () => {
-        expect(sanitizeFabricData({ type: 'Rect', width: 10, height: 10, opacity: 1.1 })).toBeNull();
+        expect(
+          sanitizeFabricData({ type: 'Rect', width: 10, height: 10, opacity: 1.1 }),
+        ).toBeNull();
       });
 
       it('should accept opacity at boundary values 0 and 1', () => {
-        expect(sanitizeFabricData({ type: 'Rect', width: 10, height: 10, opacity: 0 })).not.toBeNull();
-        expect(sanitizeFabricData({ type: 'Rect', width: 10, height: 10, opacity: 1 })).not.toBeNull();
+        expect(
+          sanitizeFabricData({ type: 'Rect', width: 10, height: 10, opacity: 0 }),
+        ).not.toBeNull();
+        expect(
+          sanitizeFabricData({ type: 'Rect', width: 10, height: 10, opacity: 1 }),
+        ).not.toBeNull();
       });
 
       it('should reject scale exceeding MAX_SCALE', () => {
-        expect(sanitizeFabricData({ type: 'Rect', width: 10, height: 10, scaleX: MAX_SCALE + 1 })).toBeNull();
+        expect(
+          sanitizeFabricData({ type: 'Rect', width: 10, height: 10, scaleX: MAX_SCALE + 1 }),
+        ).toBeNull();
       });
 
       it('should reject angle exceeding MAX_ANGLE', () => {
-        expect(sanitizeFabricData({ type: 'Rect', width: 10, height: 10, angle: MAX_ANGLE + 1 })).toBeNull();
+        expect(
+          sanitizeFabricData({ type: 'Rect', width: 10, height: 10, angle: MAX_ANGLE + 1 }),
+        ).toBeNull();
       });
 
       it('should accept negative angle within bounds', () => {
@@ -323,16 +351,22 @@ describe('fabric-data-sanitizer', () => {
       it('should reject NaN in numeric fields', () => {
         expect(sanitizeFabricData({ type: 'Rect', width: NaN, height: 10 })).toBeNull();
         expect(sanitizeFabricData({ type: 'Rect', width: 10, height: 10, left: NaN })).toBeNull();
-        expect(sanitizeFabricData({ type: 'Rect', width: 10, height: 10, opacity: NaN })).toBeNull();
+        expect(
+          sanitizeFabricData({ type: 'Rect', width: 10, height: 10, opacity: NaN }),
+        ).toBeNull();
       });
 
       it('should reject Infinity in numeric fields', () => {
         expect(sanitizeFabricData({ type: 'Rect', width: 10, height: Infinity })).toBeNull();
-        expect(sanitizeFabricData({ type: 'Rect', width: 10, height: 10, left: Infinity })).toBeNull();
+        expect(
+          sanitizeFabricData({ type: 'Rect', width: 10, height: 10, left: Infinity }),
+        ).toBeNull();
       });
 
       it('should reject negative Infinity', () => {
-        expect(sanitizeFabricData({ type: 'Rect', width: 10, height: 10, top: -Infinity })).toBeNull();
+        expect(
+          sanitizeFabricData({ type: 'Rect', width: 10, height: 10, top: -Infinity }),
+        ).toBeNull();
       });
 
       it('should reject negative radius for Circle', () => {
@@ -382,10 +416,15 @@ describe('fabric-data-sanitizer', () => {
       });
 
       it('should accept Polyline with exactly 2 points', () => {
-        expect(sanitizeFabricData({
-          type: 'Polyline',
-          points: [{ x: 0, y: 0 }, { x: 10, y: 10 }],
-        })).not.toBeNull();
+        expect(
+          sanitizeFabricData({
+            type: 'Polyline',
+            points: [
+              { x: 0, y: 0 },
+              { x: 10, y: 10 },
+            ],
+          }),
+        ).not.toBeNull();
       });
     });
 
@@ -396,54 +435,86 @@ describe('fabric-data-sanitizer', () => {
       });
 
       it('should accept points array at exactly MAX_POINTS_COUNT', () => {
-        const maxPoints = Array.from({ length: MAX_POINTS_COUNT }, (_, i) => ({ x: i % 1000, y: i % 1000 }));
+        const maxPoints = Array.from({ length: MAX_POINTS_COUNT }, (_, i) => ({
+          x: i % 1000,
+          y: i % 1000,
+        }));
         expect(sanitizeFabricData({ type: 'Polyline', points: maxPoints })).not.toBeNull();
       });
 
       it('should reject strokeDashArray exceeding MAX_STROKE_DASH_ARRAY_LENGTH', () => {
         const hugeDash = Array.from({ length: MAX_STROKE_DASH_ARRAY_LENGTH + 1 }, (_, i) => i + 1);
-        expect(sanitizeFabricData({ type: 'Rect', width: 10, height: 10, strokeDashArray: hugeDash })).toBeNull();
+        expect(
+          sanitizeFabricData({ type: 'Rect', width: 10, height: 10, strokeDashArray: hugeDash }),
+        ).toBeNull();
       });
 
       it('should accept null strokeDashArray', () => {
-        const result = sanitizeFabricData({ type: 'Rect', width: 10, height: 10, strokeDashArray: null });
+        const result = sanitizeFabricData({
+          type: 'Rect',
+          width: 10,
+          height: 10,
+          strokeDashArray: null,
+        });
         expect(result).not.toBeNull();
         expect(result?.strokeDashArray).toBeNull();
       });
 
       it('should reject points with non-numeric coordinates', () => {
-        expect(sanitizeFabricData({
-          type: 'Polyline',
-          points: [{ x: 'bad', y: 0 }, { x: 10, y: 10 }],
-        })).toBeNull();
+        expect(
+          sanitizeFabricData({
+            type: 'Polyline',
+            points: [
+              { x: 'bad', y: 0 },
+              { x: 10, y: 10 },
+            ],
+          }),
+        ).toBeNull();
       });
 
       it('should reject points with coordinates exceeding MAX_COORDINATE', () => {
-        expect(sanitizeFabricData({
-          type: 'Polyline',
-          points: [{ x: MAX_COORDINATE + 1, y: 0 }, { x: 10, y: 10 }],
-        })).toBeNull();
+        expect(
+          sanitizeFabricData({
+            type: 'Polyline',
+            points: [
+              { x: MAX_COORDINATE + 1, y: 0 },
+              { x: 10, y: 10 },
+            ],
+          }),
+        ).toBeNull();
       });
     });
 
     describe('string length limits', () => {
       it('should reject fill string exceeding MAX_STRING_LENGTH', () => {
         const longFill = 'a'.repeat(MAX_STRING_LENGTH + 1);
-        expect(sanitizeFabricData({ type: 'Rect', width: 10, height: 10, fill: longFill })).toBeNull();
+        expect(
+          sanitizeFabricData({ type: 'Rect', width: 10, height: 10, fill: longFill }),
+        ).toBeNull();
       });
 
       it('should accept fill string at exactly MAX_STRING_LENGTH', () => {
         const maxFill = 'a'.repeat(MAX_STRING_LENGTH);
-        expect(sanitizeFabricData({ type: 'Rect', width: 10, height: 10, fill: maxFill })).not.toBeNull();
+        expect(
+          sanitizeFabricData({ type: 'Rect', width: 10, height: 10, fill: maxFill }),
+        ).not.toBeNull();
       });
 
       it('should reject stroke string exceeding MAX_STRING_LENGTH', () => {
         const longStroke = 'b'.repeat(MAX_STRING_LENGTH + 1);
-        expect(sanitizeFabricData({ type: 'Rect', width: 10, height: 10, stroke: longStroke })).toBeNull();
+        expect(
+          sanitizeFabricData({ type: 'Rect', width: 10, height: 10, stroke: longStroke }),
+        ).toBeNull();
       });
 
       it('should accept null fill and stroke', () => {
-        const result = sanitizeFabricData({ type: 'Rect', width: 10, height: 10, fill: null, stroke: null });
+        const result = sanitizeFabricData({
+          type: 'Rect',
+          width: 10,
+          height: 10,
+          fill: null,
+          stroke: null,
+        });
         expect(result).not.toBeNull();
       });
 
@@ -475,34 +546,56 @@ describe('fabric-data-sanitizer', () => {
       });
 
       it('should return null for invalid paintFirst value', () => {
-        expect(sanitizeFabricData({ type: 'Rect', width: 10, height: 10, paintFirst: 'invalid' })).toBeNull();
+        expect(
+          sanitizeFabricData({ type: 'Rect', width: 10, height: 10, paintFirst: 'invalid' }),
+        ).toBeNull();
       });
 
       it('should return null for invalid lineCap value', () => {
-        expect(sanitizeFabricData({ type: 'Rect', width: 10, height: 10, strokeLineCap: 'invalid' })).toBeNull();
+        expect(
+          sanitizeFabricData({ type: 'Rect', width: 10, height: 10, strokeLineCap: 'invalid' }),
+        ).toBeNull();
       });
     });
 
     describe('enum field validation', () => {
       it('should accept valid paintFirst values', () => {
-        expect(sanitizeFabricData({ type: 'Rect', width: 10, height: 10, paintFirst: 'fill' })).not.toBeNull();
-        expect(sanitizeFabricData({ type: 'Rect', width: 10, height: 10, paintFirst: 'stroke' })).not.toBeNull();
+        expect(
+          sanitizeFabricData({ type: 'Rect', width: 10, height: 10, paintFirst: 'fill' }),
+        ).not.toBeNull();
+        expect(
+          sanitizeFabricData({ type: 'Rect', width: 10, height: 10, paintFirst: 'stroke' }),
+        ).not.toBeNull();
       });
 
       it('should accept valid fillRule values', () => {
-        expect(sanitizeFabricData({ type: 'Rect', width: 10, height: 10, fillRule: 'nonzero' })).not.toBeNull();
-        expect(sanitizeFabricData({ type: 'Rect', width: 10, height: 10, fillRule: 'evenodd' })).not.toBeNull();
+        expect(
+          sanitizeFabricData({ type: 'Rect', width: 10, height: 10, fillRule: 'nonzero' }),
+        ).not.toBeNull();
+        expect(
+          sanitizeFabricData({ type: 'Rect', width: 10, height: 10, fillRule: 'evenodd' }),
+        ).not.toBeNull();
       });
 
       it('should accept valid strokeLineCap values', () => {
-        expect(sanitizeFabricData({ type: 'Rect', width: 10, height: 10, strokeLineCap: 'butt' })).not.toBeNull();
-        expect(sanitizeFabricData({ type: 'Rect', width: 10, height: 10, strokeLineCap: 'round' })).not.toBeNull();
-        expect(sanitizeFabricData({ type: 'Rect', width: 10, height: 10, strokeLineCap: 'square' })).not.toBeNull();
+        expect(
+          sanitizeFabricData({ type: 'Rect', width: 10, height: 10, strokeLineCap: 'butt' }),
+        ).not.toBeNull();
+        expect(
+          sanitizeFabricData({ type: 'Rect', width: 10, height: 10, strokeLineCap: 'round' }),
+        ).not.toBeNull();
+        expect(
+          sanitizeFabricData({ type: 'Rect', width: 10, height: 10, strokeLineCap: 'square' }),
+        ).not.toBeNull();
       });
 
       it('should accept valid strokeLineJoin values', () => {
-        expect(sanitizeFabricData({ type: 'Rect', width: 10, height: 10, strokeLineJoin: 'bevel' })).not.toBeNull();
-        expect(sanitizeFabricData({ type: 'Rect', width: 10, height: 10, strokeLineJoin: 'miter' })).not.toBeNull();
+        expect(
+          sanitizeFabricData({ type: 'Rect', width: 10, height: 10, strokeLineJoin: 'bevel' }),
+        ).not.toBeNull();
+        expect(
+          sanitizeFabricData({ type: 'Rect', width: 10, height: 10, strokeLineJoin: 'miter' }),
+        ).not.toBeNull();
       });
     });
   });

@@ -24,7 +24,7 @@ test.describe('Filmstrip', () => {
   test('should highlight assigned images', async ({ page }) => {
     // Highsmith is assigned to cell 0, so it should have a highlighted border
     const highsmithItem = page.getByTestId('filmstrip-item-highsmith');
-    const border = await highsmithItem.evaluate(el => getComputedStyle(el).borderColor);
+    const border = await highsmithItem.evaluate((el) => getComputedStyle(el).borderColor);
     // The assigned image should have the blue highlight border
     expect(border).toContain('rgb(33, 150, 243)'); // #2196F3
   });
@@ -44,12 +44,12 @@ test.describe('Filmstrip', () => {
     await expect(page.locator('text=Assign an image')).toHaveCount(0);
 
     // Both Highsmith and Duomo should now be highlighted
-    const highsmithBorder = await page.getByTestId('filmstrip-item-highsmith').evaluate(
-      el => getComputedStyle(el).borderColor
-    );
-    const duomoBorder = await page.getByTestId('filmstrip-item-duomo').evaluate(
-      el => getComputedStyle(el).borderColor
-    );
+    const highsmithBorder = await page
+      .getByTestId('filmstrip-item-highsmith')
+      .evaluate((el) => getComputedStyle(el).borderColor);
+    const duomoBorder = await page
+      .getByTestId('filmstrip-item-duomo')
+      .evaluate((el) => getComputedStyle(el).borderColor);
     expect(highsmithBorder).toContain('rgb(33, 150, 243)');
     expect(duomoBorder).toContain('rgb(33, 150, 243)');
   });

@@ -22,18 +22,10 @@ export type {
 } from './core/types.js';
 
 // ID factory functions
-export {
-  createAnnotationId,
-  createImageId,
-  createAnnotationContextId,
-} from './core/types.js';
+export { createAnnotationId, createImageId, createAnnotationContextId } from './core/types.js';
 
 // Constants
-export {
-  DEFAULT_ANNOTATION_STYLE,
-  DEFAULT_GRID_CONFIG,
-  MAX_GRID_SIZE,
-} from './core/constants.js';
+export { DEFAULT_ANNOTATION_STYLE, DEFAULT_GRID_CONFIG, MAX_GRID_SIZE } from './core/constants.js';
 
 // Overlay
 export { FabricOverlay, computeViewportTransform, createOverlayManager } from './overlay/index.js';

@@ -33,8 +33,11 @@ const ANNOTATION_TYPES: readonly string[] = ['rectangle', 'circle', 'line', 'poi
 /**
  * Serialize annotation state into a portable JSON document.
  */
-export function serialize(state: AnnotationState, images: readonly ImageSource[]): AnnotationDocument {
-  const imageAnnotations: ImageAnnotations[] = images.map(image => {
+export function serialize(
+  state: AnnotationState,
+  images: readonly ImageSource[],
+): AnnotationDocument {
+  const imageAnnotations: ImageAnnotations[] = images.map((image) => {
     const annMap = state.byImage[image.id];
     const annotations: Annotation[] = annMap ? Object.values(annMap) : [];
     return {
@@ -64,7 +67,7 @@ export function deserialize(doc: unknown): Record<ImageId, Record<AnnotationId, 
 
   if (d.version !== SUPPORTED_VERSION) {
     throw new SerializationError(
-      `Unsupported document version: ${String(d.version)}. Expected ${SUPPORTED_VERSION}`
+      `Unsupported document version: ${String(d.version)}. Expected ${SUPPORTED_VERSION}`,
     );
   }
 
@@ -188,8 +191,13 @@ function validateRawAnnotationData(value: unknown): boolean {
   }
 
   if (normalizedType === 'Line') {
-    if (!isFiniteNumber(data.x1) || !isFiniteNumber(data.y1) ||
-        !isFiniteNumber(data.x2) || !isFiniteNumber(data.y2)) return false;
+    if (
+      !isFiniteNumber(data.x1) ||
+      !isFiniteNumber(data.y1) ||
+      !isFiniteNumber(data.x2) ||
+      !isFiniteNumber(data.y2)
+    )
+      return false;
     for (const v of [data.x1, data.y1, data.x2, data.y2] as number[]) {
       if (Math.abs(v) > MAX_COORDINATE) return false;
     }
@@ -214,10 +222,12 @@ function validateGeometry(value: unknown): boolean {
 
   switch (g.type as AnnotationType) {
     case 'rectangle':
-      return validatePointValue(g.origin) &&
+      return (
+        validatePointValue(g.origin) &&
         isFiniteNumber(g.width) &&
         isFiniteNumber(g.height) &&
-        isFiniteNumber(g.rotation);
+        isFiniteNumber(g.rotation)
+      );
 
     case 'circle':
       return validatePointValue(g.center) && isFiniteNumber(g.radius);
