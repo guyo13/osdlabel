@@ -7,7 +7,7 @@ export function createUIStore() {
     activeCellIndex: 0,
     gridColumns: 1,
     gridRows: 1,
-    gridAssignments: {},
+    gridAssignments: { 0: '' as any }, // Will be set by app logic
     selectedAnnotationId: null,
   });
   return { state, setState };
