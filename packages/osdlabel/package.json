@@ -1,5 +1,5 @@
 {
-  "name": "@guyo13/osdlabel",
+  "name": "osdlabel",
   "version": "1.0.0",
   "description": "DZI image annotation library built with SolidJS, Fabric.js, and OpenSeaDragon",
   "type": "module",

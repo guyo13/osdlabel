@@ -12,7 +12,7 @@ export default defineConfig({
     alias: {
       // During development, resolve the library from its TypeScript source
       // so Vite's HMR picks up changes immediately without a tsc rebuild.
-      '@guyo13/osdlabel': resolve(__dirname, '../../packages/osdlabel/src/index.ts'),
+      osdlabel: resolve(__dirname, '../../packages/osdlabel/src/index.ts'),
     },
   },
 });
