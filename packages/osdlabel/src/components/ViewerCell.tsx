@@ -105,11 +105,10 @@ const ViewerCell: Component<ViewerCellProps> = (props) => {
     // Async load from rawAnnotationData
     const capturedImageId = imageId;
     void (async () => {
-      const promises = matching.map((ann) => createFabricObjectFromRawData(ann));
-      const objects = await Promise.all(promises);
-
       if (props.imageSource?.id !== capturedImageId) return; // stale check
 
+      const promises = matching.map((ann) => createFabricObjectFromRawData(ann));
+      const objects = await Promise.all(promises);
       const validObjects = objects.filter((obj) => obj !== null);
       if (validObjects.length > 0) {
         ov.canvas.add(...validObjects);
