@@ -141,8 +141,7 @@ export interface ImageSource {
 /** Root state for the annotation system */
 export interface AnnotationState {
   byImage: Record<ImageId, Record<AnnotationId, Annotation>>;
-  reloadGeneration: number;
-  /** Monotonically increasing version number for fast change detection */
+  /** Monotonically increasing counter; incremented on every mutation for O(1) change detection */
   version: number;
 }
 

@@ -73,8 +73,7 @@ export function AnnotatorProvider(props: AnnotatorProviderProps) {
         for (const [imageId, annMap] of Object.entries(props.initialAnnotations!)) {
           state.byImage[imageId as ImageId] = { ...annMap };
         }
-        // Initialize version to 1 if we have initial data, to ensure sync
-        state.version = 1;
+        state.version += 1;
       }),
     );
   }

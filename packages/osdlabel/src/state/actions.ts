@@ -97,10 +97,11 @@ export function createActions(
     setContextState('activeContextId', contextId);
   }
 
-  function triggerReload(): void {
+  function loadAnnotations(byImage: Record<ImageId, Record<AnnotationId, Annotation>>): void {
     setAnnotationState(
       produce((state) => {
-        state.reloadGeneration += 1;
+        state.byImage = byImage;
+        state.version += 1;
       }),
     );
   }
@@ -116,7 +117,6 @@ export function createActions(
     setGridDimensions,
     setContexts,
     setActiveContext,
-    triggerReload,
-    setAnnotationState,
+    loadAnnotations,
   };
 }
