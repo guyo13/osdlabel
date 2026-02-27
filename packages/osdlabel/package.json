@@ -29,17 +29,17 @@
     "solid-js": "^1.9.0"
   },
   "dependencies": {
-    "fabric": "7.1.0",
-    "openseadragon": "5.0.1"
+    "fabric": "catalog:",
+    "openseadragon": "catalog:"
   },
   "devDependencies": {
-    "@types/openseadragon": "^5.0.2",
-    "@typescript-eslint/eslint-plugin": "^8.55.0",
-    "@typescript-eslint/parser": "^8.55.0",
-    "eslint": "9.19.0",
-    "solid-js": "1.9.11",
-    "typescript": "5.7.3",
-    "vite-plugin-solid": "2.11.0",
-    "vitest": "3.0.5"
+    "@types/openseadragon": "catalog:",
+    "@typescript-eslint/eslint-plugin": "catalog:",
+    "@typescript-eslint/parser": "catalog:",
+    "eslint": "catalog:",
+    "solid-js": "catalog:",
+    "typescript": "catalog:",
+    "vite-plugin-solid": "catalog:",
+    "vitest": "catalog:"
   }
 }
