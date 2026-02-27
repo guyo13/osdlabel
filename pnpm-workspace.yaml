@@ -19,4 +19,4 @@ catalog:
   vitest: 3.0.5
 
 gitChecks: false
-publishBranch: production
+publishBranch: main
