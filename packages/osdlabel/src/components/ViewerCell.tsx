@@ -105,10 +105,15 @@ const ViewerCell: Component<ViewerCellProps> = (props) => {
     // Async load from rawAnnotationData
     const capturedImageId = imageId;
     void (async () => {
-      for (const ann of matching) {
-        if (props.imageSource?.id !== capturedImageId) return; // stale
-        const obj = await createFabricObjectFromRawData(ann);
-        if (obj) ov.canvas.add(obj);
+      const promises = matching.map((ann) => createFabricObjectFromRawData(ann));
+      const objects = await Promise.all(promises);
+
+      if (props.imageSource?.id !== capturedImageId) return; // stale check
+
+      const validObjects = objects.filter((obj) => obj !== null);
+      if (validObjects.length > 0) {
+        // @ts-expect-error - Fabric type mismatch in filter inference, but safe at runtime
+        ov.canvas.add(...validObjects);
       }
       ov.canvas.requestRenderAll();
     })();
