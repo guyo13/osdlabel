@@ -53,6 +53,9 @@ importers:
 
   .:
     devDependencies:
+      playwright:
+        specifier: ^1.58.2
+        version: 1.58.2
       prettier:
         specifier: 'catalog:'
         version: 3.8.1
