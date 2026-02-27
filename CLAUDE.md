@@ -41,8 +41,8 @@ This is `@guyo13/osdlabel`, a DZI image annotation library built with SolidJS, F
 
 ### Architecture
 
-- **Core logic is framework-agnostic.** Everything in `src/core/` must have zero imports from `solid-js` or any UI framework. This includes the annotation model, serialization, constraints, coordinate transforms, and tool implementations.
-- **State mutations go through named action functions.** Never modify the store directly from components. All mutations are in `src/state/actions.ts`.
+- **Core logic is framework-agnostic.** Everything in `packages/osdlabel/src/core/` must have zero imports from `solid-js` or any UI framework. This includes the annotation model, serialization, constraints, coordinate transforms, and tool implementations.
+- **State mutations go through named action functions.** Never modify the store directly from components. All mutations are in `packages/osdlabel/src/state/actions.ts`.
 - **One active cell at a time.** Only one grid cell can be in annotation mode at a time. All other cells display existing annotations in read-only mode.
 - **Constraint enforcement is reactive.** Use Solid's `createMemo` to derive whether each tool is enabled/disabled from the current annotation counts and the active context's limits. The toolbar reads this derived state. Do not imperatively enable/disable tools.
 
@@ -57,19 +57,42 @@ This is `@guyo13/osdlabel`, a DZI image annotation library built with SolidJS, F
 
 - One exported entity per file where practical. Exceptions: closely related types can share a file.
 - File names use kebab-case: `rectangle-tool.ts`, `annotation-store.ts`.
-- Test files mirror source structure: `src/core/annotations/model.ts` → `tests/unit/annotations/model.test.ts`.
+- Test files mirror source structure: `packages/osdlabel/src/core/annotations/model.ts` → `packages/osdlabel/tests/unit/annotations/model.test.ts`.
 - All imports use explicit file extensions: `import { Foo } from './foo.js'` (required for ESM).
+
+### Monorepo Structure
+
+This is a pnpm workspace monorepo with Turborepo for task orchestration:
+
+- `packages/osdlabel/` — the publishable `@guyo13/osdlabel` library (source: `src/`, unit tests: `tests/unit/`)
+- `apps/dev/` — the development app (`@osdlabel/dev`); source in `src/`, E2E tests in `tests/e2e/`
 
 ### Build Commands
 
+Run from the workspace root — Turbo fans out to the correct packages:
+
 ```bash
-pnpm dev          # Start Vite dev server with demo app
-pnpm build        # Run tsc to emit ESM + declarations to dist/
-pnpm typecheck    # Run tsc --noEmit (type checking only)
-pnpm test         # Run Vitest unit tests
-pnpm test:e2e     # Run Playwright E2E tests
-pnpm lint         # Run ESLint
-pnpm format       # Run Prettier
+pnpm dev          # Start Vite dev server (apps/dev) with HMR into library source
+pnpm build        # Build @guyo13/osdlabel with tsc → packages/osdlabel/dist/
+pnpm typecheck    # Type-check all packages (builds osdlabel first for d.ts)
+pnpm test         # Run Vitest unit tests in packages/osdlabel/
+pnpm test:e2e     # Run Playwright E2E tests in apps/dev/
+pnpm lint         # Run ESLint across all packages
+pnpm format       # Run Prettier across the workspace
+```
+
+Per-package commands (run from within the package directory):
+
+```bash
+# packages/osdlabel/
+pnpm build        # tsc -p tsconfig.build.json
+pnpm typecheck    # tsc --noEmit
+pnpm test         # vitest run
+pnpm test:watch   # vitest (watch mode)
+
+# apps/dev/
+pnpm dev          # vite
+pnpm test:e2e     # playwright test
 ```
 
 ### Incremental Verification

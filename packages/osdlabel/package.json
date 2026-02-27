@@ -1,0 +1,45 @@
+{
+  "name": "@guyo13/osdlabel",
+  "version": "1.0.0",
+  "description": "DZI image annotation library built with SolidJS, Fabric.js, and OpenSeaDragon",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "sideEffects": false,
+  "keywords": [],
+  "author": "",
+  "license": "BSD-3-Clause",
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "lint": "eslint src/ tests/"
+  },
+  "peerDependencies": {
+    "solid-js": "^1.9.0"
+  },
+  "dependencies": {
+    "fabric": "7.1.0",
+    "openseadragon": "5.0.1"
+  },
+  "devDependencies": {
+    "@types/openseadragon": "^5.0.2",
+    "@typescript-eslint/eslint-plugin": "^8.55.0",
+    "@typescript-eslint/parser": "^8.55.0",
+    "eslint": "9.19.0",
+    "solid-js": "1.9.11",
+    "typescript": "5.7.3",
+    "vite-plugin-solid": "2.11.0",
+    "vitest": "3.0.5"
+  }
+}

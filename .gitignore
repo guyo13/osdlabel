@@ -1,5 +1,7 @@
-dist/
+packages/*/dist/
+apps/*/dist/
 node_modules/
+.turbo/
 *.log
 .DS_Store
 .env
