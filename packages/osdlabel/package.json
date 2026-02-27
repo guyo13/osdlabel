@@ -16,7 +16,7 @@
   ],
   "sideEffects": false,
   "keywords": [],
-  "author": "",
+  "author": "Guy Or <guydude1@gmail.com>",
   "license": "BSD-3-Clause",
   "scripts": {
     "build": "tsc -p tsconfig.build.json",
