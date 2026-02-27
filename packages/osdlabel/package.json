@@ -1,7 +1,7 @@
 {
   "name": "osdlabel",
   "version": "0.0.1",
-  "description": "DZI image annotation library built with SolidJS, Fabric.js, and OpenSeaDragon",
+  "description": "Image annotation library built with SolidJS, Fabric.js, and OpenSeaDragon supporting tiled images",
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
