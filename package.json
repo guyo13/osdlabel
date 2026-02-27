@@ -16,7 +16,9 @@
     "format": "prettier --write ."
   },
   "devDependencies": {
+    "@eslint/js": "^10.0.1",
     "prettier": "catalog:",
-    "turbo": "catalog:"
+    "turbo": "catalog:",
+    "typescript-eslint": "^8.56.1"
   }
 }
