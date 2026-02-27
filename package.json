@@ -1,6 +1,7 @@
 {
   "name": "osdlabel-workspace",
   "version": "0.0.0",
+  "author": "Guy Or <guydude1@gmail.com>",
   "private": true,
   "type": "module",
   "packageManager": "pnpm@10.28.2",
