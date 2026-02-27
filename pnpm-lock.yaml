@@ -62,7 +62,7 @@ importers:
 
   apps/dev:
     dependencies:
-      '@guyo13/osdlabel':
+      osdlabel:
         specifier: workspace:*
         version: link:../../packages/osdlabel
       solid-js:

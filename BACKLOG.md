@@ -1,4 +1,4 @@
-# Backlog — @guyo13/osdlabel
+# Backlog — osdlabel
 
 Tracked issues, improvements, and deferred work items.
 

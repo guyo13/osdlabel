@@ -164,7 +164,7 @@ image-annotator/
 ```jsonc
 // package.json (relevant fields)
 {
-  "name": "@guyo13/osdlabel",
+  "name": "osdlabel",
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",

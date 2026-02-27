@@ -11,8 +11,8 @@ import {
   useAnnotator,
   serialize,
   deserialize,
-} from '@guyo13/osdlabel';
-import type { AnnotationContextId, AnnotationContext, ImageSource } from '@guyo13/osdlabel';
+} from 'osdlabel';
+import type { AnnotationContextId, AnnotationContext, ImageSource } from 'osdlabel';
 
 const IMAGES: ImageSource[] = [
   {

@@ -2,7 +2,7 @@
 
 ## Project Overview
 
-This is `@guyo13/osdlabel`, a DZI image annotation library built with SolidJS, Fabric.js v7, OpenSeaDragon, and TypeScript. Read `image-annotator-spec.md` for the full specification. Read the task files in `tasks/` sequentially — each task builds on the previous one.
+This is `osdlabel`, a DZI image annotation library built with SolidJS, Fabric.js v7, OpenSeaDragon, and TypeScript. Read `image-annotator-spec.md` for the full specification. Read the task files in `tasks/` sequentially — each task builds on the previous one.
 
 ## Critical Rules
 
@@ -64,7 +64,7 @@ This is `@guyo13/osdlabel`, a DZI image annotation library built with SolidJS, F
 
 This is a pnpm workspace monorepo with Turborepo for task orchestration:
 
-- `packages/osdlabel/` — the publishable `@guyo13/osdlabel` library (source: `src/`, unit tests: `tests/unit/`)
+- `packages/osdlabel/` — the publishable `osdlabel` library (source: `src/`, unit tests: `tests/unit/`)
 - `apps/dev/` — the development app (`@osdlabel/dev`); source in `src/`, E2E tests in `tests/e2e/`
 
 ### Build Commands
@@ -73,7 +73,7 @@ Run from the workspace root — Turbo fans out to the correct packages:
 
 ```bash
 pnpm dev          # Start Vite dev server (apps/dev) with HMR into library source
-pnpm build        # Build @guyo13/osdlabel with tsc → packages/osdlabel/dist/
+pnpm build        # Build osdlabel with tsc → packages/osdlabel/dist/
 pnpm typecheck    # Type-check all packages (builds osdlabel first for d.ts)
 pnpm test         # Run Vitest unit tests in packages/osdlabel/
 pnpm test:e2e     # Run Playwright E2E tests in apps/dev/

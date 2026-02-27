@@ -11,7 +11,7 @@
     "lint": "eslint src/ tests/"
   },
   "dependencies": {
-    "@guyo13/osdlabel": "workspace:*",
+    "osdlabel": "workspace:*",
     "solid-js": "catalog:"
   },
   "devDependencies": {
