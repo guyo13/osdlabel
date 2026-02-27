@@ -88,7 +88,7 @@ const ViewerCell: Component<ViewerCellProps> = (props) => {
     const contextId = contextState.activeContextId;
     // Track these as reactive dependencies so the effect re-runs
     void props.isActive;
-    void annotationState.reloadGeneration;
+    void annotationState.version;
 
     if (!ov || !imageId) return;
 
