@@ -10,7 +10,7 @@ export default defineConfig({
     server: { deps: { inline: [/solid-js/] } },
     environment: 'jsdom',
     globals: true,
-    include: ['tests/unit/**/*.test.ts'],
+    include: ['tests/**/*.test.ts'],
     setupFiles: ['./tests/setup.ts'],
   },
 });
