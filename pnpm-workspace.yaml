@@ -1,25 +1,19 @@
 packages:
-  - 'packages/*'
-  - 'apps/*'
+  - packages/*
+  - apps/*
 
 catalog:
-  # Core runtime
-  fabric: 7.1.0
+  '@playwright/test': ^1.58.2
+  '@types/openseadragon': ^5.0.2
+  '@typescript-eslint/eslint-plugin': ^8.56.1
+  '@typescript-eslint/parser': ^8.56.1
+  eslint: ^10.0.2
+  fabric: 7.2.0
   openseadragon: 5.0.1
-  solid-js: 1.9.11
-  # Testing
-  '@playwright/test': 1.50.1
-  vitest: 3.0.5
-  # Build & tooling
-  typescript: 5.7.3
+  prettier: ^3.8.1
+  solid-js: ^1.9.11
+  turbo: ^2.8.11
+  typescript: ^5.9.3
   vite: 6.1.0
   vite-plugin-solid: 2.11.0
-  # Linting
-  eslint: 9.19.0
-  '@typescript-eslint/eslint-plugin': ^8.55.0
-  '@typescript-eslint/parser': ^8.55.0
-  # Types
-  '@types/openseadragon': ^5.0.2
-  # Workspace root tools
-  prettier: ^3.8.1
-  turbo: latest
+  vitest: 3.0.5
