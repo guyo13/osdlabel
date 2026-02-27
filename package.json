@@ -1,52 +1,21 @@
 {
-  "name": "@guyo13/osdlabel",
-  "version": "1.0.0",
-  "description": "DZI image annotation library built with SolidJS, Fabric.js, and OpenSeaDragon",
+  "name": "osdlabel-workspace",
+  "version": "0.0.0",
+  "private": true,
   "type": "module",
-  "main": "./dist/index.js",
-  "types": "./dist/index.d.ts",
-  "exports": {
-    ".": {
-      "types": "./dist/index.d.ts",
-      "default": "./dist/index.js"
-    }
-  },
-  "files": [
-    "dist"
-  ],
-  "sideEffects": false,
+  "packageManager": "pnpm@10.28.2",
   "scripts": {
-    "dev": "vite",
-    "build": "tsc -p tsconfig.build.json",
-    "typecheck": "tsc --noEmit",
-    "test": "vitest run",
-    "test:watch": "vitest",
-    "test:e2e": "playwright test",
-    "test:all": "vitest run && playwright test",
-    "lint": "eslint src/ tests/",
+    "dev": "turbo dev",
+    "build": "turbo build",
+    "typecheck": "turbo typecheck",
+    "test": "turbo test",
+    "test:e2e": "turbo test:e2e",
+    "test:all": "turbo run test test:e2e",
+    "lint": "turbo lint",
     "format": "prettier --write ."
   },
-  "peerDependencies": {
-    "solid-js": "^1.9.0"
-  },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "packageManager": "pnpm@10.28.2",
-  "dependencies": {
-    "fabric": "7.1.0",
-    "openseadragon": "5.0.1"
-  },
   "devDependencies": {
-    "@playwright/test": "1.50.1",
-    "@types/openseadragon": "^5.0.2",
-    "@typescript-eslint/eslint-plugin": "^8.55.0",
-    "@typescript-eslint/parser": "^8.55.0",
-    "eslint": "9.19.0",
     "prettier": "^3.8.1",
-    "typescript": "5.7.3",
-    "vite": "6.1.0",
-    "vite-plugin-solid": "2.11.0",
-    "vitest": "3.0.5"
+    "turbo": "latest"
   }
 }

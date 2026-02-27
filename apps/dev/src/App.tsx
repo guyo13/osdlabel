@@ -1,18 +1,18 @@
 import { createSignal } from 'solid-js';
 import { render } from 'solid-js/web';
-import Toolbar from '../src/components/Toolbar.js';
-import StatusBar from '../src/components/StatusBar.js';
-import GridView from '../src/components/GridView.js';
-import Filmstrip from '../src/components/Filmstrip.js';
-import GridControls from '../src/components/GridControls.js';
 import {
+  Toolbar,
+  StatusBar,
+  GridView,
+  Filmstrip,
+  GridControls,
   createImageId,
-  AnnotationContextId,
-  AnnotationContext,
-  ImageSource,
-} from '../src/core/types.js';
-import { AnnotatorProvider, useAnnotator } from '../src/state/annotator-context.js';
-import { serialize, deserialize } from '../src/core/annotations/serialization.js';
+  AnnotatorProvider,
+  useAnnotator,
+  serialize,
+  deserialize,
+} from '@guyo13/osdlabel';
+import type { AnnotationContextId, AnnotationContext, ImageSource } from '@guyo13/osdlabel';
 
 const IMAGES: ImageSource[] = [
   {

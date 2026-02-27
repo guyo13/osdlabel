@@ -150,7 +150,7 @@ test.describe('Keyboard Shortcuts', () => {
     await expect(page.getByTestId('status-tool')).toContainText('Rectangle');
   });
 
-  test('Shortcuts can be suppressed by custom predicate', async ({ page }) => {
+  test('Shortcuts can be suppressed by custom predicate', async ({ page: _page }) => {
     // Inject a script to modify the window.AnnotatorConfig or similar if we could,
     // but we can't easily modify the props passed to the running app from outside.
     // Instead, we can't test this easily without modifying the dev/App.tsx.
