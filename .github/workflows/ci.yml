@@ -40,24 +40,27 @@ jobs:
           cache: 'pnpm'
       - name: Install dependencies
         run: pnpm install
-      
+
       - name: Get Playwright version
-        run: echo "PLAYWRIGHT_VERSION=$(pnpm ls @playwright/test --depth 0 --json | jq -r '.[0].devDependencies[\"@playwright/test\"].version')" >> $GITHUB_ENV
-        
+        id: playwright-version
+        run: |
+          PLAYWRIGHT_VERSION=$(pnpm ls @playwright/test --filter @osdlabel/dev --depth 0 --json | jq -r '.[0].devDependencies["@playwright/test"].version')
+          echo "PLAYWRIGHT_VERSION=$PLAYWRIGHT_VERSION" >> $GITHUB_ENV
+
       - name: Cache Playwright Browsers
         uses: actions/cache@v4
         id: playwright-cache
         with:
           path: ~/.cache/ms-playwright
           key: ${{ runner.os }}-playwright-${{ env.PLAYWRIGHT_VERSION }}
-          
+
       - name: Install Playwright Browsers
         if: steps.playwright-cache.outputs.cache-hit != 'true'
-        run: pnpm exec playwright install --with-deps
-        
+        run: pnpm --filter @osdlabel/dev exec playwright install --with-deps
+
       - name: Run Playwright tests
         run: pnpm test:e2e
-        
+
       - uses: actions/upload-artifact@v4
         if: always()
         with:
