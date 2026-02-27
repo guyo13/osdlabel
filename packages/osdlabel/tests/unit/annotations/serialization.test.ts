@@ -77,7 +77,7 @@ describe('Serialization', () => {
       }
       byImage[ann.imageId][ann.id] = ann;
     }
-    return { byImage, reloadGeneration: 0 };
+    return { byImage, version: 0 };
   }
 
   describe('serialize', () => {
@@ -94,7 +94,7 @@ describe('Serialization', () => {
     });
 
     it('should handle empty state', () => {
-      const state: AnnotationState = { byImage: {}, reloadGeneration: 0 };
+      const state: AnnotationState = { byImage: {}, version: 0 };
       const doc = serialize(state, imageSources);
 
       expect(doc.version).toBe('1.0.0');
@@ -444,7 +444,7 @@ describe('Serialization', () => {
     });
 
     it('should return empty array for empty state', () => {
-      const state: AnnotationState = { byImage: {}, reloadGeneration: 0 };
+      const state: AnnotationState = { byImage: {}, version: 0 };
       expect(getAllAnnotationsFlat(state)).toEqual([]);
     });
   });
