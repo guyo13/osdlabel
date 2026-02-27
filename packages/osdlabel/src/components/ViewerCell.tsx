@@ -112,7 +112,6 @@ const ViewerCell: Component<ViewerCellProps> = (props) => {
 
       const validObjects = objects.filter((obj) => obj !== null);
       if (validObjects.length > 0) {
-        // @ts-expect-error - Fabric type mismatch in filter inference, but safe at runtime
         ov.canvas.add(...validObjects);
       }
       ov.canvas.requestRenderAll();
