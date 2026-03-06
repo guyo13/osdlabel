@@ -1,0 +1,135 @@
+---
+title: Annotation Contexts
+description: Configuring tool constraints and annotation scoping
+---
+
+import ContextsDemoWrapper from '../../../components/demos/ContextsDemoWrapper.astro';
+
+## What is a context?
+
+An annotation context defines a labelling task — for example, "mark fractures" or "outline tumors." Each context specifies which drawing tools are available and optionally limits how many annotations of each type can be created.
+
+Only one context is active at a time.
+
+<ContextsDemoWrapper />
+
+## Defining contexts
+
+```tsx
+import {createAnnotationContextId} from 'osdlabel/core';
+import type {AnnotationContext} from 'osdlabel/core';
+
+const contexts: AnnotationContext[] = [
+  {
+    id: createAnnotationContextId('fracture'),
+    label: 'Fracture',
+    tools: [
+      { type: 'line', maxCount: 3, countScope: 'per-image' },
+      { type: 'rectangle', maxCount: 2 },
+    ],
+  },
+  {
+    id: createAnnotationContextId('general'),
+    label: 'General',
+    tools: [
+      { type: 'rectangle' },
+      { type: 'circle' },
+      { type: 'line' },
+      { type: 'point' },
+      { type: 'path' },
+    ],
+  },
+];
+```
+
+## Tool constraints
+
+Each tool in a context can have:
+
+| Property | Type | Default | Description |
+|----------|------|---------|-------------|
+| `type` | `AnnotationType` | (required) | `'rectangle'` \| `'circle'` \| `'line'` \| `'point'` \| `'path'` |
+| `maxCount` | `number` | unlimited | Maximum number of annotations of this type |
+| `countScope` | `CountScope` | `'global'` | Whether `maxCount` applies per-image or globally across all images |
+| `defaultStyle` | `Partial<AnnotationStyle>` | default style | Override the default stroke/fill for this tool |
+
+When a tool's `maxCount` is reached, it is automatically disabled in the toolbar and via keyboard shortcuts.
+
+## Count scope
+
+The `countScope` property controls how annotations are counted against `maxCount`:
+
+- **`'global'`** (default) — Counts all annotations of this type across all images
+- **`'per-image'`** — Counts annotations per image independently
+
+```tsx
+{
+  type: 'line',
+  maxCount: 3,
+  countScope: 'per-image', // Each image can have up to 3 lines
+}
+```
+
+## Image scoping
+
+A context can be restricted to specific images using the `imageIds` property:
+
+```tsx
+{
+  id: createAnnotationContextId('fracture'),
+  label: 'Fracture',
+  imageIds: [createImageId('xray-1'), createImageId('xray-2')],
+  tools: [{ type: 'line', maxCount: 3 }],
+}
+```
+
+When the active cell shows an image not in the context's `imageIds`, all tools are disabled. If `imageIds` is omitted, the context applies to all images.
+
+## Setting contexts
+
+Pass contexts to the `Annotator` component or set them programmatically:
+
+```tsx
+// Via Annotator component
+<Annotator images={images} contexts={contexts} />
+
+// Via actions (when using AnnotatorProvider)
+const { actions } = useAnnotator();
+actions.setContexts(contexts);
+actions.setActiveContext(contexts[0].id);
+```
+
+## Switching contexts
+
+```tsx
+const { actions } = useAnnotator();
+actions.setActiveContext(contextId);
+
+// Clear the active tool when switching contexts
+actions.setActiveTool(null);
+```
+
+## Reading constraint status
+
+Use the `constraintStatus` accessor to check which tools are enabled:
+
+```tsx
+const { constraintStatus } = useAnnotator();
+
+const status = constraintStatus();
+// status.rectangle.enabled — boolean
+// status.rectangle.currentCount — number
+// status.rectangle.maxCount — number | null
+```
+
+Or use the `useConstraints` hook for convenience:
+
+```tsx
+import {useConstraints} from 'osdlabel/hooks';
+
+const { isToolEnabled, canAddAnnotation } = useConstraints();
+
+if (isToolEnabled('rectangle')) {
+  // Rectangle tool is available
+}
+```

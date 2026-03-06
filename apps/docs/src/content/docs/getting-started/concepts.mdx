@@ -1,0 +1,87 @@
+---
+title: Core Concepts
+description: Key concepts and architecture of osdlabel
+---
+
+## Architecture overview
+
+osdlabel is composed of three layers:
+
+1. **OpenSeaDragon** — Manages the DZI/tiled image viewer, handling pan, zoom, and tile loading
+2. **Fabric.js overlay** — A transparent Fabric.js canvas positioned on top of each OSD viewer, synchronized on every animation frame
+3. **SolidJS state** — Reactive stores that drive the UI, tool selection, constraints, and annotation data
+
+The overlay's job is to compute a `viewportTransform` matrix that maps **image-space** coordinates to **screen-space**, so annotations stored in image pixels render correctly at any zoom level.
+
+## Coordinate systems
+
+osdlabel uses four coordinate systems:
+
+| System | Origin | Units | Usage |
+|--------|--------|-------|-------|
+| **Image-space** | Top-left of full-res image | Pixels | Annotation geometry storage |
+| **OSD Viewport** | Top-left of viewport | Image width = 1.0 | OSD internal calculations |
+| **Screen-space** | Top-left of browser viewport | CSS pixels | Mouse events, element positioning |
+| **Fabric canvas** | Same as screen-space | CSS pixels (transformed) | Rendering via `viewportTransform` |
+
+All annotation geometry (`Geometry` type) is stored in **image-space**. You never need to convert coordinates manually — the overlay handles the transform between image-space and screen-space automatically.
+
+## Branded ID types
+
+osdlabel uses TypeScript branded types for IDs to prevent accidental mixing:
+
+```ts
+type AnnotationId = string & { readonly __brand: unique symbol };
+type ImageId = string & { readonly __brand: unique symbol };
+type AnnotationContextId = string & { readonly __brand: unique symbol };
+```
+
+You cannot pass a plain `string` where a branded ID is expected. Use the factory functions:
+
+```ts
+import {createImageId, createAnnotationId, createAnnotationContextId} from 'osdlabel/core';
+
+const imageId = createImageId('my-image');
+const annotationId = createAnnotationId('ann-1');
+const contextId = createAnnotationContextId('ctx-1');
+```
+
+## Annotation contexts
+
+A context represents a single annotation task — for example, "mark fractures" or "outline pneumothorax." Each context defines:
+
+- **Label** — Human-readable name
+- **Tools** — Which drawing tools are available, optionally with count limits
+- **Image scoping** — Optionally restrict the context to specific images
+- **Count scope** — Whether limits apply per-image or globally
+
+Only one context is active at a time. Switching contexts changes which tools are available in the toolbar.
+
+## The overlay model
+
+Each grid cell contains an OpenSeaDragon viewer with a `FabricOverlay` on top. The overlay operates in two modes:
+
+- **Navigation mode** — OSD handles all mouse input (pan/zoom). Fabric is display-only.
+- **Annotation mode** — Fabric handles mouse input (draw/select/edit). OSD navigation is disabled, except for `Ctrl`/`Cmd`+drag (pan) and `Ctrl`/`Cmd`+scroll (zoom).
+
+The active cell is in annotation mode; all other cells are in navigation mode.
+
+## State management
+
+osdlabel uses three SolidJS stores:
+
+| Store | Contents |
+|-------|----------|
+| **AnnotationState** | All annotations organized by image ID |
+| **UIState** | Active tool, active cell, grid dimensions, grid assignments, selected annotation |
+| **ContextState** | Available contexts and the active context ID |
+
+State is accessed via the `useAnnotator()` hook and mutated through named action functions. Components never modify stores directly.
+
+## Reactivity model
+
+SolidJS components run **once** to set up the view. Updates happen through signals and effects, not re-renders. This is critical for 60fps overlay synchronization:
+
+- `createEffect` synchronizes imperative libraries (OSD, Fabric) with reactive state
+- `createMemo` derives constraint status from annotation counts and context limits
+- The toolbar reads derived constraint state reactively — no imperative enable/disable logic

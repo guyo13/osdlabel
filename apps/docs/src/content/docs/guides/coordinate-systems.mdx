@@ -1,0 +1,93 @@
+---
+title: Coordinate Systems
+description: Understanding the four coordinate systems in osdlabel
+---
+
+## Overview
+
+osdlabel involves four coordinate systems. Understanding them is essential if you need to do custom coordinate conversions or build advanced overlay features.
+
+```
+Image-space (pixels)     →  stored in Annotation.geometry
+        ↓  computeViewportTransform()
+Fabric canvas-space      →  Fabric objects rendered here via viewportTransform
+        =
+Screen-space (CSS px)    →  mouse events, element positioning
+        ↑  OSD internal
+OSD Viewport-space       →  image width = 1.0, aspect-ratio-dependent
+```
+
+## Image-space
+
+- **Origin:** Top-left of the full-resolution image
+- **Units:** Pixels
+- **Usage:** All annotation geometry is stored in this space
+
+Image-space coordinates are stable regardless of zoom level. A point at `(500, 300)` always refers to pixel 500, 300 in the source image.
+
+```ts
+const geometry = {
+  type: 'rectangle' as const,
+  origin: { x: 100, y: 200 },  // image pixels
+  width: 300,                    // image pixels
+  height: 150,                   // image pixels
+  rotation: 0,
+};
+```
+
+## OSD Viewport-space
+
+- **Origin:** Top-left of the viewport
+- **Units:** Image width = 1.0, Y is aspect-ratio-dependent
+- **Usage:** OpenSeaDragon's internal coordinate system
+
+You generally don't interact with this directly. It's used internally by OSD for pan/zoom calculations.
+
+## Screen-space
+
+- **Origin:** Top-left of the browser viewport
+- **Units:** CSS pixels
+- **Usage:** Mouse events (`clientX`, `clientY`), element positioning
+
+## Fabric canvas-space
+
+- **Same as screen-space**, but Fabric objects are drawn using the `viewportTransform` matrix
+- The transform maps image-space coordinates to screen-space at the current zoom/pan
+
+## The viewportTransform
+
+The overlay computes a 6-element affine matrix `[a, b, c, d, tx, ty]` that maps image-space to screen-space:
+
+```ts
+import {computeViewportTransform} from 'osdlabel/overlay';
+
+// Called internally on every OSD animation frame
+const matrix = computeViewportTransform(viewer);
+fabricCanvas.setViewportTransform(matrix);
+```
+
+This matrix encodes the current scale, rotation, and translation. Fabric uses it to render all objects — you store coordinates in image-space and the transform handles the rest.
+
+## Coordinate conversion
+
+The `FabricOverlay` provides conversion methods:
+
+```ts
+// Screen-space → Image-space
+const imagePoint = overlay.screenToImage({ x: event.clientX, y: event.clientY });
+
+// Image-space → Screen-space
+const screenPoint = overlay.imageToScreen({ x: 500, y: 300 });
+```
+
+These are thin wrappers around OSD's `viewerElementToImageCoordinates()` and `imageToViewerElementCoordinates()`.
+
+## Key principle
+
+**Store in image-space, render via transform.**
+
+Annotations are always stored in image-space pixels. The overlay's `viewportTransform` matrix handles the mapping to screen-space at the current zoom level. This means:
+
+- Annotations are resolution-independent
+- No coordinate recalculation needed on zoom/pan
+- Serialized data is always in the same coordinate system regardless of viewport state

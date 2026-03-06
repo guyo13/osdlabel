@@ -66,6 +66,16 @@ This is a pnpm workspace monorepo with Turborepo for task orchestration:
 
 - `packages/osdlabel/` — the publishable `osdlabel` library (source: `src/`, unit tests: `tests/unit/`)
 - `apps/dev/` — the development app (`@osdlabel/dev`); source in `src/`, E2E tests in `tests/e2e/`
+- `apps/docs/` — the documentation site (`@osdlabel/docs`); Astro + Starlight, deployed to GitHub Pages
+
+### Library Entrypoints & Granularity
+
+`osdlabel` provides ESM-friendly sub-path exports for efficient tree-shaking. Imports are supported at three levels:
+1. **Main Barrel**: `import { ... } from 'osdlabel'` — Re-exports all public APIs.
+2. **Sub-path Barrels**: `import { ... } from 'osdlabel/components'`, `osdlabel/state`, `osdlabel/hooks`, `osdlabel/core`, `osdlabel/overlay`, `osdlabel/utils`.
+3. **Granular Imports**: `import { Annotator } from 'osdlabel/components/Annotator'` — Supported via glob exports (`"./*"`).
+
+The library is built using **Vite in library mode** with `vite-plugin-solid` to ensure JSX is pre-compiled for SolidJS consumers.
 
 ### Build Commands
 
@@ -79,6 +89,8 @@ pnpm test         # Run Vitest unit tests in packages/osdlabel/
 pnpm test:e2e     # Run Playwright E2E tests in apps/dev/
 pnpm lint         # Run ESLint across all packages
 pnpm format       # Run Prettier across the workspace
+pnpm docs:dev     # Start docs dev server (apps/docs)
+pnpm docs:build   # Build docs site (generates LLM page first, then Astro build)
 ```
 
 Per-package commands (run from within the package directory):
@@ -93,7 +105,17 @@ pnpm test:watch   # vitest (watch mode)
 # apps/dev/
 pnpm dev          # vite
 pnpm test:e2e     # playwright test
+
+# apps/docs/
+pnpm dev          # astro dev
+pnpm build        # generates LLM page + astro build
 ```
+
+### Documentation Site (Astro/Starlight)
+
+- **Use `legacy: { collections: true }` in `astro.config.mjs`.** The `docsLoader()` content layer API has issues with build-time content resolution in this monorepo setup. Legacy collections with `src/content/config.ts` (no loader, schema only) work reliably.
+- **Branded ID types in docs examples:** Use `createAnnotationContextId()` factory functions instead of `as AnnotationContextId` casts — keeps examples consistent with the library's public API.
+- **LLM page:** Generated at build time by `scripts/generate-llm-page.js`. Also produces `public/llms.txt` for the llms.txt convention.
 
 ### Incremental Verification
 

@@ -1,0 +1,124 @@
+---
+title: Serialization
+description: Exporting and importing annotation data
+---
+
+import SerializationDemoWrapper from '../../../components/demos/SerializationDemoWrapper.astro';
+
+osdlabel provides built-in functions for serializing its internal state into a standard JSON document format and deserializing it back.
+
+<SerializationDemoWrapper />
+
+## Document format
+
+osdlabel uses a JSON document format for persisting annotations:
+
+```json
+{
+  "version": "1.0.0",
+  "exportedAt": "2026-03-06T12:00:00.000Z",
+  "images": [
+    {
+      "imageId": "sample-1",
+      "sourceUrl": "https://example.com/image.dzi",
+      "annotations": [
+        {
+          "id": "ann-1",
+          "imageId": "sample-1",
+          "contextId": "general",
+          "geometry": {
+            "type": "rectangle",
+            "origin": { "x": 100, "y": 200 },
+            "width": 300,
+            "height": 150,
+            "rotation": 0
+          },
+          "rawAnnotationData": {
+            "format": "fabric",
+            "fabricVersion": "7.2.0",
+            "data": { ... }
+          },
+          "createdAt": "2026-03-06T12:00:00.000Z",
+          "updatedAt": "2026-03-06T12:00:00.000Z"
+        }
+      ]
+    }
+  ]
+}
+```
+
+## Exporting annotations
+
+Use `serialize()` to create an `AnnotationDocument` from the current state:
+
+```tsx
+import {serialize} from 'osdlabel/core';
+
+const { annotationState } = useAnnotator();
+
+const doc = serialize(annotationState, images);
+const json = JSON.stringify(doc, null, 2);
+
+// Save to file, send to API, etc.
+```
+
+## Importing annotations
+
+Use `deserialize()` to parse a document and load it into the store:
+
+```tsx
+import {deserialize} from 'osdlabel/core';
+
+const { actions } = useAnnotator();
+
+const parsed = JSON.parse(jsonString);
+const byImage = deserialize(parsed);
+actions.loadAnnotations(byImage);
+```
+
+`deserialize()` validates the document structure and throws `SerializationError` on invalid input.
+
+## Validation
+
+The `validateAnnotation()` function is a type guard that checks if a value is a valid `Annotation`:
+
+```tsx
+import {validateAnnotation} from 'osdlabel/core';
+
+if (validateAnnotation(unknownData)) {
+  // unknownData is Annotation
+}
+```
+
+Validation checks include:
+
+- Required string fields (`id`, `imageId`, `contextId`, timestamps)
+- Geometry type and shape validation
+- Raw annotation data structure and Fabric object type whitelisting
+- Numeric bounds checking (coordinates, dimensions)
+
+## Listening to changes
+
+The `onAnnotationsChange` callback fires whenever annotations are added, updated, or deleted:
+
+```tsx
+<AnnotatorProvider
+  onAnnotationsChange={(annotations) => {
+    // annotations: Annotation[] — flat list of all annotations
+    saveToBackend(annotations);
+  }}
+>
+  {/* ... */}
+</AnnotatorProvider>
+```
+
+## Getting all annotations
+
+Use `getAllAnnotationsFlat()` to extract a flat array from the state at any time:
+
+```tsx
+import {getAllAnnotationsFlat} from 'osdlabel/core';
+
+const { annotationState } = useAnnotator();
+const allAnnotations = getAllAnnotationsFlat(annotationState);
+```
