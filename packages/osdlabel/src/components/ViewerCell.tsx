@@ -86,9 +86,8 @@ const ViewerCell: Component<ViewerCellProps> = (props) => {
     const ov = overlay();
     const imageId = props.imageSource?.id;
     const contextId = contextState.activeContextId;
-    // Track these as reactive dependencies so the effect re-runs
+    // Track this as reactive dependencies so the effect re-runs
     void props.isActive;
-    void annotationState.reloadGeneration;
 
     if (!ov || !imageId) return;
 
