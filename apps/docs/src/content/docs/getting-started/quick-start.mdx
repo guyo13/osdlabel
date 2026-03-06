@@ -1,0 +1,96 @@
+---
+title: Quick Start
+description: Create your first image annotator in minutes
+---
+
+import QuickStartDemoWrapper from '../../../components/demos/QuickStartDemoWrapper.astro';
+
+This guide walks you through setting up a minimal annotation interface with osdlabel.
+
+<QuickStartDemoWrapper />
+
+## 1. Define your images
+
+Create an array of `ImageSource` objects. Each image needs a unique branded ID and a URL (DZI or standard image).
+
+```tsx
+import {createImageId} from 'osdlabel/core';
+import type {ImageSource} from 'osdlabel/core';
+
+const images: ImageSource[] = [
+  {
+    id: createImageId('sample-1'),
+    dziUrl: 'https://openseadragon.github.io/example-images/highsmith/highsmith.dzi',
+    label: 'Sample Image',
+  },
+];
+```
+
+## 2. Define annotation contexts
+
+Contexts define which tools are available and their constraints. Each context represents a labelling task (e.g., marking a specific pathology).
+
+```tsx
+import {createAnnotationContextId} from 'osdlabel/core';
+import type {AnnotationContext} from 'osdlabel/core';
+
+const contexts: AnnotationContext[] = [
+  {
+    id: createAnnotationContextId('general'),
+    label: 'General',
+    tools: [
+      { type: 'rectangle' },
+      { type: 'circle' },
+      { type: 'line' },
+      { type: 'point' },
+      { type: 'path' },
+    ],
+  },
+];
+```
+
+## 3. Render the Annotator
+
+The `Annotator` component provides a complete annotation interface with toolbar, grid view, filmstrip, and status bar.
+
+```tsx
+import { render } from 'solid-js/web';
+import {Annotator} from 'osdlabel/components';
+
+function App() {
+  return (
+    <div style={{ width: '100vw', height: '100vh' }}>
+      <Annotator
+        images={images}
+        contexts={contexts}
+        onAnnotationsChange={(annotations) => {
+          console.log('Annotations:', annotations.length);
+        }}
+      />
+    </div>
+  );
+}
+
+render(() => <App />, document.getElementById('app')!);
+```
+
+## 4. What you get
+
+The `Annotator` component renders:
+
+- **Toolbar** — Tool selector that respects context constraints, showing which tools are available and their usage counts
+- **Grid View** — One or more image viewers in a configurable grid (use `=`/`-` keys to resize)
+- **Filmstrip** — Sidebar for assigning images to grid cells (click an image to assign it to the active cell)
+- **Status Bar** — Shows the active context, tool, and annotation count
+
+## 5. Interact with annotations
+
+Click on a drawing tool in the toolbar (or press a keyboard shortcut like `r` for rectangle), then draw on the image. Annotations can be selected, moved, resized, and rotated after creation.
+
+Use `Ctrl`/`Cmd` + drag to pan, and `Ctrl`/`Cmd` + scroll to zoom while in annotation mode.
+
+## Next steps
+
+- Learn about [Core Concepts](/osdlabel/getting-started/concepts/) — coordinate systems, the overlay model, and branded types
+- See the [Annotation Contexts](/osdlabel/guides/annotation-contexts/) guide for constraint configuration
+- Build a custom UI with the [Custom Toolbar](/osdlabel/examples/custom-toolbar/) example

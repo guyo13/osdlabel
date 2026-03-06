@@ -1,0 +1,73 @@
+---
+title: Installation
+description: How to install osdlabel and set up your project
+---
+
+## Install the package
+
+```bash
+# npm
+npm install osdlabel
+
+# pnpm
+pnpm add osdlabel
+
+# yarn
+yarn add osdlabel
+```
+
+## Peer dependencies
+
+osdlabel requires SolidJS as a peer dependency:
+
+```bash
+npm install solid-js
+```
+
+The following dependencies are bundled with osdlabel and do not need to be installed separately:
+
+- `fabric` (v7.x) — Canvas abstraction for annotation drawing and editing
+- `openseadragon` (v5.x) — DZI/tiled image viewer
+
+## Bundler setup
+
+osdlabel is an ESM-only package. You need a bundler that supports SolidJS JSX compilation.
+
+### Vite (recommended)
+
+```bash
+npm install -D vite vite-plugin-solid
+```
+
+```ts
+// vite.config.ts
+import { defineConfig } from 'vite';
+import solidPlugin from 'vite-plugin-solid';
+
+export default defineConfig({
+  plugins: [solidPlugin()],
+});
+```
+
+## TypeScript
+
+osdlabel ships with full TypeScript declarations. No `@types` packages needed.
+
+Recommended `tsconfig.json` settings:
+
+```json
+{
+  "compilerOptions": {
+    "target": "ESNext",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "jsx": "preserve",
+    "jsxImportSource": "solid-js",
+    "strict": true
+  }
+}
+```
+
+## Next steps
+
+See the [Quick Start](/osdlabel/getting-started/quick-start/) guide to create your first annotator.

@@ -1,0 +1,57 @@
+---
+title: Minimal Viewer
+description: The fewest lines to get a working annotator
+---
+
+import MinimalViewerDemoWrapper from '../../../components/demos/MinimalViewerDemoWrapper.astro';
+
+A complete, minimal annotation setup with a single image and unrestricted tools.
+
+<MinimalViewerDemoWrapper />
+
+```tsx
+import { render } from 'solid-js/web';
+import {Annotator} from 'osdlabel/components';
+import {createImageId, createAnnotationContextId} from 'osdlabel/core';
+import type {ImageSource, AnnotationContext} from 'osdlabel/core';
+
+const images: ImageSource[] = [
+  {
+    id: createImageId('demo'),
+    dziUrl: 'https://openseadragon.github.io/example-images/highsmith/highsmith.dzi',
+    label: 'Demo Image',
+  },
+];
+
+const contexts: AnnotationContext[] = [
+  {
+    id: createAnnotationContextId('default'),
+    label: 'Default',
+    tools: [
+      { type: 'rectangle' },
+      { type: 'circle' },
+      { type: 'line' },
+      { type: 'point' },
+      { type: 'path' },
+    ],
+  },
+];
+
+function App() {
+  return (
+    <div style={{ width: '100vw', height: '100vh' }}>
+      <Annotator images={images} contexts={contexts} />
+    </div>
+  );
+}
+
+render(() => <App />, document.getElementById('app')!);
+```
+
+This gives you:
+
+- A full-screen image viewer with pan/zoom
+- All 5 drawing tools available in the toolbar
+- Keyboard shortcuts for tool selection
+- Selection, move, resize, and rotate for created annotations
+- Filmstrip sidebar (single image) and status bar

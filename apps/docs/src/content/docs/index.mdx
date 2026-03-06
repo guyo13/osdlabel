@@ -1,0 +1,58 @@
+---
+title: osdlabel
+description: DZI image annotation library for SolidJS
+template: splash
+hero:
+  tagline: A high-performance DZI image annotation library built with SolidJS, Fabric.js v7, and OpenSeaDragon.
+  actions:
+    - text: Get Started
+      link: /osdlabel/getting-started/installation/
+      icon: right-arrow
+      variant: primary
+    - text: View on GitHub
+      link: https://github.com/guyo13/osdlabel
+      icon: external
+      variant: minimal
+---
+
+import { Card, CardGrid } from '@astrojs/starlight/components';
+
+## Features
+
+<CardGrid stagger>
+  <Card title="Deep Zoom Images" icon="magnifier">
+    Built on OpenSeaDragon for smooth pan/zoom on gigapixel images. Supports DZI tiles and standard image formats.
+  </Card>
+
+  <Card title="5 Drawing Tools" icon="pencil">
+    Rectangle, circle, line, point, and freehand path tools with full post-creation editing — select, move, resize, rotate.
+  </Card>
+
+  <Card title="Multi-Image Grid" icon="bars">
+    View and annotate multiple images simultaneously in a configurable grid layout with filmstrip navigation.
+  </Card>
+
+  <Card title="Annotation Contexts" icon="setting">
+    Define per-context tool constraints with count limits, per-image or global scoping, and image-level filtering.
+  </Card>
+
+  <Card title="Type-Safe" icon="approve-check">
+    Strict TypeScript with branded ID types, discriminated union geometries, and full `readonly` data model.
+  </Card>
+
+  <Card title="Serialization" icon="document">
+    Round-trip JSON serialization with validation. Export and import annotation documents with a single function call.
+  </Card>
+</CardGrid>
+
+## Quick Install
+
+```bash
+npm install osdlabel
+```
+
+Peer dependency: `solid-js@^1.9.0`
+
+## License
+
+BSD 3-Clause

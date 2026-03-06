@@ -13,7 +13,10 @@
     "test:e2e": "turbo test:e2e",
     "test:all": "turbo run test test:e2e",
     "lint": "turbo lint",
-    "format": "prettier --write ."
+    "format": "prettier --write .",
+    "docs:dev": "turbo --filter @osdlabel/docs dev",
+    "docs:build": "turbo --filter @osdlabel/docs build",
+    "docs:preview": "turbo --filter @osdlabel/docs preview"
   },
   "devDependencies": {
     "playwright": "^1.58.2",

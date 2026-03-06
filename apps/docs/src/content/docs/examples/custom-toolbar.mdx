@@ -1,0 +1,133 @@
+---
+title: Custom Toolbar
+description: Building a custom toolbar with useAnnotator
+---
+
+import CustomToolbarDemoWrapper from '../../../components/demos/CustomToolbarDemoWrapper.astro';
+
+Use `AnnotatorProvider` and `useAnnotator()` to build a fully custom annotation UI.
+
+<CustomToolbarDemoWrapper />
+
+```tsx
+import { render } from 'solid-js/web';
+import {GridView, StatusBar} from 'osdlabel/components';
+import {createImageId, createAnnotationContextId} from 'osdlabel/core';
+import {useConstraints} from 'osdlabel/hooks';
+import {AnnotatorProvider, useAnnotator} from 'osdlabel/state';
+import type {ImageSource, AnnotationContext, AnnotationType} from 'osdlabel/core';
+
+const images: ImageSource[] = [
+  {
+    id: createImageId('sample'),
+    dziUrl: 'https://openseadragon.github.io/example-images/highsmith/highsmith.dzi',
+    label: 'Sample',
+  },
+];
+
+const contexts: AnnotationContext[] = [
+  {
+    id: createAnnotationContextId('default'),
+    label: 'Default',
+    tools: [
+      { type: 'rectangle', maxCount: 5 },
+      { type: 'circle', maxCount: 3 },
+      { type: 'line' },
+    ],
+  },
+];
+
+function CustomToolbar() {
+  const { actions, uiState, constraintStatus } = useAnnotator();
+  const { isToolEnabled } = useConstraints();
+
+  const tools: { type: AnnotationType | 'select'; label: string }[] = [
+    { type: 'select', label: 'Select' },
+    { type: 'rectangle', label: 'Rect' },
+    { type: 'circle', label: 'Circle' },
+    { type: 'line', label: 'Line' },
+  ];
+
+  const toolInfo = (type: AnnotationType) => {
+    const status = constraintStatus();
+    const s = status[type];
+    if (s.maxCount === null) return '';
+    return ` (${s.currentCount}/${s.maxCount})`;
+  };
+
+  return (
+    <div style={{ display: 'flex', gap: '4px', padding: '8px', background: '#1a1a2e' }}>
+      {tools.map((tool) => (
+        <button
+          disabled={tool.type !== 'select' && !isToolEnabled(tool.type)}
+          onClick={() => actions.setActiveTool(tool.type)}
+          style={{
+            padding: '6px 12px',
+            border: uiState.activeTool === tool.type ? '2px solid #4f6df5' : '1px solid #555',
+            'border-radius': '4px',
+            background: uiState.activeTool === tool.type ? '#2a2a5e' : '#2a2a3e',
+            color: '#fff',
+            cursor: 'pointer',
+            opacity: tool.type !== 'select' && !isToolEnabled(tool.type) ? '0.5' : '1',
+          }}
+        >
+          {tool.label}
+          {tool.type !== 'select' && toolInfo(tool.type)}
+        </button>
+      ))}
+
+      <button
+        onClick={() => actions.setActiveTool(null)}
+        style={{
+          'margin-left': 'auto',
+          padding: '6px 12px',
+          border: '1px solid #555',
+          'border-radius': '4px',
+          background: '#2a2a3e',
+          color: '#fff',
+          cursor: 'pointer',
+        }}
+      >
+        Navigate
+      </button>
+    </div>
+  );
+}
+
+function AppContent() {
+  const { uiState, actions } = useAnnotator();
+
+  actions.setContexts(contexts);
+  actions.setActiveContext(contexts[0]!.id);
+  actions.assignImageToCell(0, images[0]!.id);
+
+  const activeImageId = () => uiState.gridAssignments[uiState.activeCellIndex];
+
+  return (
+    <div style={{ width: '100vw', height: '100vh', display: 'flex', 'flex-direction': 'column' }}>
+      <CustomToolbar />
+      <div style={{ flex: '1', 'min-height': '0' }}>
+        <GridView columns={1} rows={1} maxColumns={1} maxRows={1} images={images} />
+      </div>
+      <StatusBar imageId={activeImageId()} />
+    </div>
+  );
+}
+
+function App() {
+  return (
+    <AnnotatorProvider>
+      <AppContent />
+    </AnnotatorProvider>
+  );
+}
+
+render(() => <App />, document.getElementById('app')!);
+```
+
+## Key patterns
+
+- Use `AnnotatorProvider` instead of `Annotator` for full layout control
+- Access state via `useAnnotator()` and `useConstraints()`
+- The `constraintStatus()` accessor provides reactive count information
+- Set contexts and assign images in the content component (inside the provider)

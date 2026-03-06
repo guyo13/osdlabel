@@ -1,0 +1,94 @@
+---
+title: Multiple Annotation Contexts
+description: Managing different labelling tasks with tool constraints
+---
+
+import MultipleContextsDemoWrapper from '../../../components/demos/MultipleContextsDemoWrapper.astro';
+
+A setup with multiple annotation contexts for classifying different types of features, each with its own set of allowed tools and count limits.
+
+<MultipleContextsDemoWrapper />
+
+```tsx
+import { render } from 'solid-js/web';
+import {Annotator} from 'osdlabel/components';
+import {createImageId, createAnnotationContextId} from 'osdlabel/core';
+import type {ImageSource, AnnotationContext} from 'osdlabel/core';
+
+const images: ImageSource[] = [
+  {
+    id: createImageId('sample-1'),
+    dziUrl: 'https://openseadragon.github.io/example-images/highsmith/highsmith.dzi',
+    label: 'Region North',
+  },
+  {
+    id: createImageId('sample-2'),
+    dziUrl: 'https://openseadragon.github.io/example-images/duomo/duomo.dzi',
+    label: 'Region South',
+  },
+];
+
+const contexts: AnnotationContext[] = [
+  {
+    id: createAnnotationContextId('buildings'),
+    label: 'Buildings',
+    // Only annotate buildings in specific regions
+    imageIds: [createImageId('sample-1'), createImageId('sample-2')],
+    tools: [
+      // Up to 10 building outlines per image
+      { type: 'rectangle', maxCount: 10, countScope: 'per-image' },
+      // Up to 5 freehand boundaries total for irregular shapes
+      { type: 'path', maxCount: 5 },
+    ],
+  },
+  {
+    id: createAnnotationContextId('roads'),
+    label: 'Roads',
+    tools: [
+      // Trace road segments with lines
+      { type: 'line', maxCount: 20, countScope: 'per-image' },
+      // Mark intersections
+      { type: 'point', maxCount: 15 },
+    ],
+  },
+  {
+    id: createAnnotationContextId('landmarks'),
+    label: 'Landmarks',
+    tools: [
+      { type: 'rectangle' },
+      { type: 'circle' },
+      { type: 'line' },
+      { type: 'point' },
+      { type: 'path' },
+    ],
+  },
+];
+
+function App() {
+  return (
+    <div style={{ width: '100vw', height: '100vh' }}>
+      <Annotator
+        images={images}
+        contexts={contexts}
+        showContextSwitcher={true}
+        filmstripPosition="left"
+        maxGridSize={{ columns: 2, rows: 1 }}
+        onAnnotationsChange={(annotations) => {
+          console.log(`Total annotations: ${annotations.length}`);
+        }}
+      />
+    </div>
+  );
+}
+
+render(() => <App />, document.getElementById('app')!);
+```
+
+## Key features demonstrated
+
+- **Context Switching** — use `showContextSwitcher={true}` to enable the built-in UI for switching tasks
+- **Multiple contexts** with different tool constraints (Buildings, Roads, Landmarks)
+- **Image scoping** — contexts can be restricted to specific images in the dataset
+- **Per-image counting** — constraints can limit annotations per individual image
+- **Global counting** — constraints can also limit annotations across the entire image set
+- **Callbacks** for annotation changes and constraint status updates

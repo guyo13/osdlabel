@@ -1,0 +1,21 @@
+:root {
+  --sl-color-accent-low: #1a1a3e;
+  --sl-color-accent: #4f6df5;
+  --sl-color-accent-high: #b4c3ff;
+}
+
+:root[data-theme='light'] {
+  --sl-color-accent-low: #d8e0ff;
+  --sl-color-accent: #3451c7;
+  --sl-color-accent-high: #1a2a6e;
+}
+
+/* 
+  Reset Starlight's automatic top margins for osdlabel components.
+  Starlight adds margin-top: 1rem to most children in .sl-markdown-content.
+  This breaks the OSD and Fabric canvas layouts.
+*/
+.sl-markdown-content :where(.osdlabel-container *) {
+  margin-top: 0 !important;
+}
+

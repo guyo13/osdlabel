@@ -6,6 +6,8 @@ import Toolbar from './Toolbar.js';
 import StatusBar from './StatusBar.js';
 import GridView from './GridView.js';
 import Filmstrip from './Filmstrip.js';
+import GridControls from './GridControls.js';
+import ContextSwitcher from './ContextSwitcher.js';
 import type { ImageSource, AnnotationContext } from '../core/types.js';
 
 export interface AnnotatorProps extends Omit<AnnotatorProviderProps, 'children'> {
@@ -15,6 +17,10 @@ export interface AnnotatorProps extends Omit<AnnotatorProviderProps, 'children'>
   readonly contexts: readonly AnnotationContext[];
   /** Whether to show the filmstrip sidebar (default: true) */
   readonly showFilmstrip?: boolean | undefined;
+  /** Whether to show the grid controls (default: false) */
+  readonly showGridControls?: boolean | undefined;
+  /** Whether to show the context switcher (default: false) */
+  readonly showContextSwitcher?: boolean | undefined;
   /** Filmstrip position (default: 'left') */
   readonly filmstripPosition?: 'left' | 'right' | 'bottom' | undefined;
   /** Maximum grid dimensions */
@@ -33,6 +39,8 @@ const AnnotatorInner: Component<Omit<AnnotatorProps, keyof AnnotatorProviderProp
 
   const filmstripPosition = () => props.filmstripPosition ?? 'left';
   const showFilmstrip = () => props.showFilmstrip !== false;
+  const showGridControls = () => props.showGridControls === true;
+  const showContextSwitcher = () => props.showContextSwitcher === true;
   const maxCols = () => props.maxGridSize?.columns ?? 4;
   const maxRows = () => props.maxGridSize?.rows ?? 4;
 
@@ -48,7 +56,23 @@ const AnnotatorInner: Component<Omit<AnnotatorProps, keyof AnnotatorProviderProp
         ...props.style,
       }}
     >
-      <Toolbar />
+      <div
+        style={{
+          display: 'flex',
+          'align-items': 'center',
+          gap: '12px',
+          background: '#1a1a1a',
+          padding: '4px 8px',
+        }}
+      >
+        <Toolbar />
+        {showContextSwitcher() && <ContextSwitcher label="Context:" />}
+        {showGridControls() && (
+          <div style={{ 'margin-left': 'auto' }}>
+            <GridControls maxColumns={maxCols()} maxRows={maxRows()} />
+          </div>
+        )}
+      </div>
       <div
         style={{
           display: 'flex',
@@ -95,6 +119,8 @@ const Annotator: Component<AnnotatorProps> = (props) => {
         images={props.images}
         contexts={props.contexts}
         showFilmstrip={props.showFilmstrip}
+        showGridControls={props.showGridControls}
+        showContextSwitcher={props.showContextSwitcher}
         filmstripPosition={props.filmstripPosition}
         maxGridSize={props.maxGridSize}
         style={props.style}
