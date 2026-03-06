@@ -4,7 +4,7 @@ import { AnnotationState } from '../core/types.js';
 export function createAnnotationStore() {
   const [state, setState] = createStore<AnnotationState>({
     byImage: {},
-    version: 0,
+    changeCounter: 0,
   });
   return { state, setState };
 }

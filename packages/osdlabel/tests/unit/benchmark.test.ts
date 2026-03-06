@@ -42,16 +42,16 @@ describe('version counter', () => {
 
   it('starts at zero', () => {
     const { annotationState, dispose } = createTestStore();
-    expect(annotationState.version).toBe(0);
+    expect(annotationState.changeCounter).toBe(0);
     dispose();
   });
 
   it('increments once per addAnnotation', () => {
     const { annotationState, actions, dispose } = createTestStore();
     actions.addAnnotation(makeAnnotation(0));
-    expect(annotationState.version).toBe(1);
+    expect(annotationState.changeCounter).toBe(1);
     actions.addAnnotation(makeAnnotation(1));
-    expect(annotationState.version).toBe(2);
+    expect(annotationState.changeCounter).toBe(2);
     dispose();
   });
 
@@ -59,9 +59,9 @@ describe('version counter', () => {
     const { annotationState, actions, dispose } = createTestStore();
     const ann = makeAnnotation(0);
     actions.addAnnotation(ann);
-    const vBefore = annotationState.version;
+    const vBefore = annotationState.changeCounter;
     actions.updateAnnotation(ann.id, imageId, { label: 'updated' });
-    expect(annotationState.version).toBe(vBefore + 1);
+    expect(annotationState.changeCounter).toBe(vBefore + 1);
     dispose();
   });
 
@@ -69,17 +69,17 @@ describe('version counter', () => {
     const { annotationState, actions, dispose } = createTestStore();
     const ann = makeAnnotation(0);
     actions.addAnnotation(ann);
-    const vBefore = annotationState.version;
+    const vBefore = annotationState.changeCounter;
     actions.deleteAnnotation(ann.id, imageId);
-    expect(annotationState.version).toBe(vBefore + 1);
+    expect(annotationState.changeCounter).toBe(vBefore + 1);
     dispose();
   });
 
   it('increments on loadAnnotations', () => {
     const { annotationState, actions, dispose } = createTestStore();
-    const vBefore = annotationState.version;
+    const vBefore = annotationState.changeCounter;
     actions.loadAnnotations({});
-    expect(annotationState.version).toBe(vBefore + 1);
+    expect(annotationState.changeCounter).toBe(vBefore + 1);
     dispose();
   });
 
@@ -90,7 +90,7 @@ describe('version counter', () => {
     for (let i = 0; i < NUM_ANNOTATIONS; i++) {
       actions.addAnnotation(makeAnnotation(i));
     }
-    expect(annotationState.version).toBe(NUM_ANNOTATIONS);
+    expect(annotationState.changeCounter).toBe(NUM_ANNOTATIONS);
 
     const startStringify = performance.now();
     for (let i = 0; i < 100; i++) {
@@ -100,7 +100,7 @@ describe('version counter', () => {
 
     const startProp = performance.now();
     for (let i = 0; i < 100; i++) {
-      void annotationState.version;
+      void annotationState.changeCounter;
     }
     const avgProp = (performance.now() - startProp) / 100;
 

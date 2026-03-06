@@ -73,7 +73,7 @@ export function AnnotatorProvider(props: AnnotatorProviderProps) {
         for (const [imageId, annMap] of Object.entries(props.initialAnnotations!)) {
           state.byImage[imageId as ImageId] = { ...annMap };
         }
-        state.version += 1;
+        state.changeCounter += 1;
       }),
     );
   }
@@ -81,7 +81,7 @@ export function AnnotatorProvider(props: AnnotatorProviderProps) {
   // Fire onAnnotationsChange when annotations change (defer: skip initial mount)
   createEffect(
     on(
-      () => annotationState.version,
+      () => annotationState.changeCounter,
       () => {
         if (props.onAnnotationsChange) {
           const allAnnotations = getAllAnnotationsFlat(annotationState);

@@ -27,7 +27,7 @@ export function createActions(
           updatedAt: now,
         };
         state.byImage[annotation.imageId] = imageAnns;
-        state.version += 1;
+        state.changeCounter += 1;
       }),
     );
   }
@@ -46,7 +46,7 @@ export function createActions(
             ...patch,
             updatedAt: new Date().toISOString(),
           };
-          state.version += 1;
+          state.changeCounter += 1;
         }
       }),
     );
@@ -58,7 +58,7 @@ export function createActions(
         const imageAnns = state.byImage[imageId];
         if (imageAnns) {
           delete imageAnns[id];
-          state.version += 1;
+          state.changeCounter += 1;
         }
       }),
     );
@@ -101,7 +101,7 @@ export function createActions(
     setAnnotationState(
       produce((state) => {
         state.byImage = byImage;
-        state.version += 1;
+        state.changeCounter += 1;
       }),
     );
   }
