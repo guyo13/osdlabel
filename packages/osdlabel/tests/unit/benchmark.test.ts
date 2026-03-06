@@ -20,8 +20,8 @@ describe('version counter', () => {
     return createRoot((dispose) => {
       const { state: annotationState, setState: setAnnotationState } = createAnnotationStore();
       const { setState: setUIState } = createUIStore();
-      const { setState: setContextState } = createContextStore();
-      const actions = createActions(setAnnotationState, setUIState, setContextState);
+      const { state: contextState, setState: setContextState } = createContextStore();
+      const actions = createActions(setAnnotationState, setUIState, setContextState, contextState);
       return { annotationState, actions, dispose };
     });
   }
