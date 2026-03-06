@@ -6,7 +6,9 @@ import {
   AnnotationState,
   ConstraintStatus,
   AnnotationType,
+  ImageId,
 } from '../core/types.js';
+import { isContextScopedToImage, getCountableImageIds } from '../core/context-scoping.js';
 
 export function createContextStore() {
   const [state, setState] = createStore<ContextState>({
@@ -19,14 +21,16 @@ export function createContextStore() {
 export function createConstraintStatus(
   contextState: ContextState,
   annotationState: AnnotationState,
+  currentImageId: () => ImageId | undefined,
 ) {
   return createMemo<ConstraintStatus>(() => {
     const activeContext = contextState.contexts.find((c) => c.id === contextState.activeContextId);
+    const imgId = currentImageId();
 
     const allTypes: AnnotationType[] = ['rectangle', 'circle', 'line', 'point', 'path'];
     const result: Partial<ConstraintStatus> = {};
 
-    if (!activeContext) {
+    if (!activeContext || !imgId || !isContextScopedToImage(activeContext, imgId)) {
       for (const type of allTypes) {
         result[type] = { enabled: false, currentCount: 0, maxCount: null };
       }
@@ -38,10 +42,12 @@ export function createConstraintStatus(
       if (!toolConstraint) {
         result[type] = { enabled: false, currentCount: 0, maxCount: null };
       } else {
+        const countScope = toolConstraint.countScope ?? 'global';
         const currentCount = countAnnotationsForContextAndType(
           annotationState,
           activeContext.id,
           type,
+          getCountableImageIds(activeContext, imgId, countScope),
         );
         const maxCount = toolConstraint.maxCount ?? null;
         const enabled = maxCount === null || currentCount < maxCount;
@@ -61,9 +67,14 @@ function countAnnotationsForContextAndType(
   annotationState: AnnotationState,
   contextId: AnnotationContextId,
   type: AnnotationType,
+  scopedImageIds?: readonly ImageId[] | undefined,
 ): number {
   let count = 0;
-  for (const imageAnns of Object.values(annotationState.byImage)) {
+  const imageBuckets = scopedImageIds
+    ? scopedImageIds.map((id) => annotationState.byImage[id])
+    : Object.values(annotationState.byImage);
+
+  for (const imageAnns of imageBuckets) {
     if (!imageAnns) continue;
     for (const ann of Object.values(imageAnns)) {
       if (ann.contextId === contextId && ann.geometry.type === type) {
@@ -71,5 +82,6 @@ function countAnnotationsForContextAndType(
       }
     }
   }
+
   return count;
 }

@@ -10,13 +10,21 @@ import {
   AnnotationContextId,
   ContextState,
 } from '../core/types.js';
+import { isContextScopedToImage } from '../core/context-scoping.js';
 
 export function createActions(
   setAnnotationState: SetStoreFunction<AnnotationState>,
   setUIState: SetStoreFunction<UIState>,
   setContextState: SetStoreFunction<ContextState>,
+  contextState: ContextState,
 ) {
   function addAnnotation(annotation: Omit<Annotation, 'createdAt' | 'updatedAt'>): void {
+    const ctx = contextState.contexts.find((c) => c.id === annotation.contextId);
+    if (ctx && !isContextScopedToImage(ctx, annotation.imageId)) {
+      console.warn(`Context "${ctx.label}" not scoped to image "${annotation.imageId}"`);
+      return;
+    }
+
     setAnnotationState(
       produce((state) => {
         const imageAnns = state.byImage[annotation.imageId] ?? {};

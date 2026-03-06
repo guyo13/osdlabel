@@ -60,8 +60,9 @@ export function AnnotatorProvider(props: AnnotatorProviderProps) {
   const { state: uiState, setState: setUIState } = createUIStore();
   const { state: contextState, setState: setContextState } = createContextStore();
 
-  const actions = createActions(setAnnotationState, setUIState, setContextState);
-  const constraintStatus = createConstraintStatus(contextState, annotationState);
+  const actions = createActions(setAnnotationState, setUIState, setContextState, contextState);
+  const currentImageId = () => uiState.gridAssignments[uiState.activeCellIndex];
+  const constraintStatus = createConstraintStatus(contextState, annotationState, currentImageId);
 
   const activeToolKeyHandlerRef: ActiveToolKeyHandlerRef = { handler: null };
   const mergedShortcuts = { ...DEFAULT_KEYBOARD_SHORTCUTS, ...props.keyboardShortcuts };

@@ -107,10 +107,14 @@ export interface ImageAnnotations {
 
 // ── Constraint System ────────────────────────────────────────────────────
 
+/** Count scope for tool constraints */
+export type CountScope = 'per-image' | 'global';
+
 /** Tool constraint within an annotation context */
 export interface ToolConstraint {
   readonly type: AnnotationType;
   readonly maxCount?: number | undefined;
+  readonly countScope?: CountScope | undefined;
   readonly defaultStyle?: Partial<AnnotationStyle> | undefined;
 }
 
@@ -119,6 +123,7 @@ export interface AnnotationContext {
   readonly id: AnnotationContextId;
   readonly label: string;
   readonly tools: readonly ToolConstraint[];
+  readonly imageIds?: readonly ImageId[] | undefined;
   readonly metadata?: Readonly<Record<string, unknown>> | undefined;
 }
 

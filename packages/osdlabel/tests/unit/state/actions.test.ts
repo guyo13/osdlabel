@@ -12,6 +12,7 @@ import {
   Annotation,
   AnnotationContext,
   AnnotationContextId,
+  ImageId,
 } from '../../../src/core/types';
 
 describe('State Management', () => {
@@ -21,8 +22,11 @@ describe('State Management', () => {
       const { state: uiState, setState: setUIState } = createUIStore();
       const { state: contextState, setState: setContextState } = createContextStore();
 
-      const actions = createActions(setAnnotationState, setUIState, setContextState);
-      const constraintStatus = createConstraintStatus(contextState, annotationState);
+      const actions = createActions(setAnnotationState, setUIState, setContextState, contextState);
+      // Assign image to cell 0 so constraint status has a currentImageId
+      setUIState('gridAssignments', 0, dummyImageId);
+      const currentImageId = () => uiState.gridAssignments[uiState.activeCellIndex];
+      const constraintStatus = createConstraintStatus(contextState, annotationState, currentImageId);
 
       return { annotationState, uiState, contextState, actions, constraintStatus, dispose };
     });

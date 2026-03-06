@@ -24,6 +24,10 @@ export type {
 // ID factory functions
 export { createAnnotationId, createImageId, createAnnotationContextId } from './core/types.js';
 
+// Context scoping
+export { isContextScopedToImage } from './core/context-scoping.js';
+export type { CountScope } from './core/types.js';
+
 // Constants
 export { DEFAULT_ANNOTATION_STYLE, DEFAULT_GRID_CONFIG, MAX_GRID_SIZE } from './core/constants.js';
 

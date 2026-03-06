@@ -41,8 +41,9 @@ const CONTEXTS: AnnotationContext[] = [
   {
     id: 'ctx-1' as AnnotationContextId,
     label: 'Fracture',
+    imageIds: [createImageId('highsmith'), createImageId('duomo')],
     tools: [
-      { type: 'line', maxCount: 3 },
+      { type: 'line', maxCount: 3, countScope: 'per-image' },
       { type: 'rectangle', maxCount: 2 },
     ],
   },

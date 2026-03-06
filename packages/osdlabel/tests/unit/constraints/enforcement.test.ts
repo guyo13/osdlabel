@@ -10,17 +10,21 @@ import {
   createImageId,
   createAnnotationContextId,
   AnnotationContext,
+  ImageId,
 } from '../../../src/core/types';
 
 describe('Constraint Enforcement', () => {
-  function createTestStore() {
+  function createTestStore(initialImageId: ImageId = imageId) {
     return createRoot((dispose) => {
       const { state: annotationState, setState: setAnnotationState } = createAnnotationStore();
       const { state: uiState, setState: setUIState } = createUIStore();
       const { state: contextState, setState: setContextState } = createContextStore();
 
-      const actions = createActions(setAnnotationState, setUIState, setContextState);
-      const constraintStatus = createConstraintStatus(contextState, annotationState);
+      const actions = createActions(setAnnotationState, setUIState, setContextState, contextState);
+      // Assign image to cell 0 so constraint status has a currentImageId
+      setUIState('gridAssignments', 0, initialImageId);
+      const currentImageId = () => uiState.gridAssignments[uiState.activeCellIndex];
+      const constraintStatus = createConstraintStatus(contextState, annotationState, currentImageId);
 
       return { annotationState, uiState, contextState, actions, constraintStatus, dispose };
     });
@@ -261,6 +265,206 @@ describe('Constraint Enforcement', () => {
     });
 
     expect(canAddLine()).toBe(false);
+
+    dispose();
+  });
+
+  // ── Context Scoping Tests ──────────────────────────────────────────────
+
+  const imageId2 = createImageId('img2');
+  const imageId3 = createImageId('img3');
+
+  it('should disable all tools when context is not scoped to current image', () => {
+    const { actions, constraintStatus, dispose } = createTestStore();
+
+    const scopedContext: AnnotationContext = {
+      id: contextId1,
+      label: 'Scoped Context',
+      imageIds: [imageId2], // only img2, not img1
+      tools: [{ type: 'rectangle' }, { type: 'circle' }],
+    };
+
+    actions.setContexts([scopedContext]);
+    actions.setActiveContext(contextId1);
+
+    const status = constraintStatus();
+    expect(status.rectangle.enabled).toBe(false);
+    expect(status.circle.enabled).toBe(false);
+
+    dispose();
+  });
+
+  it('should enable tools when context is scoped to current image', () => {
+    const { actions, constraintStatus, dispose } = createTestStore();
+
+    const scopedContext: AnnotationContext = {
+      id: contextId1,
+      label: 'Scoped Context',
+      imageIds: [imageId, imageId2],
+      tools: [{ type: 'rectangle' }, { type: 'circle' }],
+    };
+
+    actions.setContexts([scopedContext]);
+    actions.setActiveContext(contextId1);
+
+    const status = constraintStatus();
+    expect(status.rectangle.enabled).toBe(true);
+    expect(status.circle.enabled).toBe(true);
+
+    dispose();
+  });
+
+  it('should disable all tools when imageIds is empty array', () => {
+    const { actions, constraintStatus, dispose } = createTestStore();
+
+    const emptyContext: AnnotationContext = {
+      id: contextId1,
+      label: 'Empty Scope',
+      imageIds: [],
+      tools: [{ type: 'rectangle' }],
+    };
+
+    actions.setContexts([emptyContext]);
+    actions.setActiveContext(contextId1);
+
+    const status = constraintStatus();
+    expect(status.rectangle.enabled).toBe(false);
+
+    dispose();
+  });
+
+  it('should behave as before when imageIds is undefined (all images)', () => {
+    const { actions, constraintStatus, dispose } = createTestStore();
+
+    // context1 has no imageIds — backward compatible
+    actions.setContexts([context1]);
+    actions.setActiveContext(contextId1);
+
+    const status = constraintStatus();
+    expect(status.rectangle.enabled).toBe(true);
+    expect(status.circle.enabled).toBe(true);
+
+    dispose();
+  });
+
+  it('should count per-image when countScope is per-image', () => {
+    const { actions, constraintStatus, dispose } = createTestStore();
+
+    const perImageContext: AnnotationContext = {
+      id: contextId1,
+      label: 'Per-Image',
+      tools: [{ type: 'rectangle', maxCount: 1, countScope: 'per-image' }],
+    };
+
+    actions.setContexts([perImageContext]);
+    actions.setActiveContext(contextId1);
+
+    // Add rectangle on img1 (current image)
+    actions.addAnnotation({
+      id: createAnnotationId('r1'),
+      imageId,
+      contextId: contextId1,
+      geometry: { type: 'rectangle', origin: { x: 0, y: 0 }, width: 10, height: 10, rotation: 0 },
+      rawAnnotationData: baseRawData,
+    });
+
+    let status = constraintStatus();
+    expect(status.rectangle.currentCount).toBe(1);
+    expect(status.rectangle.enabled).toBe(false); // maxCount 1 reached on current image
+
+    // Add rectangle on img2 (different image) — should not affect img1's count
+    actions.addAnnotation({
+      id: createAnnotationId('r2'),
+      imageId: imageId2,
+      contextId: contextId1,
+      geometry: { type: 'rectangle', origin: { x: 0, y: 0 }, width: 10, height: 10, rotation: 0 },
+      rawAnnotationData: baseRawData,
+    });
+
+    // Still on img1 — count should still be 1 (per-image)
+    status = constraintStatus();
+    expect(status.rectangle.currentCount).toBe(1);
+    expect(status.rectangle.enabled).toBe(false);
+
+    dispose();
+  });
+
+  it('should count globally across scoped images when countScope is global with imageIds', () => {
+    const { actions, constraintStatus, dispose } = createTestStore();
+
+    const globalScopedContext: AnnotationContext = {
+      id: contextId1,
+      label: 'Global Scoped',
+      imageIds: [imageId, imageId2],
+      tools: [{ type: 'rectangle', maxCount: 2, countScope: 'global' }],
+    };
+
+    actions.setContexts([globalScopedContext]);
+    actions.setActiveContext(contextId1);
+
+    // Add rectangle on img1
+    actions.addAnnotation({
+      id: createAnnotationId('r1'),
+      imageId,
+      contextId: contextId1,
+      geometry: { type: 'rectangle', origin: { x: 0, y: 0 }, width: 10, height: 10, rotation: 0 },
+      rawAnnotationData: baseRawData,
+    });
+
+    // Add rectangle on img2
+    actions.addAnnotation({
+      id: createAnnotationId('r2'),
+      imageId: imageId2,
+      contextId: contextId1,
+      geometry: { type: 'rectangle', origin: { x: 0, y: 0 }, width: 10, height: 10, rotation: 0 },
+      rawAnnotationData: baseRawData,
+    });
+
+    // Global count should be 2 (across scoped images)
+    const status = constraintStatus();
+    expect(status.rectangle.currentCount).toBe(2);
+    expect(status.rectangle.enabled).toBe(false);
+
+    // Add rectangle on img3 (out of scope) — should not be counted
+    actions.addAnnotation({
+      id: createAnnotationId('r3'),
+      imageId: imageId3,
+      contextId: contextId1,
+      geometry: { type: 'rectangle', origin: { x: 0, y: 0 }, width: 10, height: 10, rotation: 0 },
+      rawAnnotationData: baseRawData,
+    });
+
+    // Count should still be 2 (img3 not in scoped images)
+    const status2 = constraintStatus();
+    expect(status2.rectangle.currentCount).toBe(2);
+
+    dispose();
+  });
+
+  it('should block addAnnotation on out-of-scope image', () => {
+    const { actions, annotationState, dispose } = createTestStore();
+
+    const scopedContext: AnnotationContext = {
+      id: contextId1,
+      label: 'Scoped',
+      imageIds: [imageId], // only img1
+      tools: [{ type: 'rectangle' }],
+    };
+
+    actions.setContexts([scopedContext]);
+    actions.setActiveContext(contextId1);
+
+    // Try to add annotation on img2 (out of scope)
+    actions.addAnnotation({
+      id: createAnnotationId('r1'),
+      imageId: imageId2,
+      contextId: contextId1,
+      geometry: { type: 'rectangle', origin: { x: 0, y: 0 }, width: 10, height: 10, rotation: 0 },
+      rawAnnotationData: baseRawData,
+    });
+
+    // Annotation should not have been added
+    expect(annotationState.byImage[imageId2]).toBeUndefined();
 
     dispose();
   });
