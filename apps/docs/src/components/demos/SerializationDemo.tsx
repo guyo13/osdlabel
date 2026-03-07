@@ -68,14 +68,11 @@ function AppContent() {
         <AnnotatorProvider>
           {/* Need to wrap in another provider or pass state down if we want to show it outside */}
         </AnnotatorProvider>
-        {/* Wait, Annotator already has its own internal provider if used as component */}
-        {/* I'll use Annotator but I need to access its state. Actually I'll build it with AnnotatorProvider */}
       </div>
     </div>
   );
 }
 
-// Redoing AppContent to use AnnotatorProvider correctly for state access
 function SerializationDemoContent() {
   const { actions, annotationState } = useAnnotator();
 
@@ -107,26 +104,17 @@ function SerializationDemoContent() {
         <div style={{ height: '100%', display: 'flex', 'flex-direction': 'column' }}>
           <div style={{ flex: '1' }}>
             <div style={{ width: '100%', height: '100%' }}>
-              {/* Since I want the full experience, I'll just use the library's GridView etc. */}
               {/* For simplicity in this demo, just a single cell */}
               <div style={{ width: '100%', height: '100%', position: 'relative' }}>
                 {/* GridView with 1x1 */}
                 <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }}>
-                  {/* To keep it simple and interactive, I'll just use Annotator component if possible, 
-                             but I can't easily reach into its state from outside. 
-                             So I'll use the provider + components. */}
                   <div style={{ display: 'flex', height: '100%' }}>
                     <div style={{ flex: 1, position: 'relative' }}>
                       <div style={{ height: '100%' }}>
                         <div style={{ height: '100%' }}>
-                          {/* I'll just use a simplified layout */}
                           <div style={{ height: '300px' }}>
                             <div style={{ width: '100%', height: '100%', position: 'relative' }}>
-                              {/* I will use the actual components */}
                               <div style={{ height: '100%' }}>
-                                {/* This is getting complex to re-implement.
-                                                        I'll just use the provided Annotator and a separate state if I can.
-                                                        Actually, let's just show the serialize/deserialize in action. */}
                               </div>
                             </div>
                           </div>
@@ -143,11 +131,6 @@ function SerializationDemoContent() {
     </div>
   );
 }
-
-// Let's simplify: A standard Annotator but we'll show the JSON in a companion div if we can.
-// But we can't easily with the standalone component.
-// I'll just provide a simple Annotator and explain it's serializable.
-// Or I'll use the Provider + internal components.
 
 import { GridView, Toolbar, StatusBar } from 'osdlabel/components';
 
