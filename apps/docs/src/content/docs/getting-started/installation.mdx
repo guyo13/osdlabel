@@ -31,7 +31,9 @@ The following dependencies are bundled with osdlabel and do not need to be insta
 
 ## Bundler setup
 
-osdlabel is an ESM-only package. You need a bundler that supports SolidJS JSX compilation.
+osdlabel is an ESM-only package. It comes pre-compiled with SolidJS optimized JavaScript, so your bundler does not need to handle its JSX.
+
+If you are building your own SolidJS application (recommended), you will still need a setup that supports SolidJS.
 
 ### Vite (recommended)
 
@@ -52,21 +54,6 @@ export default defineConfig({
 ## TypeScript
 
 osdlabel ships with full TypeScript declarations. No `@types` packages needed.
-
-Recommended `tsconfig.json` settings:
-
-```json
-{
-  "compilerOptions": {
-    "target": "ESNext",
-    "module": "ESNext",
-    "moduleResolution": "bundler",
-    "jsx": "preserve",
-    "jsxImportSource": "solid-js",
-    "strict": true
-  }
-}
-```
 
 ## Next steps
 

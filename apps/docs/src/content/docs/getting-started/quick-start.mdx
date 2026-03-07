@@ -76,12 +76,16 @@ render(() => <App />, document.getElementById('app')!);
 
 ## 4. What you get
 
-The `Annotator` component renders:
+The `Annotator` component provides a standard layout using the following built-in components:
 
 - **Toolbar** — Tool selector that respects context constraints, showing which tools are available and their usage counts
-- **Grid View** — One or more image viewers in a configurable grid (use `=`/`-` keys to resize)
-- **Filmstrip** — Sidebar for assigning images to grid cells (click an image to assign it to the active cell)
+- **Grid View** — One or more image viewers in a configurable grid
+- **Filmstrip** — Sidebar for assigning images to grid cells
 - **Status Bar** — Shows the active context, tool, and annotation count
+- **Grid Controls** — Optional visual selector for resizing the grid (Table Selector)
+- **Context Switcher** — Optional dropdown for switching between different annotation tasks
+
+All these components are also available individually for building custom layouts with `AnnotatorProvider`.
 
 ## 5. Interact with annotations
 
@@ -93,4 +97,5 @@ Use `Ctrl`/`Cmd` + drag to pan, and `Ctrl`/`Cmd` + scroll to zoom while in annot
 
 - Learn about [Core Concepts](/osdlabel/getting-started/concepts/) — coordinate systems, the overlay model, and branded types
 - See the [Annotation Contexts](/osdlabel/guides/annotation-contexts/) guide for constraint configuration
+- Explore [Multiple Annotation Contexts](/osdlabel/examples/multiple-contexts/) for a complex real-world setup
 - Build a custom UI with the [Custom Toolbar](/osdlabel/examples/custom-toolbar/) example
