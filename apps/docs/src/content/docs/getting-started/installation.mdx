@@ -3,26 +3,17 @@ title: Installation
 description: How to install osdlabel and set up your project
 ---
 
+import { PackageManagers } from 'starlight-package-managers'
+
 ## Install the package
 
-```bash
-# npm
-npm install osdlabel
-
-# pnpm
-pnpm add osdlabel
-
-# yarn
-yarn add osdlabel
-```
+<PackageManagers pkg="osdlabel" pkgManagers={['npm', 'pnpm', 'yarn', 'bun', 'deno']} />
 
 ## Peer dependencies
 
 osdlabel requires SolidJS as a peer dependency:
 
-```bash
-npm install solid-js
-```
+<PackageManagers pkg="solid-js" pkgManagers={['npm', 'pnpm', 'yarn', 'bun', 'deno']} />
 
 The following dependencies are bundled with osdlabel and do not need to be installed separately:
 
@@ -37,9 +28,7 @@ If you are building your own SolidJS application (recommended), you will still n
 
 ### Vite (recommended)
 
-```bash
-npm install -D vite vite-plugin-solid
-```
+<PackageManagers pkg="vite vite-plugin-solid" dev pkgManagers={['npm', 'pnpm', 'yarn', 'bun', 'deno']} />
 
 ```ts
 // vite.config.ts
