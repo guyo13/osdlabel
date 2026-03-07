@@ -202,6 +202,8 @@ export interface KeyboardShortcutMap {
   readonly gridCell9: string;
   readonly increaseGridColumns: string;
   readonly decreaseGridColumns: string;
+  readonly increaseGridRows: string;
+  readonly decreaseGridRows: string;
   readonly pathFinish: string;
   readonly pathClose: string;
   readonly pathCancel: string;

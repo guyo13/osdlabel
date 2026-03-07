@@ -87,6 +87,38 @@ test.describe('Keyboard Shortcuts', () => {
     await expect(gridSize).toContainText('4x1');
     await page.keyboard.press('='); // Should stay 4
     await expect(gridSize).toContainText('4x1');
+
+    // Return to 1x1
+    await page.keyboard.press('-');
+    await page.keyboard.press('-');
+    await page.keyboard.press('-');
+    await expect(gridSize).toContainText('1x1');
+
+    // Increase rows with ']'
+    await page.keyboard.press(']');
+    await expect(gridSize).toContainText('1x2');
+
+    // Increase rows again
+    await page.keyboard.press(']');
+    await expect(gridSize).toContainText('1x3');
+
+    // Decrease rows with '['
+    await page.keyboard.press('[');
+    await expect(gridSize).toContainText('1x2');
+
+    // Check clamping at 1 row
+    await page.keyboard.press('[');
+    await expect(gridSize).toContainText('1x1');
+    await page.keyboard.press('[');
+    await expect(gridSize).toContainText('1x1');
+
+    // Check clamping at Max (4) for rows
+    await page.keyboard.press(']'); // 2
+    await page.keyboard.press(']'); // 3
+    await page.keyboard.press(']'); // 4
+    await expect(gridSize).toContainText('1x4');
+    await page.keyboard.press(']'); // Should stay 4
+    await expect(gridSize).toContainText('1x4');
   });
 
   test('Grid cell selection shortcuts (1-9)', async ({ page }) => {
