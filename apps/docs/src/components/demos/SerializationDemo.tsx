@@ -124,7 +124,7 @@ function SerializationDemoContent() {
                             <div style={{ width: '100%', height: '100%', position: 'relative' }}>
                               {/* I will use the actual components */}
                               <div style={{ height: '100%' }}>
-                                {/* This is getting complex to re-implement. 
+                                {/* This is getting complex to re-implement.
                                                         I'll just use the provided Annotator and a separate state if I can.
                                                         Actually, let's just show the serialize/deserialize in action. */}
                               </div>

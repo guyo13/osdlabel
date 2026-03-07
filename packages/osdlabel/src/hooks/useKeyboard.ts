@@ -25,6 +25,8 @@ export const DEFAULT_KEYBOARD_SHORTCUTS: KeyboardShortcutMap = {
   gridCell9: '9',
   increaseGridColumns: '=',
   decreaseGridColumns: '-',
+  increaseGridRows: ']',
+  decreaseGridRows: '[',
   pathFinish: 'Enter',
   pathClose: 'c',
   pathCancel: 'Escape',
@@ -113,6 +115,17 @@ export function useKeyboard(
     } else if (key === shortcuts.decreaseGridColumns) {
       if (uiState.gridColumns > 1) {
         actions.setGridDimensions(uiState.gridColumns - 1, uiState.gridRows);
+      }
+    }
+    // Grid Rows
+    else if (key === shortcuts.increaseGridRows) {
+      const maxRows = MAX_GRID_SIZE.rows;
+      if (uiState.gridRows < maxRows) {
+        actions.setGridDimensions(uiState.gridColumns, uiState.gridRows + 1);
+      }
+    } else if (key === shortcuts.decreaseGridRows) {
+      if (uiState.gridRows > 1) {
+        actions.setGridDimensions(uiState.gridColumns, uiState.gridRows - 1);
       }
     }
   };
