@@ -24,15 +24,6 @@ test.describe('Race Condition: Cell Switching & Key Handling', () => {
 
     // Assign an image (e.g., the first one available in the filmstrip or placeholder)
     // The placeholder text "Assign an image" should be visible in the cell.
-    // We can assume the filmstrip is visible. Let's pick a specific item if possible,
-    // or just assume clicking the placeholder opens a dialog/mode (in this app, clicking placeholder activates it and we click filmstrip).
-
-    // As per grid-view.spec.ts:
-    // "Click cell 1 (the empty one) to activate it" -> We did that.
-    // "Assign Duomo to cell 1 via filmstrip"
-    // Let's use 'filmstrip-item-0' or similar if IDs aren't known, but 'filmstrip-item-duomo' was used in other tests.
-    // Let's check filmstrip using a generic selector if specific IDs aren't guaranteed,
-    // but looking at grid-view.spec.ts they use 'filmstrip-item-duomo'.
     // Safe bet: click the first item in the filmstrip.
     await page.locator('[data-testid^="filmstrip-item-"]').first().click();
 
@@ -44,7 +35,6 @@ test.describe('Race Condition: Cell Switching & Key Handling', () => {
     await expect(page.getByTestId('grid-cell-0')).toHaveAttribute('data-active', 'true');
 
     // 4. Switch to 'General' context to ensure Path tool is enabled
-    // (Assuming default is General or it has Path, but let's be safe like keyboard.spec.ts)
     const contextSelector = page.getByRole('combobox');
     if (await contextSelector.isVisible()) {
       await contextSelector.selectOption({ label: 'General' });
