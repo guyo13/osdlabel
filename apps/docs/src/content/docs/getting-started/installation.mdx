@@ -3,7 +3,7 @@ title: Installation
 description: How to install osdlabel and set up your project
 ---
 
-import { PackageManagers } from 'starlight-package-managers'
+import { PackageManagers } from 'starlight-package-managers';
 
 ## Install the package
 
@@ -28,7 +28,11 @@ If you are building your own SolidJS application (recommended), you will still n
 
 ### Vite (recommended)
 
-<PackageManagers pkg="vite vite-plugin-solid" dev pkgManagers={['npm', 'pnpm', 'yarn', 'bun', 'deno']} />
+<PackageManagers
+  pkg="vite vite-plugin-solid"
+  dev
+  pkgManagers={['npm', 'pnpm', 'yarn', 'bun', 'deno']}
+/>
 
 ```ts
 // vite.config.ts

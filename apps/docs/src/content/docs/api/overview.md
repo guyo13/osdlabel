@@ -20,10 +20,10 @@ import { Annotator, useAnnotator, serialize } from 'osdlabel';
 Preferred for better build performance and tree-shaking in production apps.
 
 ```ts
-import {Annotator} from 'osdlabel/components';
-import {serialize} from 'osdlabel/core';
-import {useAnnotator} from 'osdlabel/state';
-import type {Annotation, ImageSource, AnnotationContext} from 'osdlabel/core';
+import { Annotator } from 'osdlabel/components';
+import { serialize } from 'osdlabel/core';
+import { useAnnotator } from 'osdlabel/state';
+import type { Annotation, ImageSource, AnnotationContext } from 'osdlabel/core';
 ```
 
 ### 3. Granular imports
@@ -43,8 +43,8 @@ import { Annotator } from 'osdlabel/components/Annotator';
 Core TypeScript types and branded ID factories. See [Types](/osdlabel/api/types/).
 
 ```ts
-import type {AnnotationId, ImageId, Geometry, Annotation} from 'osdlabel/core';
-import {createImageId, createAnnotationId} from 'osdlabel/core';
+import type { AnnotationId, ImageId, Geometry, Annotation } from 'osdlabel/core';
+import { createImageId, createAnnotationId } from 'osdlabel/core';
 ```
 
 ### Components
@@ -52,7 +52,15 @@ import {createImageId, createAnnotationId} from 'osdlabel/core';
 SolidJS UI components for building annotation interfaces. See [Components](/osdlabel/api/components/).
 
 ```ts
-import {Annotator, ViewerCell, Toolbar, StatusBar, GridView, Filmstrip, GridControls} from 'osdlabel/components';
+import {
+  Annotator,
+  ViewerCell,
+  Toolbar,
+  StatusBar,
+  GridView,
+  Filmstrip,
+  GridControls,
+} from 'osdlabel/components';
 ```
 
 ### State management
@@ -60,7 +68,7 @@ import {Annotator, ViewerCell, Toolbar, StatusBar, GridView, Filmstrip, GridCont
 Stores, actions, and the context provider. See [State Management](/osdlabel/api/state/).
 
 ```ts
-import {AnnotatorProvider, useAnnotator, createActions} from 'osdlabel/state';
+import { AnnotatorProvider, useAnnotator, createActions } from 'osdlabel/state';
 ```
 
 ### Overlay
@@ -68,7 +76,7 @@ import {AnnotatorProvider, useAnnotator, createActions} from 'osdlabel/state';
 Low-level OSD-Fabric integration. See [Overlay](/osdlabel/api/overlay/).
 
 ```ts
-import {FabricOverlay, computeViewportTransform, createOverlayManager} from 'osdlabel/overlay';
+import { FabricOverlay, computeViewportTransform, createOverlayManager } from 'osdlabel/overlay';
 ```
 
 ### Serialization
@@ -76,7 +84,7 @@ import {FabricOverlay, computeViewportTransform, createOverlayManager} from 'osd
 JSON export/import functions. See [Serialization](/osdlabel/api/serialization/).
 
 ```ts
-import {serialize, deserialize, validateAnnotation, getAllAnnotationsFlat} from 'osdlabel/core';
+import { serialize, deserialize, validateAnnotation, getAllAnnotationsFlat } from 'osdlabel/core';
 ```
 
 ### Hooks
@@ -84,7 +92,7 @@ import {serialize, deserialize, validateAnnotation, getAllAnnotationsFlat} from 
 Custom SolidJS hooks. See [Hooks](/osdlabel/api/hooks/).
 
 ```ts
-import {useConstraints, useKeyboard} from 'osdlabel/hooks';
+import { useConstraints, useKeyboard } from 'osdlabel/hooks';
 ```
 
 ### Constants
@@ -92,5 +100,5 @@ import {useConstraints, useKeyboard} from 'osdlabel/hooks';
 Default configuration values. See [Constants](/osdlabel/api/constants/).
 
 ```ts
-import {DEFAULT_ANNOTATION_STYLE, DEFAULT_GRID_CONFIG, MAX_GRID_SIZE} from 'osdlabel/core';
+import { DEFAULT_ANNOTATION_STYLE, DEFAULT_GRID_CONFIG, MAX_GRID_SIZE } from 'osdlabel/core';
 ```

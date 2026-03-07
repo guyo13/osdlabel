@@ -8,7 +8,7 @@ description: Custom SolidJS hooks
 Convenience hook for checking tool availability based on the active context's constraints.
 
 ```ts
-import {useConstraints} from 'osdlabel/hooks';
+import { useConstraints } from 'osdlabel/hooks';
 ```
 
 Must be used within an `AnnotatorProvider`.
@@ -22,10 +22,10 @@ Must be used within an `AnnotatorProvider`.
 }
 ```
 
-| Function | Description |
-|----------|-------------|
-| `isToolEnabled` | Returns whether a tool type is enabled (context allows it and limit not reached) |
-| `canAddAnnotation` | Same check as `isToolEnabled` — used by tools as a safety net before committing |
+| Function           | Description                                                                      |
+| ------------------ | -------------------------------------------------------------------------------- |
+| `isToolEnabled`    | Returns whether a tool type is enabled (context allows it and limit not reached) |
+| `canAddAnnotation` | Same check as `isToolEnabled` — used by tools as a safety net before committing  |
 
 ### Example
 
@@ -49,7 +49,7 @@ function MyToolbar() {
 Sets up keyboard shortcut handling. Called automatically by `AnnotatorProvider` — you don't need to call this directly unless building a fully custom setup.
 
 ```ts
-import {useKeyboard} from 'osdlabel/hooks';
+import { useKeyboard } from 'osdlabel/hooks';
 ```
 
 ### Signature
@@ -59,14 +59,14 @@ function useKeyboard(
   shortcuts: KeyboardShortcutMap,
   activeToolKeyHandlerRef: ActiveToolKeyHandlerRef,
   shouldSkipTargetPredicate?: (target: HTMLElement) => boolean,
-): void
+): void;
 ```
 
-| Parameter | Description |
-|-----------|-------------|
-| `shortcuts` | The keyboard shortcut map (default + overrides) |
-| `activeToolKeyHandlerRef` | Ref to the active tool's key handler (for tool-specific keys like path `Enter`/`c`) |
-| `shouldSkipTargetPredicate` | Optional callback to suppress shortcuts for specific targets |
+| Parameter                   | Description                                                                         |
+| --------------------------- | ----------------------------------------------------------------------------------- |
+| `shortcuts`                 | The keyboard shortcut map (default + overrides)                                     |
+| `activeToolKeyHandlerRef`   | Ref to the active tool's key handler (for tool-specific keys like path `Enter`/`c`) |
+| `shouldSkipTargetPredicate` | Optional callback to suppress shortcuts for specific targets                        |
 
 ### Behavior
 
@@ -82,15 +82,16 @@ function useKeyboard(
 Utility function for checking if an annotation context applies to a specific image.
 
 ```ts
-import {isContextScopedToImage} from 'osdlabel/hooks';
+import { isContextScopedToImage } from 'osdlabel/hooks';
 ```
 
 ### Signature
 
 ```ts
-function isContextScopedToImage(context: AnnotationContext, imageId: ImageId): boolean
+function isContextScopedToImage(context: AnnotationContext, imageId: ImageId): boolean;
 ```
 
 Returns `true` if:
+
 - The context has no `imageIds` array (applies to all images), OR
 - The `imageIds` array includes the given `imageId`

@@ -83,30 +83,36 @@ describe('version counter', () => {
     dispose();
   });
 
-  it('is faster than JSON.stringify for change detection (informational)', { timeout: 30000 }, () => {
-    const { annotationState, actions, dispose } = createTestStore();
-    const NUM_ANNOTATIONS = 1000;
+  it(
+    'is faster than JSON.stringify for change detection (informational)',
+    { timeout: 30000 },
+    () => {
+      const { annotationState, actions, dispose } = createTestStore();
+      const NUM_ANNOTATIONS = 1000;
 
-    for (let i = 0; i < NUM_ANNOTATIONS; i++) {
-      actions.addAnnotation(makeAnnotation(i));
-    }
-    expect(annotationState.changeCounter).toBe(NUM_ANNOTATIONS);
+      for (let i = 0; i < NUM_ANNOTATIONS; i++) {
+        actions.addAnnotation(makeAnnotation(i));
+      }
+      expect(annotationState.changeCounter).toBe(NUM_ANNOTATIONS);
 
-    const startStringify = performance.now();
-    for (let i = 0; i < 100; i++) {
-      JSON.stringify(annotationState.byImage);
-    }
-    const avgStringify = (performance.now() - startStringify) / 100;
+      const startStringify = performance.now();
+      for (let i = 0; i < 100; i++) {
+        JSON.stringify(annotationState.byImage);
+      }
+      const avgStringify = (performance.now() - startStringify) / 100;
 
-    const startProp = performance.now();
-    for (let i = 0; i < 100; i++) {
-      void annotationState.changeCounter;
-    }
-    const avgProp = (performance.now() - startProp) / 100;
+      const startProp = performance.now();
+      for (let i = 0; i < 100; i++) {
+        void annotationState.changeCounter;
+      }
+      const avgProp = (performance.now() - startProp) / 100;
 
-    console.log(`[Benchmark] JSON.stringify avg: ${avgStringify.toFixed(4)}ms  |  version access avg: ${avgProp.toFixed(4)}ms`);
-    expect(avgProp).toBeLessThan(avgStringify);
+      console.log(
+        `[Benchmark] JSON.stringify avg: ${avgStringify.toFixed(4)}ms  |  version access avg: ${avgProp.toFixed(4)}ms`,
+      );
+      expect(avgProp).toBeLessThan(avgStringify);
 
-    dispose();
-  });
+      dispose();
+    },
+  );
 });

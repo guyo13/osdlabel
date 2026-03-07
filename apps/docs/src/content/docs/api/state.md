@@ -8,7 +8,7 @@ description: Stores, actions, and the context provider
 The primary hook for accessing all annotation state and actions. Must be used within an `AnnotatorProvider`.
 
 ```ts
-import {useAnnotator} from 'osdlabel/state';
+import { useAnnotator } from 'osdlabel/state';
 ```
 
 ### Return value
@@ -25,14 +25,14 @@ import {useAnnotator} from 'osdlabel/state';
 }
 ```
 
-| Property | Description |
-|----------|-------------|
-| `annotationState` | All annotations organized by image ID with a change counter |
-| `uiState` | Active tool, cell, grid dimensions, assignments, selection |
-| `contextState` | Available contexts and active context ID |
-| `constraintStatus` | Reactive accessor returning tool enable/disable status |
-| `actions` | Object containing all state mutation functions |
-| `shortcuts` | Merged keyboard shortcut map (defaults + overrides) |
+| Property           | Description                                                 |
+| ------------------ | ----------------------------------------------------------- |
+| `annotationState`  | All annotations organized by image ID with a change counter |
+| `uiState`          | Active tool, cell, grid dimensions, assignments, selection  |
+| `contextState`     | Available contexts and active context ID                    |
+| `constraintStatus` | Reactive accessor returning tool enable/disable status      |
+| `actions`          | Object containing all state mutation functions              |
+| `shortcuts`        | Merged keyboard shortcut map (defaults + overrides)         |
 
 ---
 
@@ -150,7 +150,7 @@ These are lower-level primitives used by `AnnotatorProvider`. They are exported 
 function createAnnotationStore(): {
   state: AnnotationState;
   setState: SetStoreFunction<AnnotationState>;
-}
+};
 ```
 
 ### createUIStore
@@ -159,7 +159,7 @@ function createAnnotationStore(): {
 function createUIStore(): {
   state: UIState;
   setState: SetStoreFunction<UIState>;
-}
+};
 ```
 
 ### createContextStore
@@ -168,7 +168,7 @@ function createUIStore(): {
 function createContextStore(): {
   state: ContextState;
   setState: SetStoreFunction<ContextState>;
-}
+};
 ```
 
 ### createActions
@@ -179,7 +179,7 @@ function createActions(
   setUIState: SetStoreFunction<UIState>,
   setContextState: SetStoreFunction<ContextState>,
   contextState: ContextState,
-): Actions
+): Actions;
 ```
 
 ### createConstraintStatus
@@ -189,7 +189,7 @@ function createConstraintStatus(
   contextState: ContextState,
   annotationState: AnnotationState,
   currentImageId: Accessor<ImageId | undefined>,
-): Accessor<ConstraintStatus>
+): Accessor<ConstraintStatus>;
 ```
 
 Creates a reactive accessor that derives tool enable/disable status from the current context, annotations, and active image.

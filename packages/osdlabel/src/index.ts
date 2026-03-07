@@ -73,4 +73,3 @@ export type { AnnotatorProps } from './components/Annotator.js';
 // Hooks
 export { useConstraints } from './hooks/useConstraints.js';
 export { useKeyboard, DEFAULT_KEYBOARD_SHORTCUTS } from './hooks/useKeyboard.js';
-

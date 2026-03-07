@@ -99,11 +99,16 @@ type Geometry =
 ```ts
 function describeGeometry(g: Geometry): string {
   switch (g.type) {
-    case 'rectangle': return `${g.width}x${g.height} at (${g.origin.x}, ${g.origin.y})`;
-    case 'circle':    return `radius ${g.radius} at (${g.center.x}, ${g.center.y})`;
-    case 'line':      return `from (${g.start.x}, ${g.start.y}) to (${g.end.x}, ${g.end.y})`;
-    case 'point':     return `at (${g.position.x}, ${g.position.y})`;
-    case 'path':      return `${g.points.length} points, ${g.closed ? 'closed' : 'open'}`;
+    case 'rectangle':
+      return `${g.width}x${g.height} at (${g.origin.x}, ${g.origin.y})`;
+    case 'circle':
+      return `radius ${g.radius} at (${g.center.x}, ${g.center.y})`;
+    case 'line':
+      return `from (${g.start.x}, ${g.start.y}) to (${g.end.x}, ${g.end.y})`;
+    case 'point':
+      return `at (${g.position.x}, ${g.position.y})`;
+    case 'path':
+      return `${g.points.length} points, ${g.closed ? 'closed' : 'open'}`;
   }
 }
 ```
@@ -117,7 +122,7 @@ function describeGeometry(g: Geometry): string {
 ```ts
 interface AnnotationStyle {
   readonly strokeColor: string;
-  readonly strokeWidth: number;       // Screen pixels
+  readonly strokeWidth: number; // Screen pixels
   readonly strokeDashArray?: readonly number[];
   readonly fillColor: string;
   readonly fillOpacity: number;
@@ -150,8 +155,8 @@ interface Annotation {
   readonly rawAnnotationData: RawAnnotationData;
   readonly label?: string;
   readonly metadata?: Readonly<Record<string, unknown>>;
-  readonly createdAt: string;   // ISO 8601
-  readonly updatedAt: string;   // ISO 8601
+  readonly createdAt: string; // ISO 8601
+  readonly updatedAt: string; // ISO 8601
 }
 ```
 
@@ -201,7 +206,7 @@ Defines a tool's availability and limits within a context.
 interface ToolConstraint {
   readonly type: AnnotationType;
   readonly maxCount?: number;
-  readonly countScope?: CountScope;         // Default: 'global'
+  readonly countScope?: CountScope; // Default: 'global'
   readonly defaultStyle?: Partial<AnnotationStyle>;
 }
 ```
@@ -215,7 +220,7 @@ interface AnnotationContext {
   readonly id: AnnotationContextId;
   readonly label: string;
   readonly tools: readonly ToolConstraint[];
-  readonly imageIds?: readonly ImageId[];   // Restrict to specific images
+  readonly imageIds?: readonly ImageId[]; // Restrict to specific images
   readonly metadata?: Readonly<Record<string, unknown>>;
 }
 ```
@@ -263,7 +268,7 @@ The `dziUrl` can point to a `.dzi` file for tiled deep zoom images, or a standar
 ```ts
 interface AnnotationState {
   byImage: Record<ImageId, Record<AnnotationId, Annotation>>;
-  changeCounter: number;  // Incremented on every mutation
+  changeCounter: number; // Incremented on every mutation
 }
 ```
 

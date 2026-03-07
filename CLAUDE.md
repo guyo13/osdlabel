@@ -71,6 +71,7 @@ This is a pnpm workspace monorepo with Turborepo for task orchestration:
 ### Library Entrypoints & Granularity
 
 `osdlabel` provides ESM-friendly sub-path exports for efficient tree-shaking. Imports are supported at three levels:
+
 1. **Main Barrel**: `import { ... } from 'osdlabel'` — Re-exports all public APIs.
 2. **Sub-path Barrels**: `import { ... } from 'osdlabel/components'`, `osdlabel/state`, `osdlabel/hooks`, `osdlabel/core`, `osdlabel/overlay`, `osdlabel/utils`.
 3. **Granular Imports**: `import { Annotator } from 'osdlabel/components/Annotator'` — Supported via glob exports (`"./*"`).

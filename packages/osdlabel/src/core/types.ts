@@ -41,12 +41,12 @@ export interface Point {
 /** Discriminated union of annotation geometries */
 export type Geometry =
   | {
-    readonly type: 'rectangle';
-    readonly origin: Point;
-    readonly width: number;
-    readonly height: number;
-    readonly rotation: number;
-  }
+      readonly type: 'rectangle';
+      readonly origin: Point;
+      readonly width: number;
+      readonly height: number;
+      readonly rotation: number;
+    }
   | { readonly type: 'circle'; readonly center: Point; readonly radius: number }
   | { readonly type: 'line'; readonly start: Point; readonly end: Point }
   | { readonly type: 'point'; readonly position: Point }
