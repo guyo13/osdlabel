@@ -101,6 +101,8 @@ actions.setActiveContext(contexts[0].id);
 
 ## Switching contexts
 
+You can switch contexts programmatically using actions:
+
 ```tsx
 const { actions } = useAnnotator();
 actions.setActiveContext(contextId);
@@ -108,6 +110,18 @@ actions.setActiveContext(contextId);
 // Clear the active tool when switching contexts
 actions.setActiveTool(null);
 ```
+
+Or enable the built-in UI in the `Annotator` component:
+
+```tsx
+<Annotator 
+  images={images} 
+  contexts={contexts} 
+  showContextSwitcher={true} 
+/>
+```
+
+The `ContextSwitcher` component can also be used independently in custom layouts. See [Components](/osdlabel/api/components/#contextswitcher).
 
 ## Reading constraint status
 
