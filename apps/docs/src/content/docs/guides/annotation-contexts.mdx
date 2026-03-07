@@ -16,8 +16,8 @@ Only one context is active at a time.
 ## Defining contexts
 
 ```tsx
-import {createAnnotationContextId} from 'osdlabel/core';
-import type {AnnotationContext} from 'osdlabel/core';
+import { createAnnotationContextId } from 'osdlabel/core';
+import type { AnnotationContext } from 'osdlabel/core';
 
 const contexts: AnnotationContext[] = [
   {
@@ -46,12 +46,12 @@ const contexts: AnnotationContext[] = [
 
 Each tool in a context can have:
 
-| Property | Type | Default | Description |
-|----------|------|---------|-------------|
-| `type` | `AnnotationType` | (required) | `'rectangle'` \| `'circle'` \| `'line'` \| `'point'` \| `'path'` |
-| `maxCount` | `number` | unlimited | Maximum number of annotations of this type |
-| `countScope` | `CountScope` | `'global'` | Whether `maxCount` applies per-image or globally across all images |
-| `defaultStyle` | `Partial<AnnotationStyle>` | default style | Override the default stroke/fill for this tool |
+| Property       | Type                       | Default       | Description                                                        |
+| -------------- | -------------------------- | ------------- | ------------------------------------------------------------------ |
+| `type`         | `AnnotationType`           | (required)    | `'rectangle'` \| `'circle'` \| `'line'` \| `'point'` \| `'path'`   |
+| `maxCount`     | `number`                   | unlimited     | Maximum number of annotations of this type                         |
+| `countScope`   | `CountScope`               | `'global'`    | Whether `maxCount` applies per-image or globally across all images |
+| `defaultStyle` | `Partial<AnnotationStyle>` | default style | Override the default stroke/fill for this tool                     |
 
 When a tool's `maxCount` is reached, it is automatically disabled in the toolbar and via keyboard shortcuts.
 
@@ -91,7 +91,7 @@ Pass contexts to the `Annotator` component or set them programmatically:
 
 ```tsx
 // Via Annotator component
-<Annotator images={images} contexts={contexts} />
+<Annotator images={images} contexts={contexts} />;
 
 // Via actions (when using AnnotatorProvider)
 const { actions } = useAnnotator();
@@ -114,11 +114,7 @@ actions.setActiveTool(null);
 Or enable the built-in UI in the `Annotator` component:
 
 ```tsx
-<Annotator 
-  images={images} 
-  contexts={contexts} 
-  showContextSwitcher={true} 
-/>
+<Annotator images={images} contexts={contexts} showContextSwitcher={true} />
 ```
 
 The `ContextSwitcher` component can also be used independently in custom layouts. See [Components](/osdlabel/api/components/#contextswitcher).
@@ -139,7 +135,7 @@ const status = constraintStatus();
 Or use the `useConstraints` hook for convenience:
 
 ```tsx
-import {useConstraints} from 'osdlabel/hooks';
+import { useConstraints } from 'osdlabel/hooks';
 
 const { isToolEnabled, canAddAnnotation } = useConstraints();
 

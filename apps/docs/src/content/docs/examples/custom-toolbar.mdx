@@ -11,11 +11,11 @@ Use `AnnotatorProvider` and `useAnnotator()` to build a fully custom annotation 
 
 ```tsx
 import { render } from 'solid-js/web';
-import {GridView, StatusBar} from 'osdlabel/components';
-import {createImageId, createAnnotationContextId} from 'osdlabel/core';
-import {useConstraints} from 'osdlabel/hooks';
-import {AnnotatorProvider, useAnnotator} from 'osdlabel/state';
-import type {ImageSource, AnnotationContext, AnnotationType} from 'osdlabel/core';
+import { GridView, StatusBar } from 'osdlabel/components';
+import { createImageId, createAnnotationContextId } from 'osdlabel/core';
+import { useConstraints } from 'osdlabel/hooks';
+import { AnnotatorProvider, useAnnotator } from 'osdlabel/state';
+import type { ImageSource, AnnotationContext, AnnotationType } from 'osdlabel/core';
 
 const images: ImageSource[] = [
   {
@@ -29,11 +29,7 @@ const contexts: AnnotationContext[] = [
   {
     id: createAnnotationContextId('default'),
     label: 'Default',
-    tools: [
-      { type: 'rectangle', maxCount: 5 },
-      { type: 'circle', maxCount: 3 },
-      { type: 'line' },
-    ],
+    tools: [{ type: 'rectangle', maxCount: 5 }, { type: 'circle', maxCount: 3 }, { type: 'line' }],
   },
 ];
 

@@ -14,9 +14,7 @@ const ContextSwitcher: Component<ContextSwitcherProps> = (props) => {
 
   return (
     <div style={{ display: 'flex', 'align-items': 'center', gap: '8px' }}>
-      {props.label && (
-        <span style={{ color: '#fff', 'font-size': '13px' }}>{props.label}</span>
-      )}
+      {props.label && <span style={{ color: '#fff', 'font-size': '13px' }}>{props.label}</span>}
       <select
         value={contextState.activeContextId ?? ''}
         onChange={(e) => actions.setActiveContext(e.currentTarget.value as any)}
@@ -31,9 +29,7 @@ const ContextSwitcher: Component<ContextSwitcherProps> = (props) => {
         }}
       >
         <For each={contextState.contexts}>
-          {(context) => (
-            <option value={context.id}>{context.label}</option>
-          )}
+          {(context) => <option value={context.id}>{context.label}</option>}
         </For>
       </select>
     </div>

@@ -17,12 +17,12 @@ The overlay's job is to compute a `viewportTransform` matrix that maps **image-s
 
 osdlabel uses four coordinate systems:
 
-| System | Origin | Units | Usage |
-|--------|--------|-------|-------|
-| **Image-space** | Top-left of full-res image | Pixels | Annotation geometry storage |
-| **OSD Viewport** | Top-left of viewport | Image width = 1.0 | OSD internal calculations |
-| **Screen-space** | Top-left of browser viewport | CSS pixels | Mouse events, element positioning |
-| **Fabric canvas** | Same as screen-space | CSS pixels (transformed) | Rendering via `viewportTransform` |
+| System            | Origin                       | Units                    | Usage                             |
+| ----------------- | ---------------------------- | ------------------------ | --------------------------------- |
+| **Image-space**   | Top-left of full-res image   | Pixels                   | Annotation geometry storage       |
+| **OSD Viewport**  | Top-left of viewport         | Image width = 1.0        | OSD internal calculations         |
+| **Screen-space**  | Top-left of browser viewport | CSS pixels               | Mouse events, element positioning |
+| **Fabric canvas** | Same as screen-space         | CSS pixels (transformed) | Rendering via `viewportTransform` |
 
 All annotation geometry (`Geometry` type) is stored in **image-space**. You never need to convert coordinates manually — the overlay handles the transform between image-space and screen-space automatically.
 
@@ -39,7 +39,7 @@ type AnnotationContextId = string & { readonly __brand: unique symbol };
 You cannot pass a plain `string` where a branded ID is expected. Use the factory functions:
 
 ```ts
-import {createImageId, createAnnotationId, createAnnotationContextId} from 'osdlabel/core';
+import { createImageId, createAnnotationId, createAnnotationContextId } from 'osdlabel/core';
 
 const imageId = createImageId('my-image');
 const annotationId = createAnnotationId('ann-1');
@@ -70,11 +70,11 @@ The active cell is in annotation mode; all other cells are in navigation mode.
 
 osdlabel uses three SolidJS stores:
 
-| Store | Contents |
-|-------|----------|
-| **AnnotationState** | All annotations organized by image ID |
-| **UIState** | Active tool, active cell, grid dimensions, grid assignments, selected annotation |
-| **ContextState** | Available contexts and the active context ID |
+| Store               | Contents                                                                         |
+| ------------------- | -------------------------------------------------------------------------------- |
+| **AnnotationState** | All annotations organized by image ID                                            |
+| **UIState**         | Active tool, active cell, grid dimensions, grid assignments, selected annotation |
+| **ContextState**    | Available contexts and the active context ID                                     |
 
 State is accessed via the `useAnnotator()` hook and mutated through named action functions. Components never modify stores directly.
 

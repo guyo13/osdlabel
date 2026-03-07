@@ -6,10 +6,7 @@ description: JSON export/import functions
 ## serialize
 
 ```ts
-function serialize(
-  state: AnnotationState,
-  images: readonly ImageSource[],
-): AnnotationDocument
+function serialize(state: AnnotationState, images: readonly ImageSource[]): AnnotationDocument;
 ```
 
 Serialize the current annotation state into a portable JSON document. Creates one `ImageAnnotations` entry per image in the `images` array.
@@ -17,7 +14,7 @@ Serialize the current annotation state into a portable JSON document. Creates on
 **Example:**
 
 ```ts
-import {serialize} from 'osdlabel/core';
+import { serialize } from 'osdlabel/core';
 
 const doc = serialize(annotationState, images);
 const json = JSON.stringify(doc, null, 2);
@@ -28,12 +25,13 @@ const json = JSON.stringify(doc, null, 2);
 ## deserialize
 
 ```ts
-function deserialize(doc: unknown): Record<ImageId, Record<AnnotationId, Annotation>>
+function deserialize(doc: unknown): Record<ImageId, Record<AnnotationId, Annotation>>;
 ```
 
 Parse and validate a serialized document, returning the `byImage` store structure. Throws `SerializationError` on invalid input.
 
 **Validates:**
+
 - Document version (`'1.0.0'`)
 - Required fields (`exportedAt`, `images` array)
 - Each annotation's structure (IDs, geometry, timestamps, raw data)
@@ -41,7 +39,7 @@ Parse and validate a serialized document, returning the `byImage` store structur
 **Example:**
 
 ```ts
-import {deserialize} from 'osdlabel/core';
+import { deserialize } from 'osdlabel/core';
 
 try {
   const byImage = deserialize(JSON.parse(jsonString));
@@ -58,7 +56,7 @@ try {
 ## validateAnnotation
 
 ```ts
-function validateAnnotation(value: unknown): value is Annotation
+function validateAnnotation(value: unknown): value is Annotation;
 ```
 
 Type guard that validates the shape of an annotation object. Checks:
@@ -76,7 +74,7 @@ Returns `true` if the value is a valid `Annotation`.
 ## getAllAnnotationsFlat
 
 ```ts
-function getAllAnnotationsFlat(state: AnnotationState): Annotation[]
+function getAllAnnotationsFlat(state: AnnotationState): Annotation[];
 ```
 
 Flatten all annotations from the nested `byImage` store into a single array.
@@ -84,7 +82,7 @@ Flatten all annotations from the nested `byImage` store into a single array.
 **Example:**
 
 ```ts
-import {getAllAnnotationsFlat} from 'osdlabel/core';
+import { getAllAnnotationsFlat } from 'osdlabel/core';
 
 const all = getAllAnnotationsFlat(annotationState);
 console.log(`Total annotations: ${all.length}`);

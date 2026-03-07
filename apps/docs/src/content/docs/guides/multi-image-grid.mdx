@@ -22,7 +22,7 @@ import { GridView } from 'osdlabel/components';
   maxColumns={4}
   maxRows={4}
   images={images}
-/>
+/>;
 ```
 
 ## Grid dimensions
@@ -37,7 +37,7 @@ Resize the grid using keyboard shortcuts or the `GridControls` component (which 
 ```tsx
 import { GridControls } from 'osdlabel/components';
 
-<GridControls maxColumns={4} maxRows={4} />
+<GridControls maxColumns={4} maxRows={4} />;
 ```
 
 Programmatic control:
@@ -68,9 +68,9 @@ The active cell is highlighted visually and receives all drawing/selection input
 The `Filmstrip` component shows thumbnails of all available images and allows drag-to-assign interaction:
 
 ```tsx
-import {Filmstrip} from 'osdlabel/components';
+import { Filmstrip } from 'osdlabel/components';
 
-<Filmstrip images={images} position="left" />
+<Filmstrip images={images} position="left" />;
 ```
 
 The `position` prop accepts `'left'`, `'right'`, or `'bottom'`.
@@ -95,7 +95,7 @@ The `Annotator` component bundles the grid, filmstrip, toolbar, and status bar i
 <AnnotatorWithGridControlsDemoWrapper />
 
 ```tsx
-import {Annotator} from 'osdlabel/components';
+import { Annotator } from 'osdlabel/components';
 
 <Annotator
   images={images}
@@ -104,9 +104,8 @@ import {Annotator} from 'osdlabel/components';
   showGridControls={true}
   filmstripPosition="left"
   maxGridSize={{ columns: 4, rows: 4 }}
-/>
+/>;
 ```
 
 - Set `showFilmstrip={false}` to hide the filmstrip sidebar.
 - Set `showGridControls={true}` to show the grid dimension selector in the toolbar.
-

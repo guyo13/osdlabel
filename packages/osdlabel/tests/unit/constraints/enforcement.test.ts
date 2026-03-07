@@ -24,7 +24,11 @@ describe('Constraint Enforcement', () => {
       // Assign image to cell 0 so constraint status has a currentImageId
       setUIState('gridAssignments', 0, initialImageId);
       const currentImageId = () => uiState.gridAssignments[uiState.activeCellIndex];
-      const constraintStatus = createConstraintStatus(contextState, annotationState, currentImageId);
+      const constraintStatus = createConstraintStatus(
+        contextState,
+        annotationState,
+        currentImageId,
+      );
 
       return { annotationState, uiState, contextState, actions, constraintStatus, dispose };
     });

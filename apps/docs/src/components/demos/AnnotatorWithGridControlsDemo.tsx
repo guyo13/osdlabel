@@ -1,6 +1,6 @@
-import {Annotator} from 'osdlabel/components';
-import {createImageId, createAnnotationContextId} from 'osdlabel/core';
-import type {ImageSource, AnnotationContext} from 'osdlabel/core';
+import { Annotator } from 'osdlabel/components';
+import { createImageId, createAnnotationContextId } from 'osdlabel/core';
+import type { ImageSource, AnnotationContext } from 'osdlabel/core';
 
 const images: ImageSource[] = [
   {
@@ -31,14 +31,15 @@ const contexts: AnnotationContext[] = [
 
 export default function AnnotatorWithGridControlsDemo() {
   return (
-    <div class="osdlabel-container"
+    <div
+      class="osdlabel-container"
       style={{
         height: '500px',
         width: '100%',
         border: '1px solid #333',
         'border-radius': '6px',
         overflow: 'hidden',
-        margin: '1rem 0'
+        margin: '1rem 0',
       }}
     >
       <Annotator

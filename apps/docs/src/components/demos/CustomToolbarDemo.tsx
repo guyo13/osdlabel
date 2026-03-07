@@ -1,8 +1,8 @@
-import {GridView, StatusBar} from 'osdlabel/components';
-import {createImageId, createAnnotationContextId} from 'osdlabel/core';
-import {useConstraints} from 'osdlabel/hooks';
-import {AnnotatorProvider, useAnnotator} from 'osdlabel/state';
-import type {ImageSource, AnnotationContext, AnnotationType} from 'osdlabel/core';
+import { GridView, StatusBar } from 'osdlabel/components';
+import { createImageId, createAnnotationContextId } from 'osdlabel/core';
+import { useConstraints } from 'osdlabel/hooks';
+import { AnnotatorProvider, useAnnotator } from 'osdlabel/state';
+import type { ImageSource, AnnotationContext, AnnotationType } from 'osdlabel/core';
 import { onMount } from 'solid-js';
 
 const images: ImageSource[] = [
@@ -17,11 +17,7 @@ const contexts: AnnotationContext[] = [
   {
     id: createAnnotationContextId('default'),
     label: 'Default',
-    tools: [
-      { type: 'rectangle', maxCount: 5 },
-      { type: 'circle', maxCount: 3 },
-      { type: 'line' },
-    ],
+    tools: [{ type: 'rectangle', maxCount: 5 }, { type: 'circle', maxCount: 3 }, { type: 'line' }],
   },
 ];
 
@@ -56,8 +52,9 @@ function CustomToolbar() {
             background: uiState.activeTool === tool.type ? '#2a2a5e' : '#2a2a3e',
             color: '#fff',
             cursor: 'pointer',
-            opacity: tool.type !== 'select' && !isToolEnabled(tool.type as AnnotationType) ? '0.5' : '1',
-            'font-size': '12px'
+            opacity:
+              tool.type !== 'select' && !isToolEnabled(tool.type as AnnotationType) ? '0.5' : '1',
+            'font-size': '12px',
           }}
         >
           {tool.label}
@@ -75,7 +72,7 @@ function CustomToolbar() {
           background: '#2a2a3e',
           color: '#fff',
           cursor: 'pointer',
-          'font-size': '12px'
+          'font-size': '12px',
         }}
       >
         Navigate

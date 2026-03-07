@@ -11,27 +11,27 @@ osdlabel is designed for high-throughput annotation tasks with a comprehensive s
 
 ## Default shortcuts
 
-| Key | Action |
-|-----|--------|
-| `v` | Select tool |
-| `r` | Rectangle tool |
-| `c` | Circle tool |
-| `l` | Line tool |
-| `p` | Point tool |
-| `d` | Path (draw) tool |
-| `Escape` | Deselect annotation, then deactivate tool |
-| `Delete` / `Backspace` | Delete selected annotation |
-| `1`–`9` | Activate grid cell by position |
-| `=` / `+` | Add a grid column |
-| `-` | Remove a grid column |
+| Key                    | Action                                    |
+| ---------------------- | ----------------------------------------- |
+| `v`                    | Select tool                               |
+| `r`                    | Rectangle tool                            |
+| `c`                    | Circle tool                               |
+| `l`                    | Line tool                                 |
+| `p`                    | Point tool                                |
+| `d`                    | Path (draw) tool                          |
+| `Escape`               | Deselect annotation, then deactivate tool |
+| `Delete` / `Backspace` | Delete selected annotation                |
+| `1`–`9`                | Activate grid cell by position            |
+| `=` / `+`              | Add a grid column                         |
+| `-`                    | Remove a grid column                      |
 
 ### Path tool shortcuts
 
-| Key | Action |
-|-----|--------|
-| `Enter` | Finish path (open polyline) |
-| `c` | Close path (polygon) |
-| `Escape` | Cancel path in progress |
+| Key      | Action                      |
+| -------- | --------------------------- |
+| `Enter`  | Finish path (open polyline) |
+| `c`      | Close path (polygon)        |
+| `Escape` | Cancel path in progress     |
 
 ## Customizing shortcuts
 
@@ -40,9 +40,9 @@ Pass a `keyboardShortcuts` prop to override any default binding:
 ```tsx
 <AnnotatorProvider
   keyboardShortcuts={{
-    rectangleTool: 'b',     // 'b' for box instead of 'r'
-    circleTool: 'o',        // 'o' for oval instead of 'c'
-    delete: 'x',            // 'x' to delete instead of Delete
+    rectangleTool: 'b', // 'b' for box instead of 'r'
+    circleTool: 'o', // 'o' for oval instead of 'c'
+    delete: 'x', // 'x' to delete instead of Delete
   }}
 >
   {/* ... */}
@@ -52,11 +52,7 @@ Pass a `keyboardShortcuts` prop to override any default binding:
 Or via the `Annotator` component:
 
 ```tsx
-<Annotator
-  images={images}
-  contexts={contexts}
-  keyboardShortcuts={{ rectangleTool: 'b' }}
-/>
+<Annotator images={images} contexts={contexts} keyboardShortcuts={{ rectangleTool: 'b' }} />
 ```
 
 Unspecified keys keep their default bindings. See [`KeyboardShortcutMap`](/osdlabel/api/types/#keyboardshortcutmap) for all available keys.

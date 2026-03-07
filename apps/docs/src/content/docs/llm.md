@@ -24,10 +24,10 @@ import { Annotator, useAnnotator, serialize } from 'osdlabel';
 Preferred for better build performance and tree-shaking in production apps.
 
 ```ts
-import {Annotator} from 'osdlabel/components';
-import {serialize} from 'osdlabel/core';
-import {useAnnotator} from 'osdlabel/state';
-import type {Annotation, ImageSource, AnnotationContext} from 'osdlabel/core';
+import { Annotator } from 'osdlabel/components';
+import { serialize } from 'osdlabel/core';
+import { useAnnotator } from 'osdlabel/state';
+import type { Annotation, ImageSource, AnnotationContext } from 'osdlabel/core';
 ```
 
 ### 3. Granular imports
@@ -47,8 +47,8 @@ import { Annotator } from 'osdlabel/components/Annotator';
 Core TypeScript types and branded ID factories. See [Types](/osdlabel/api/types/).
 
 ```ts
-import type {AnnotationId, ImageId, Geometry, Annotation} from 'osdlabel/core';
-import {createImageId, createAnnotationId} from 'osdlabel/core';
+import type { AnnotationId, ImageId, Geometry, Annotation } from 'osdlabel/core';
+import { createImageId, createAnnotationId } from 'osdlabel/core';
 ```
 
 ### Components
@@ -56,7 +56,15 @@ import {createImageId, createAnnotationId} from 'osdlabel/core';
 SolidJS UI components for building annotation interfaces. See [Components](/osdlabel/api/components/).
 
 ```ts
-import {Annotator, ViewerCell, Toolbar, StatusBar, GridView, Filmstrip, GridControls} from 'osdlabel/components';
+import {
+  Annotator,
+  ViewerCell,
+  Toolbar,
+  StatusBar,
+  GridView,
+  Filmstrip,
+  GridControls,
+} from 'osdlabel/components';
 ```
 
 ### State management
@@ -64,7 +72,7 @@ import {Annotator, ViewerCell, Toolbar, StatusBar, GridView, Filmstrip, GridCont
 Stores, actions, and the context provider. See [State Management](/osdlabel/api/state/).
 
 ```ts
-import {AnnotatorProvider, useAnnotator, createActions} from 'osdlabel/state';
+import { AnnotatorProvider, useAnnotator, createActions } from 'osdlabel/state';
 ```
 
 ### Overlay
@@ -72,7 +80,7 @@ import {AnnotatorProvider, useAnnotator, createActions} from 'osdlabel/state';
 Low-level OSD-Fabric integration. See [Overlay](/osdlabel/api/overlay/).
 
 ```ts
-import {FabricOverlay, computeViewportTransform, createOverlayManager} from 'osdlabel/overlay';
+import { FabricOverlay, computeViewportTransform, createOverlayManager } from 'osdlabel/overlay';
 ```
 
 ### Serialization
@@ -80,7 +88,7 @@ import {FabricOverlay, computeViewportTransform, createOverlayManager} from 'osd
 JSON export/import functions. See [Serialization](/osdlabel/api/serialization/).
 
 ```ts
-import {serialize, deserialize, validateAnnotation, getAllAnnotationsFlat} from 'osdlabel/core';
+import { serialize, deserialize, validateAnnotation, getAllAnnotationsFlat } from 'osdlabel/core';
 ```
 
 ### Hooks
@@ -88,7 +96,7 @@ import {serialize, deserialize, validateAnnotation, getAllAnnotationsFlat} from 
 Custom SolidJS hooks. See [Hooks](/osdlabel/api/hooks/).
 
 ```ts
-import {useConstraints, useKeyboard} from 'osdlabel/hooks';
+import { useConstraints, useKeyboard } from 'osdlabel/hooks';
 ```
 
 ### Constants
@@ -96,7 +104,7 @@ import {useConstraints, useKeyboard} from 'osdlabel/hooks';
 Default configuration values. See [Constants](/osdlabel/api/constants/).
 
 ```ts
-import {DEFAULT_ANNOTATION_STYLE, DEFAULT_GRID_CONFIG, MAX_GRID_SIZE} from 'osdlabel/core';
+import { DEFAULT_ANNOTATION_STYLE, DEFAULT_GRID_CONFIG, MAX_GRID_SIZE } from 'osdlabel/core';
 ```
 
 ---
@@ -199,11 +207,16 @@ type Geometry =
 ```ts
 function describeGeometry(g: Geometry): string {
   switch (g.type) {
-    case 'rectangle': return `${g.width}x${g.height} at (${g.origin.x}, ${g.origin.y})`;
-    case 'circle':    return `radius ${g.radius} at (${g.center.x}, ${g.center.y})`;
-    case 'line':      return `from (${g.start.x}, ${g.start.y}) to (${g.end.x}, ${g.end.y})`;
-    case 'point':     return `at (${g.position.x}, ${g.position.y})`;
-    case 'path':      return `${g.points.length} points, ${g.closed ? 'closed' : 'open'}`;
+    case 'rectangle':
+      return `${g.width}x${g.height} at (${g.origin.x}, ${g.origin.y})`;
+    case 'circle':
+      return `radius ${g.radius} at (${g.center.x}, ${g.center.y})`;
+    case 'line':
+      return `from (${g.start.x}, ${g.start.y}) to (${g.end.x}, ${g.end.y})`;
+    case 'point':
+      return `at (${g.position.x}, ${g.position.y})`;
+    case 'path':
+      return `${g.points.length} points, ${g.closed ? 'closed' : 'open'}`;
   }
 }
 ```
@@ -217,7 +230,7 @@ function describeGeometry(g: Geometry): string {
 ```ts
 interface AnnotationStyle {
   readonly strokeColor: string;
-  readonly strokeWidth: number;       // Screen pixels
+  readonly strokeWidth: number; // Screen pixels
   readonly strokeDashArray?: readonly number[];
   readonly fillColor: string;
   readonly fillOpacity: number;
@@ -250,8 +263,8 @@ interface Annotation {
   readonly rawAnnotationData: RawAnnotationData;
   readonly label?: string;
   readonly metadata?: Readonly<Record<string, unknown>>;
-  readonly createdAt: string;   // ISO 8601
-  readonly updatedAt: string;   // ISO 8601
+  readonly createdAt: string; // ISO 8601
+  readonly updatedAt: string; // ISO 8601
 }
 ```
 
@@ -301,7 +314,7 @@ Defines a tool's availability and limits within a context.
 interface ToolConstraint {
   readonly type: AnnotationType;
   readonly maxCount?: number;
-  readonly countScope?: CountScope;         // Default: 'global'
+  readonly countScope?: CountScope; // Default: 'global'
   readonly defaultStyle?: Partial<AnnotationStyle>;
 }
 ```
@@ -315,7 +328,7 @@ interface AnnotationContext {
   readonly id: AnnotationContextId;
   readonly label: string;
   readonly tools: readonly ToolConstraint[];
-  readonly imageIds?: readonly ImageId[];   // Restrict to specific images
+  readonly imageIds?: readonly ImageId[]; // Restrict to specific images
   readonly metadata?: Readonly<Record<string, unknown>>;
 }
 ```
@@ -363,7 +376,7 @@ The `dziUrl` can point to a `.dzi` file for tiled deep zoom images, or a standar
 ```ts
 interface AnnotationState {
   byImage: Record<ImageId, Record<AnnotationId, Annotation>>;
-  changeCounter: number;  // Incremented on every mutation
+  changeCounter: number; // Incremented on every mutation
 }
 ```
 
@@ -438,28 +451,28 @@ See [Keyboard Shortcuts](/osdlabel/guides/keyboard-shortcuts/) for default value
 All-in-one annotation component with toolbar, grid view, filmstrip, and status bar.
 
 ```tsx
-import {Annotator} from 'osdlabel/components';
+import { Annotator } from 'osdlabel/components';
 ```
 
 ### Props
 
 `AnnotatorProps` extends `AnnotatorProviderProps` (minus `children`):
 
-| Prop | Type | Default | Description |
-|------|------|---------|-------------|
-| `images` | `readonly ImageSource[]` | (required) | Available images |
-| `contexts` | `readonly AnnotationContext[]` | (required) | Annotation contexts |
-| `showFilmstrip` | `boolean` | `true` | Show the filmstrip sidebar |
-| `showGridControls` | `boolean` | `false` | Show the grid size controls |
-| `showContextSwitcher` | `boolean` | `false` | Show the context selector |
-| `filmstripPosition` | `'left' \| 'right' \| 'bottom'` | `'left'` | Filmstrip placement |
-| `maxGridSize` | `{ columns: number; rows: number }` | `{ columns: 4, rows: 4 }` | Maximum grid dimensions |
-| `style` | `JSX.CSSProperties` | — | Custom style for root container |
-| `initialAnnotations` | `Record<ImageId, Record<AnnotationId, Annotation>>` | — | Pre-existing annotations |
-| `onAnnotationsChange` | `(annotations: Annotation[]) => void` | — | Fires on annotation changes |
-| `onConstraintChange` | `(status: ConstraintStatus) => void` | — | Fires on constraint changes |
-| `keyboardShortcuts` | `Partial<KeyboardShortcutMap>` | — | Override default shortcuts |
-| `shouldSkipKeyboardShortcutPredicate` | `(target: HTMLElement) => boolean` | — | Suppress shortcuts conditionally |
+| Prop                                  | Type                                                | Default                   | Description                      |
+| ------------------------------------- | --------------------------------------------------- | ------------------------- | -------------------------------- |
+| `images`                              | `readonly ImageSource[]`                            | (required)                | Available images                 |
+| `contexts`                            | `readonly AnnotationContext[]`                      | (required)                | Annotation contexts              |
+| `showFilmstrip`                       | `boolean`                                           | `true`                    | Show the filmstrip sidebar       |
+| `showGridControls`                    | `boolean`                                           | `false`                   | Show the grid size controls      |
+| `showContextSwitcher`                 | `boolean`                                           | `false`                   | Show the context selector        |
+| `filmstripPosition`                   | `'left' \| 'right' \| 'bottom'`                     | `'left'`                  | Filmstrip placement              |
+| `maxGridSize`                         | `{ columns: number; rows: number }`                 | `{ columns: 4, rows: 4 }` | Maximum grid dimensions          |
+| `style`                               | `JSX.CSSProperties`                                 | —                         | Custom style for root container  |
+| `initialAnnotations`                  | `Record<ImageId, Record<AnnotationId, Annotation>>` | —                         | Pre-existing annotations         |
+| `onAnnotationsChange`                 | `(annotations: Annotation[]) => void`               | —                         | Fires on annotation changes      |
+| `onConstraintChange`                  | `(status: ConstraintStatus) => void`                | —                         | Fires on constraint changes      |
+| `keyboardShortcuts`                   | `Partial<KeyboardShortcutMap>`                      | —                         | Override default shortcuts       |
+| `shouldSkipKeyboardShortcutPredicate` | `(target: HTMLElement) => boolean`                  | —                         | Suppress shortcuts conditionally |
 
 ### Example
 
@@ -480,26 +493,24 @@ import {Annotator} from 'osdlabel/components';
 Context provider that manages all state stores. Use this when building a custom layout instead of `Annotator`.
 
 ```tsx
-import {AnnotatorProvider} from 'osdlabel/state';
+import { AnnotatorProvider } from 'osdlabel/state';
 ```
 
 ### Props (AnnotatorProviderProps)
 
-| Prop | Type | Default | Description |
-|------|------|---------|-------------|
-| `children` | `JSX.Element` | (required) | Child components |
-| `initialAnnotations` | `Record<ImageId, Record<AnnotationId, Annotation>>` | — | Pre-existing annotations |
-| `onAnnotationsChange` | `(annotations: Annotation[]) => void` | — | Fires on annotation changes |
-| `onConstraintChange` | `(status: ConstraintStatus) => void` | — | Fires on constraint changes |
-| `keyboardShortcuts` | `Partial<KeyboardShortcutMap>` | — | Override default shortcuts |
-| `shouldSkipKeyboardShortcutPredicate` | `(target: HTMLElement) => boolean` | — | Suppress shortcuts conditionally |
+| Prop                                  | Type                                                | Default    | Description                      |
+| ------------------------------------- | --------------------------------------------------- | ---------- | -------------------------------- |
+| `children`                            | `JSX.Element`                                       | (required) | Child components                 |
+| `initialAnnotations`                  | `Record<ImageId, Record<AnnotationId, Annotation>>` | —          | Pre-existing annotations         |
+| `onAnnotationsChange`                 | `(annotations: Annotation[]) => void`               | —          | Fires on annotation changes      |
+| `onConstraintChange`                  | `(status: ConstraintStatus) => void`                | —          | Fires on constraint changes      |
+| `keyboardShortcuts`                   | `Partial<KeyboardShortcutMap>`                      | —          | Override default shortcuts       |
+| `shouldSkipKeyboardShortcutPredicate` | `(target: HTMLElement) => boolean`                  | —          | Suppress shortcuts conditionally |
 
 ### Example
 
 ```tsx
-<AnnotatorProvider
-  onAnnotationsChange={(anns) => saveAnnotations(anns)}
->
+<AnnotatorProvider onAnnotationsChange={(anns) => saveAnnotations(anns)}>
   <Toolbar />
   <GridView columns={2} rows={1} maxColumns={4} maxRows={4} images={images} />
   <StatusBar imageId={activeImageId()} />
@@ -513,18 +524,18 @@ import {AnnotatorProvider} from 'osdlabel/state';
 A single OSD viewer with a Fabric.js overlay. Used internally by `GridView`, but can be used directly for custom layouts.
 
 ```tsx
-import {ViewerCell} from 'osdlabel/components';
+import { ViewerCell } from 'osdlabel/components';
 ```
 
 ### Props (ViewerCellProps)
 
-| Prop | Type | Default | Description |
-|------|------|---------|-------------|
-| `imageSource` | `ImageSource \| undefined` | (required) | The image to display in this cell |
-| `isActive` | `boolean` | (required) | Whether this cell is the active annotation target |
-| `mode` | `OverlayMode` | `'navigation'` | Interaction mode (`'navigation'` or `'annotation'`) |
-| `onActivate` | `() => void` | (required) | Called when the user clicks the cell |
-| `onOverlayReady` | `(overlay: FabricOverlay) => void` | — | Called when the Fabric overlay is initialized |
+| Prop             | Type                               | Default        | Description                                         |
+| ---------------- | ---------------------------------- | -------------- | --------------------------------------------------- |
+| `imageSource`    | `ImageSource \| undefined`         | (required)     | The image to display in this cell                   |
+| `isActive`       | `boolean`                          | (required)     | Whether this cell is the active annotation target   |
+| `mode`           | `OverlayMode`                      | `'navigation'` | Interaction mode (`'navigation'` or `'annotation'`) |
+| `onActivate`     | `() => void`                       | (required)     | Called when the user clicks the cell                |
+| `onOverlayReady` | `(overlay: FabricOverlay) => void` | —              | Called when the Fabric overlay is initialized       |
 
 ---
 
@@ -533,9 +544,9 @@ import {ViewerCell} from 'osdlabel/components';
 Tool selector that respects the active context's constraints. Shows available tools with count indicators.
 
 ```tsx
-import {Toolbar} from 'osdlabel/components';
+import { Toolbar } from 'osdlabel/components';
 
-<Toolbar />
+<Toolbar />;
 ```
 
 No props required — reads state from `useAnnotator()`.
@@ -547,13 +558,13 @@ No props required — reads state from `useAnnotator()`.
 Displays the active context, tool, and annotation count for the current image.
 
 ```tsx
-import {StatusBar} from 'osdlabel/components';
+import { StatusBar } from 'osdlabel/components';
 
-<StatusBar imageId={activeImageId()} />
+<StatusBar imageId={activeImageId()} />;
 ```
 
-| Prop | Type | Description |
-|------|------|-------------|
+| Prop      | Type                   | Description                     |
+| --------- | ---------------------- | ------------------------------- |
 | `imageId` | `ImageId \| undefined` | The image ID of the active cell |
 
 ---
@@ -563,24 +574,18 @@ import {StatusBar} from 'osdlabel/components';
 MxN grid layout of `ViewerCell` components.
 
 ```tsx
-import {GridView} from 'osdlabel/components';
+import { GridView } from 'osdlabel/components';
 
-<GridView
-  columns={2}
-  rows={2}
-  maxColumns={4}
-  maxRows={4}
-  images={images}
-/>
+<GridView columns={2} rows={2} maxColumns={4} maxRows={4} images={images} />;
 ```
 
-| Prop | Type | Description |
-|------|------|-------------|
-| `columns` | `number` | Current number of columns |
-| `rows` | `number` | Current number of rows |
-| `maxColumns` | `number` | Maximum columns allowed |
-| `maxRows` | `number` | Maximum rows allowed |
-| `images` | `readonly ImageSource[]` | Available images |
+| Prop         | Type                     | Description               |
+| ------------ | ------------------------ | ------------------------- |
+| `columns`    | `number`                 | Current number of columns |
+| `rows`       | `number`                 | Current number of rows    |
+| `maxColumns` | `number`                 | Maximum columns allowed   |
+| `maxRows`    | `number`                 | Maximum rows allowed      |
+| `images`     | `readonly ImageSource[]` | Available images          |
 
 ---
 
@@ -589,14 +594,14 @@ import {GridView} from 'osdlabel/components';
 Thumbnail sidebar for assigning images to grid cells.
 
 ```tsx
-import {Filmstrip} from 'osdlabel/components';
+import { Filmstrip } from 'osdlabel/components';
 
-<Filmstrip images={images} position="left" />
+<Filmstrip images={images} position="left" />;
 ```
 
-| Prop | Type | Description |
-|------|------|-------------|
-| `images` | `readonly ImageSource[]` | Available images |
+| Prop       | Type                            | Description                    |
+| ---------- | ------------------------------- | ------------------------------ |
+| `images`   | `readonly ImageSource[]`        | Available images               |
 | `position` | `'left' \| 'right' \| 'bottom'` | Placement relative to the grid |
 
 Clicking a thumbnail assigns that image to the active cell. Assigned images are highlighted.
@@ -608,15 +613,15 @@ Clicking a thumbnail assigns that image to the active cell. Assigned images are 
 UI controls for adjusting grid dimensions.
 
 ```tsx
-import {GridControls} from 'osdlabel/components';
+import { GridControls } from 'osdlabel/components';
 
-<GridControls maxColumns={4} maxRows={4} />
+<GridControls maxColumns={4} maxRows={4} />;
 ```
 
-| Prop | Type | Description |
-|------|------|-------------|
+| Prop         | Type     | Description             |
+| ------------ | -------- | ----------------------- |
 | `maxColumns` | `number` | Maximum columns allowed |
-| `maxRows` | `number` | Maximum rows allowed |
+| `maxRows`    | `number` | Maximum rows allowed    |
 
 ---
 
@@ -625,13 +630,13 @@ import {GridControls} from 'osdlabel/components';
 UI control for switching between available annotation contexts.
 
 ```tsx
-import {ContextSwitcher} from 'osdlabel/components';
+import { ContextSwitcher } from 'osdlabel/components';
 
-<ContextSwitcher label="Task:" />
+<ContextSwitcher label="Task:" />;
 ```
 
-| Prop | Type | Description |
-|------|------|-------------|
+| Prop    | Type     | Description         |
+| ------- | -------- | ------------------- |
 | `label` | `string` | Optional text label |
 
 ---
@@ -643,7 +648,7 @@ import {ContextSwitcher} from 'osdlabel/components';
 The primary hook for accessing all annotation state and actions. Must be used within an `AnnotatorProvider`.
 
 ```ts
-import {useAnnotator} from 'osdlabel/state';
+import { useAnnotator } from 'osdlabel/state';
 ```
 
 ### Return value
@@ -660,14 +665,14 @@ import {useAnnotator} from 'osdlabel/state';
 }
 ```
 
-| Property | Description |
-|----------|-------------|
-| `annotationState` | All annotations organized by image ID with a change counter |
-| `uiState` | Active tool, cell, grid dimensions, assignments, selection |
-| `contextState` | Available contexts and active context ID |
-| `constraintStatus` | Reactive accessor returning tool enable/disable status |
-| `actions` | Object containing all state mutation functions |
-| `shortcuts` | Merged keyboard shortcut map (defaults + overrides) |
+| Property           | Description                                                 |
+| ------------------ | ----------------------------------------------------------- |
+| `annotationState`  | All annotations organized by image ID with a change counter |
+| `uiState`          | Active tool, cell, grid dimensions, assignments, selection  |
+| `contextState`     | Available contexts and active context ID                    |
+| `constraintStatus` | Reactive accessor returning tool enable/disable status      |
+| `actions`          | Object containing all state mutation functions              |
+| `shortcuts`        | Merged keyboard shortcut map (defaults + overrides)         |
 
 ---
 
@@ -785,7 +790,7 @@ These are lower-level primitives used by `AnnotatorProvider`. They are exported 
 function createAnnotationStore(): {
   state: AnnotationState;
   setState: SetStoreFunction<AnnotationState>;
-}
+};
 ```
 
 ### createUIStore
@@ -794,7 +799,7 @@ function createAnnotationStore(): {
 function createUIStore(): {
   state: UIState;
   setState: SetStoreFunction<UIState>;
-}
+};
 ```
 
 ### createContextStore
@@ -803,7 +808,7 @@ function createUIStore(): {
 function createContextStore(): {
   state: ContextState;
   setState: SetStoreFunction<ContextState>;
-}
+};
 ```
 
 ### createActions
@@ -814,7 +819,7 @@ function createActions(
   setUIState: SetStoreFunction<UIState>,
   setContextState: SetStoreFunction<ContextState>,
   contextState: ContextState,
-): Actions
+): Actions;
 ```
 
 ### createConstraintStatus
@@ -824,7 +829,7 @@ function createConstraintStatus(
   contextState: ContextState,
   annotationState: AnnotationState,
   currentImageId: Accessor<ImageId | undefined>,
-): Accessor<ConstraintStatus>
+): Accessor<ConstraintStatus>;
 ```
 
 Creates a reactive accessor that derives tool enable/disable status from the current context, annotations, and active image.
@@ -838,7 +843,7 @@ Creates a reactive accessor that derives tool enable/disable status from the cur
 A Fabric.js canvas overlay synchronized with an OpenSeaDragon viewer. Handles event routing, coordinate transforms, and mode switching.
 
 ```ts
-import {FabricOverlay} from 'osdlabel/overlay';
+import { FabricOverlay } from 'osdlabel/overlay';
 ```
 
 ### Constructor
@@ -926,7 +931,7 @@ type OverlayMode = 'navigation' | 'annotation';
 
 ```ts
 interface OverlayOptions {
-  readonly interactive?: boolean;  // Default: false
+  readonly interactive?: boolean; // Default: false
 }
 ```
 
@@ -937,7 +942,7 @@ If `interactive` is `true`, the overlay starts in annotation mode instead of nav
 ## computeViewportTransform
 
 ```ts
-function computeViewportTransform(viewer: OpenSeadragon.Viewer): TMat2D
+function computeViewportTransform(viewer: OpenSeadragon.Viewer): TMat2D;
 ```
 
 Computes the 6-element affine matrix `[a, b, c, d, tx, ty]` that maps image-space to screen-space for the current OSD viewport state.
@@ -951,13 +956,13 @@ The matrix is derived by mapping two image-space points `(0,0)` and `(1,0)` thro
 Registry for managing multiple `FabricOverlay` instances (one per grid cell).
 
 ```ts
-import {createOverlayManager} from 'osdlabel/overlay';
+import { createOverlayManager } from 'osdlabel/overlay';
 ```
 
 ### createOverlayManager
 
 ```ts
-function createOverlayManager(): OverlayManager
+function createOverlayManager(): OverlayManager;
 ```
 
 ### OverlayManager interface
@@ -971,12 +976,12 @@ interface OverlayManager {
 }
 ```
 
-| Method | Description |
-|--------|-------------|
-| `create` | Create a new overlay for a viewer at the given cell index. Destroys any existing overlay at that index first. |
-| `get` | Retrieve the overlay for a cell index, or `undefined` if none exists. |
-| `destroy` | Destroy the overlay at a cell index and remove it from the registry. |
-| `destroyAll` | Destroy all managed overlays. |
+| Method       | Description                                                                                                   |
+| ------------ | ------------------------------------------------------------------------------------------------------------- |
+| `create`     | Create a new overlay for a viewer at the given cell index. Destroys any existing overlay at that index first. |
+| `get`        | Retrieve the overlay for a cell index, or `undefined` if none exists.                                         |
+| `destroy`    | Destroy the overlay at a cell index and remove it from the registry.                                          |
+| `destroyAll` | Destroy all managed overlays.                                                                                 |
 
 ## Event routing
 
@@ -994,10 +999,7 @@ The overlay uses an OSD `MouseTracker` attached to Fabric's container element to
 ## serialize
 
 ```ts
-function serialize(
-  state: AnnotationState,
-  images: readonly ImageSource[],
-): AnnotationDocument
+function serialize(state: AnnotationState, images: readonly ImageSource[]): AnnotationDocument;
 ```
 
 Serialize the current annotation state into a portable JSON document. Creates one `ImageAnnotations` entry per image in the `images` array.
@@ -1005,7 +1007,7 @@ Serialize the current annotation state into a portable JSON document. Creates on
 **Example:**
 
 ```ts
-import {serialize} from 'osdlabel/core';
+import { serialize } from 'osdlabel/core';
 
 const doc = serialize(annotationState, images);
 const json = JSON.stringify(doc, null, 2);
@@ -1016,12 +1018,13 @@ const json = JSON.stringify(doc, null, 2);
 ## deserialize
 
 ```ts
-function deserialize(doc: unknown): Record<ImageId, Record<AnnotationId, Annotation>>
+function deserialize(doc: unknown): Record<ImageId, Record<AnnotationId, Annotation>>;
 ```
 
 Parse and validate a serialized document, returning the `byImage` store structure. Throws `SerializationError` on invalid input.
 
 **Validates:**
+
 - Document version (`'1.0.0'`)
 - Required fields (`exportedAt`, `images` array)
 - Each annotation's structure (IDs, geometry, timestamps, raw data)
@@ -1029,7 +1032,7 @@ Parse and validate a serialized document, returning the `byImage` store structur
 **Example:**
 
 ```ts
-import {deserialize} from 'osdlabel/core';
+import { deserialize } from 'osdlabel/core';
 
 try {
   const byImage = deserialize(JSON.parse(jsonString));
@@ -1046,7 +1049,7 @@ try {
 ## validateAnnotation
 
 ```ts
-function validateAnnotation(value: unknown): value is Annotation
+function validateAnnotation(value: unknown): value is Annotation;
 ```
 
 Type guard that validates the shape of an annotation object. Checks:
@@ -1064,7 +1067,7 @@ Returns `true` if the value is a valid `Annotation`.
 ## getAllAnnotationsFlat
 
 ```ts
-function getAllAnnotationsFlat(state: AnnotationState): Annotation[]
+function getAllAnnotationsFlat(state: AnnotationState): Annotation[];
 ```
 
 Flatten all annotations from the nested `byImage` store into a single array.
@@ -1072,7 +1075,7 @@ Flatten all annotations from the nested `byImage` store into a single array.
 **Example:**
 
 ```ts
-import {getAllAnnotationsFlat} from 'osdlabel/core';
+import { getAllAnnotationsFlat } from 'osdlabel/core';
 
 const all = getAllAnnotationsFlat(annotationState);
 console.log(`Total annotations: ${all.length}`);
@@ -1099,7 +1102,7 @@ Thrown by `deserialize()` when the input document is invalid. The `message` prop
 Convenience hook for checking tool availability based on the active context's constraints.
 
 ```ts
-import {useConstraints} from 'osdlabel/hooks';
+import { useConstraints } from 'osdlabel/hooks';
 ```
 
 Must be used within an `AnnotatorProvider`.
@@ -1113,10 +1116,10 @@ Must be used within an `AnnotatorProvider`.
 }
 ```
 
-| Function | Description |
-|----------|-------------|
-| `isToolEnabled` | Returns whether a tool type is enabled (context allows it and limit not reached) |
-| `canAddAnnotation` | Same check as `isToolEnabled` — used by tools as a safety net before committing |
+| Function           | Description                                                                      |
+| ------------------ | -------------------------------------------------------------------------------- |
+| `isToolEnabled`    | Returns whether a tool type is enabled (context allows it and limit not reached) |
+| `canAddAnnotation` | Same check as `isToolEnabled` — used by tools as a safety net before committing  |
 
 ### Example
 
@@ -1140,7 +1143,7 @@ function MyToolbar() {
 Sets up keyboard shortcut handling. Called automatically by `AnnotatorProvider` — you don't need to call this directly unless building a fully custom setup.
 
 ```ts
-import {useKeyboard} from 'osdlabel/hooks';
+import { useKeyboard } from 'osdlabel/hooks';
 ```
 
 ### Signature
@@ -1150,14 +1153,14 @@ function useKeyboard(
   shortcuts: KeyboardShortcutMap,
   activeToolKeyHandlerRef: ActiveToolKeyHandlerRef,
   shouldSkipTargetPredicate?: (target: HTMLElement) => boolean,
-): void
+): void;
 ```
 
-| Parameter | Description |
-|-----------|-------------|
-| `shortcuts` | The keyboard shortcut map (default + overrides) |
-| `activeToolKeyHandlerRef` | Ref to the active tool's key handler (for tool-specific keys like path `Enter`/`c`) |
-| `shouldSkipTargetPredicate` | Optional callback to suppress shortcuts for specific targets |
+| Parameter                   | Description                                                                         |
+| --------------------------- | ----------------------------------------------------------------------------------- |
+| `shortcuts`                 | The keyboard shortcut map (default + overrides)                                     |
+| `activeToolKeyHandlerRef`   | Ref to the active tool's key handler (for tool-specific keys like path `Enter`/`c`) |
+| `shouldSkipTargetPredicate` | Optional callback to suppress shortcuts for specific targets                        |
 
 ### Behavior
 
@@ -1173,16 +1176,17 @@ function useKeyboard(
 Utility function for checking if an annotation context applies to a specific image.
 
 ```ts
-import {isContextScopedToImage} from 'osdlabel/hooks';
+import { isContextScopedToImage } from 'osdlabel/hooks';
 ```
 
 ### Signature
 
 ```ts
-function isContextScopedToImage(context: AnnotationContext, imageId: ImageId): boolean
+function isContextScopedToImage(context: AnnotationContext, imageId: ImageId): boolean;
 ```
 
 Returns `true` if:
+
 - The context has no `imageIds` array (applies to all images), OR
 - The `imageIds` array includes the given `imageId`
 
@@ -1195,7 +1199,7 @@ Returns `true` if:
 Default visual style applied to new annotations.
 
 ```ts
-import {DEFAULT_ANNOTATION_STYLE} from 'osdlabel/core';
+import { DEFAULT_ANNOTATION_STYLE } from 'osdlabel/core';
 ```
 
 ```ts
@@ -1217,7 +1221,7 @@ Override per-tool via `defaultStyle` in [`ToolConstraint`](/osdlabel/api/types/#
 Default grid dimensions on initialization.
 
 ```ts
-import {DEFAULT_GRID_CONFIG} from 'osdlabel/core';
+import { DEFAULT_GRID_CONFIG } from 'osdlabel/core';
 ```
 
 ```ts
@@ -1234,7 +1238,7 @@ const DEFAULT_GRID_CONFIG = {
 Maximum allowed grid dimensions.
 
 ```ts
-import {MAX_GRID_SIZE} from 'osdlabel/core';
+import { MAX_GRID_SIZE } from 'osdlabel/core';
 ```
 
 ```ts
@@ -1251,7 +1255,7 @@ const MAX_GRID_SIZE = {
 Default keyboard shortcut bindings. See [Keyboard Shortcuts](/osdlabel/guides/keyboard-shortcuts/) for the full table.
 
 ```ts
-import {DEFAULT_KEYBOARD_SHORTCUTS} from 'osdlabel/core';
+import { DEFAULT_KEYBOARD_SHORTCUTS } from 'osdlabel/core';
 ```
 
 ```ts

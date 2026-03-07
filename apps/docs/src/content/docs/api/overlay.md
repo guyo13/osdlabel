@@ -8,7 +8,7 @@ description: OSD-Fabric integration layer
 A Fabric.js canvas overlay synchronized with an OpenSeaDragon viewer. Handles event routing, coordinate transforms, and mode switching.
 
 ```ts
-import {FabricOverlay} from 'osdlabel/overlay';
+import { FabricOverlay } from 'osdlabel/overlay';
 ```
 
 ### Constructor
@@ -96,7 +96,7 @@ type OverlayMode = 'navigation' | 'annotation';
 
 ```ts
 interface OverlayOptions {
-  readonly interactive?: boolean;  // Default: false
+  readonly interactive?: boolean; // Default: false
 }
 ```
 
@@ -107,7 +107,7 @@ If `interactive` is `true`, the overlay starts in annotation mode instead of nav
 ## computeViewportTransform
 
 ```ts
-function computeViewportTransform(viewer: OpenSeadragon.Viewer): TMat2D
+function computeViewportTransform(viewer: OpenSeadragon.Viewer): TMat2D;
 ```
 
 Computes the 6-element affine matrix `[a, b, c, d, tx, ty]` that maps image-space to screen-space for the current OSD viewport state.
@@ -121,13 +121,13 @@ The matrix is derived by mapping two image-space points `(0,0)` and `(1,0)` thro
 Registry for managing multiple `FabricOverlay` instances (one per grid cell).
 
 ```ts
-import {createOverlayManager} from 'osdlabel/overlay';
+import { createOverlayManager } from 'osdlabel/overlay';
 ```
 
 ### createOverlayManager
 
 ```ts
-function createOverlayManager(): OverlayManager
+function createOverlayManager(): OverlayManager;
 ```
 
 ### OverlayManager interface
@@ -141,12 +141,12 @@ interface OverlayManager {
 }
 ```
 
-| Method | Description |
-|--------|-------------|
-| `create` | Create a new overlay for a viewer at the given cell index. Destroys any existing overlay at that index first. |
-| `get` | Retrieve the overlay for a cell index, or `undefined` if none exists. |
-| `destroy` | Destroy the overlay at a cell index and remove it from the registry. |
-| `destroyAll` | Destroy all managed overlays. |
+| Method       | Description                                                                                                   |
+| ------------ | ------------------------------------------------------------------------------------------------------------- |
+| `create`     | Create a new overlay for a viewer at the given cell index. Destroys any existing overlay at that index first. |
+| `get`        | Retrieve the overlay for a cell index, or `undefined` if none exists.                                         |
+| `destroy`    | Destroy the overlay at a cell index and remove it from the registry.                                          |
+| `destroyAll` | Destroy all managed overlays.                                                                                 |
 
 ## Event routing
 

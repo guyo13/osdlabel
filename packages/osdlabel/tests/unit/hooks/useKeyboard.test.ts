@@ -14,7 +14,17 @@ const mockActions = {
 // Mock UI state
 const mockUiState = {
   selectedAnnotationId: null as string | null,
-  gridAssignments: ['img-1', 'img-2', 'img-3', 'img-4', 'img-5', 'img-6', 'img-7', 'img-8', 'img-9'],
+  gridAssignments: [
+    'img-1',
+    'img-2',
+    'img-3',
+    'img-4',
+    'img-5',
+    'img-6',
+    'img-7',
+    'img-8',
+    'img-9',
+  ],
   activeCellIndex: 0,
   gridColumns: 1,
   gridRows: 1,
