@@ -59,12 +59,12 @@ Only one context is active at a time. Switching contexts changes which tools are
 
 ## The overlay model
 
-Each grid cell contains an OpenSeaDragon viewer with a `FabricOverlay` on top. The overlay operates in two modes:
+Each grid cell contains an OpenSeaDragon viewer with a `FabricOverlay` on top. The overlay operates in one of two modes, routing input based on the active state:
 
-- **Navigation mode** — OSD handles all mouse input (pan/zoom). Fabric is display-only.
-- **Annotation mode** — Fabric handles mouse input (draw/select/edit). OSD navigation is disabled, except for `Ctrl`/`Cmd`+drag (pan) and `Ctrl`/`Cmd`+scroll (zoom).
+- **Navigation mode** (`'navigation'`) — This is the default mode when no tool is selected. The `FabricOverlay`'s mouse tracker is disabled, passing all pointer events directly to OpenSeaDragon. Fabric.js objects are rendered but cannot be interacted with.
+- **Annotation mode** (`'annotation'`) — This mode is activated when a tool is selected (including the `select` tool). The overlay intercepts all pointer events, forwarding them as synthetic events to Fabric.js. OSD's native navigation is disabled. To pan or zoom in this mode, users can bypass Fabric by pressing `Ctrl`/`Cmd` while dragging or scrolling.
 
-The active cell is in annotation mode; all other cells are in navigation mode.
+In a multi-cell grid, the currently active grid cell operates in its intended mode (often annotation), while all other background cells operate strictly in navigation mode.
 
 ## State management
 

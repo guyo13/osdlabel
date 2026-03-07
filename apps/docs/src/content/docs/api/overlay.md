@@ -5,7 +5,7 @@ description: OSD-Fabric integration layer
 
 ## FabricOverlay
 
-A Fabric.js canvas overlay synchronized with an OpenSeaDragon viewer. Handles event routing, coordinate transforms, and mode switching.
+A custom Fabric.js version 7 canvas overlay synchronized with an OpenSeaDragon viewer. Because standard bridge libraries are pinned to older Fabric versions, `osdlabel` provides this robust native integration. The overlay attaches directly over the OpenSeaDragon viewer, seamlessly synchronizing state on viewport changes (pan, zoom, rotation).
 
 ```ts
 import {FabricOverlay} from 'osdlabel/overlay';

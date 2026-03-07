@@ -622,7 +622,7 @@ import {GridControls} from 'osdlabel/components';
 
 ## ContextSwitcher
 
-UI control for switching between available annotation contexts.
+UI control for switching between available annotation contexts. This dropdown component reads the available contexts from `ContextState` and allows the user to select the active one. Selecting a new context updates the available tools and constraints in the toolbar.
 
 ```tsx
 import {ContextSwitcher} from 'osdlabel/components';
@@ -632,7 +632,7 @@ import {ContextSwitcher} from 'osdlabel/components';
 
 | Prop | Type | Description |
 |------|------|-------------|
-| `label` | `string` | Optional text label |
+| `label` | `string` | Optional text label displayed next to the dropdown |
 
 ---
 
@@ -835,7 +835,7 @@ Creates a reactive accessor that derives tool enable/disable status from the cur
 
 ## FabricOverlay
 
-A Fabric.js canvas overlay synchronized with an OpenSeaDragon viewer. Handles event routing, coordinate transforms, and mode switching.
+A custom Fabric.js version 7 canvas overlay synchronized with an OpenSeaDragon viewer. Because standard bridge libraries are pinned to older Fabric versions, `osdlabel` provides this robust native integration. The overlay attaches directly over the OpenSeaDragon viewer, seamlessly synchronizing state on viewport changes (pan, zoom, rotation).
 
 ```ts
 import {FabricOverlay} from 'osdlabel/overlay';

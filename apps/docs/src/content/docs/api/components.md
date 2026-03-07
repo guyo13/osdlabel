@@ -192,7 +192,7 @@ import {GridControls} from 'osdlabel/components';
 
 ## ContextSwitcher
 
-UI control for switching between available annotation contexts.
+UI control for switching between available annotation contexts. This dropdown component reads the available contexts from `ContextState` and allows the user to select the active one. Selecting a new context updates the available tools and constraints in the toolbar.
 
 ```tsx
 import {ContextSwitcher} from 'osdlabel/components';
@@ -202,4 +202,4 @@ import {ContextSwitcher} from 'osdlabel/components';
 
 | Prop | Type | Description |
 |------|------|-------------|
-| `label` | `string` | Optional text label |
+| `label` | `string` | Optional text label displayed next to the dropdown |
