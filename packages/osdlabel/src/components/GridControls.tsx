@@ -1,4 +1,4 @@
-import { Component, createSignal, For, Show } from 'solid-js';
+import { type Component, createSignal, For, Show } from 'solid-js';
 import { useAnnotator } from '../state/annotator-context.js';
 
 export interface GridControlsProps {

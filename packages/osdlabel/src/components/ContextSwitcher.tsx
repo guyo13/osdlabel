@@ -1,4 +1,4 @@
-import { Component, For } from 'solid-js';
+import { type Component, For } from 'solid-js';
 import { useAnnotator } from '../state/annotator-context.js';
 
 export interface ContextSwitcherProps {

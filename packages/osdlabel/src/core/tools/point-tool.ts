@@ -1,7 +1,7 @@
 import { Circle } from 'fabric';
 import { ShapeTool } from './shape-tool.js';
-import { FabricShapeOptions } from '../fabric-utils.js';
-import { AnnotationType, Point } from '../types.js';
+import type { FabricShapeOptions } from '../fabric-utils.js';
+import type { AnnotationType, Point } from '../types.js';
 
 export class PointTool extends ShapeTool<Circle> {
   readonly type: AnnotationType = 'point';

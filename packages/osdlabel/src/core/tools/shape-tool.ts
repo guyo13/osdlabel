@@ -1,14 +1,14 @@
 import { FabricObject } from 'fabric';
 import { BaseTool } from './base-tool.js';
 import {
-  AnnotationType,
-  Point,
-  AnnotationStyle,
-  AnnotationContextId,
+  type AnnotationType,
+  type Point,
+  type AnnotationStyle,
+  type AnnotationContextId,
   createAnnotationId,
 } from '../types.js';
 import { DEFAULT_ANNOTATION_STYLE } from '../constants.js';
-import { FabricShapeOptions, getFabricOptions } from '../fabric-utils.js';
+import { type FabricShapeOptions, getFabricOptions } from '../fabric-utils.js';
 import { generateId } from '../../utils/id.js';
 
 /**

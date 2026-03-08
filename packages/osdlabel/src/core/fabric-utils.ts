@@ -10,7 +10,7 @@ import {
   version as FABRIC_VERSION,
 } from 'fabric';
 import './fabric-module.js';
-import {
+import type {
   Annotation,
   AnnotationStyle,
   Geometry,

@@ -1,7 +1,7 @@
 import { createEffect, onCleanup } from 'solid-js';
 import type { FabricObject } from 'fabric';
 import type { FabricOverlay } from '../overlay/fabric-overlay.js';
-import { AnnotationTool, ToolCallbacks, AddAnnotationParams } from '../core/tools/base-tool.js';
+import type { AnnotationTool, ToolCallbacks, AddAnnotationParams } from '../core/tools/base-tool.js';
 import { RectangleTool } from '../core/tools/rectangle-tool.js';
 import { CircleTool } from '../core/tools/circle-tool.js';
 import { LineTool } from '../core/tools/line-tool.js';
@@ -9,7 +9,7 @@ import { PointTool } from '../core/tools/point-tool.js';
 import { PathTool } from '../core/tools/path-tool.js';
 import { SelectTool } from '../core/tools/select-tool.js';
 import { useAnnotator } from '../state/annotator-context.js';
-import { AnnotationId, ImageId, Point, AnnotationType } from '../core/types.js';
+import type { AnnotationId, ImageId, Point, AnnotationType } from '../core/types.js';
 import { getGeometryFromFabricObject, serializeFabricObject } from '../core/fabric-utils.js';
 import '../core/fabric-module.js';
 
