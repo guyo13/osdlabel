@@ -1,7 +1,7 @@
 {
   "name": "osdlabel",
   "version": "0.0.1",
-  "description": "Image annotation library built with SolidJS, Fabric.js, and OpenSeaDragon supporting tiled images",
+  "description": "Web-based image annotation library with rich drawing controls, customizable annotation contexts, and built-in serialization. Uses OpenSeaDragon for deep zoom tiled images, Fabric.js for canvas rendering, and SolidJS for reactive UI.",
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
