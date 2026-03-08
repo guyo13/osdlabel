@@ -16,6 +16,7 @@ import {
   ImageSource,
   AnnotationId,
   ImageId,
+  ViewTransform,
 } from '../../../src/core/types';
 import {
   MAX_COORDINATE,
@@ -69,7 +70,10 @@ describe('Serialization', () => {
     { id: imageId, dziUrl: 'https://example.com/image.dzi', label: 'Test Image' },
   ];
 
-  function createTestState(annotations: Annotation[]): AnnotationState {
+  function createTestState(
+    annotations: Annotation[],
+    viewTransforms: Record<ImageId, ViewTransform> = {},
+  ): AnnotationState {
     const byImage: Record<ImageId, Record<AnnotationId, Annotation>> = {};
     for (const ann of annotations) {
       if (!byImage[ann.imageId]) {
@@ -77,7 +81,7 @@ describe('Serialization', () => {
       }
       byImage[ann.imageId][ann.id] = ann;
     }
-    return { byImage, version: 0 };
+    return { byImage, viewTransforms, changeCounter: 0 };
   }
 
   describe('serialize', () => {
@@ -93,8 +97,24 @@ describe('Serialization', () => {
       expect(doc.images[0].annotations).toHaveLength(2);
     });
 
+    it('should include viewTransform when it is non-default', () => {
+      const vt = { rotation: 90, flippedH: true, flippedV: false };
+      const state = createTestState([annotation1], { [imageId]: vt });
+      const doc = serialize(state, imageSources);
+
+      expect(doc.images[0].viewTransform).toEqual(vt);
+    });
+
+    it('should omit viewTransform when it is default', () => {
+      const vt = { rotation: 0, flippedH: false, flippedV: false };
+      const state = createTestState([annotation1], { [imageId]: vt });
+      const doc = serialize(state, imageSources);
+
+      expect(doc.images[0].viewTransform).toBeUndefined();
+    });
+
     it('should handle empty state', () => {
-      const state: AnnotationState = { byImage: {}, version: 0 };
+      const state: AnnotationState = { byImage: {}, viewTransforms: {}, changeCounter: 0 };
       const doc = serialize(state, imageSources);
 
       expect(doc.version).toBe('1.0.0');
@@ -123,22 +143,25 @@ describe('Serialization', () => {
 
   describe('deserialize', () => {
     it('should round-trip serialize → deserialize preserving all data', () => {
-      const state = createTestState([annotation1, annotation2]);
+      const vt = { rotation: 270, flippedH: false, flippedV: true };
+      const state = createTestState([annotation1, annotation2], { [imageId]: vt });
       const doc = serialize(state, imageSources);
       const json = JSON.stringify(doc);
       const parsed: unknown = JSON.parse(json);
-      const result = deserialize(parsed);
+      const { byImage, viewTransforms } = deserialize(parsed);
 
-      expect(result[imageId]).toBeDefined();
-      const restoredAnn1 = result[imageId][annId1];
+      expect(byImage[imageId]).toBeDefined();
+      const restoredAnn1 = byImage[imageId][annId1];
       expect(restoredAnn1.id).toBe(annId1);
       expect(restoredAnn1.imageId).toBe(imageId);
       expect(restoredAnn1.contextId).toBe(contextId);
       expect(restoredAnn1.geometry).toEqual(annotation1.geometry);
       expect(restoredAnn1.rawAnnotationData).toEqual(baseRawAnnotationData);
 
-      const restoredAnn2 = result[imageId][annId2];
+      const restoredAnn2 = byImage[imageId][annId2];
       expect(restoredAnn2.geometry).toEqual(annotation2.geometry);
+
+      expect(viewTransforms[imageId]).toEqual(vt);
     });
 
     it('should reject non-object input', () => {
@@ -198,6 +221,26 @@ describe('Serialization', () => {
           ],
         }),
       ).toThrow(/Invalid annotation/);
+    });
+
+    it('should default to DEFAULT_VIEW_TRANSFORM when viewTransform is missing', () => {
+      const doc = {
+        version: '1.0.0',
+        exportedAt: '2024-01-01T00:00:00.000Z',
+        images: [
+          {
+            imageId: 'img1',
+            sourceUrl: 'https://example.com',
+            annotations: [],
+          },
+        ],
+      };
+      const { viewTransforms } = deserialize(doc);
+      expect(viewTransforms['img1' as ImageId]).toEqual({
+        rotation: 0,
+        flippedH: false,
+        flippedV: false,
+      });
     });
   });
 

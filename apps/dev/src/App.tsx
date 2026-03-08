@@ -2,6 +2,7 @@ import { createSignal } from 'solid-js';
 import { render } from 'solid-js/web';
 import {
   Toolbar,
+  ViewControls,
   StatusBar,
   GridView,
   Filmstrip,
@@ -115,8 +116,8 @@ function AppContent() {
     if (!json.trim()) return;
     try {
       const parsed: unknown = JSON.parse(json);
-      const byImage = deserialize(parsed);
-      actions.loadAnnotations(byImage);
+      const { byImage, viewTransforms } = deserialize(parsed);
+      actions.loadAnnotations(byImage, viewTransforms);
       setShowImportPanel(false);
       setImportJsonText('');
     } catch (err) {
@@ -177,6 +178,8 @@ function AppContent() {
         </select>
 
         <Toolbar />
+
+        <ViewControls />
 
         <GridControls maxColumns={4} maxRows={4} />
 

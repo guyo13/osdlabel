@@ -9,6 +9,11 @@ const mockActions = {
   deleteAnnotation: vi.fn(),
   setActiveCell: vi.fn(),
   setGridDimensions: vi.fn(),
+  rotateActiveImageCW: vi.fn(),
+  rotateActiveImageCCW: vi.fn(),
+  flipActiveImageH: vi.fn(),
+  flipActiveImageV: vi.fn(),
+  resetActiveImageView: vi.fn(),
 };
 
 // Mock UI state
@@ -50,8 +55,12 @@ vi.mock('../../../src/hooks/useConstraints.js', () => ({
 }));
 
 // Helper to simulate a keyboard event
-function dispatchKeyDown(key: string, target?: Partial<HTMLElement>) {
-  const event = new KeyboardEvent('keydown', { key });
+function dispatchKeyDown(
+  key: string,
+  options: { target?: Partial<HTMLElement>; shiftKey?: boolean } = {},
+) {
+  const { target, shiftKey = false } = options;
+  const event = new KeyboardEvent('keydown', { key, shiftKey });
   if (target) {
     Object.defineProperty(event, 'target', { value: target, enumerable: true });
   } else {
@@ -91,9 +100,9 @@ describe('useKeyboard', () => {
   });
 
   it('should ignore events when target is INPUT, TEXTAREA, or contentEditable', () => {
-    dispatchKeyDown('v', { tagName: 'INPUT' });
-    dispatchKeyDown('v', { tagName: 'TEXTAREA' });
-    dispatchKeyDown('v', { isContentEditable: true } as any);
+    dispatchKeyDown('v', { target: { tagName: 'INPUT' } });
+    dispatchKeyDown('v', { target: { tagName: 'TEXTAREA' } });
+    dispatchKeyDown('v', { target: { isContentEditable: true } as any });
 
     expect(mockActions.setActiveTool).not.toHaveBeenCalled();
   });
@@ -109,11 +118,11 @@ describe('useKeyboard', () => {
       useKeyboard(DEFAULT_KEYBOARD_SHORTCUTS, activeToolKeyHandlerRef, predicate);
     });
 
-    dispatchKeyDown('v', { className: 'ignore-me', tagName: 'DIV' });
+    dispatchKeyDown('v', { target: { className: 'ignore-me', tagName: 'DIV' } });
     expect(predicate).toHaveBeenCalled();
     expect(mockActions.setActiveTool).not.toHaveBeenCalled();
 
-    dispatchKeyDown('v', { className: 'process-me', tagName: 'DIV' });
+    dispatchKeyDown('v', { target: { className: 'process-me', tagName: 'DIV' } });
     expect(mockActions.setActiveTool).toHaveBeenCalledWith('select');
   });
 
@@ -172,6 +181,44 @@ describe('useKeyboard', () => {
       // But should allow others
       dispatchKeyDown(DEFAULT_KEYBOARD_SHORTCUTS.circleTool);
       expect(mockActions.setActiveTool).toHaveBeenCalledWith('circle');
+    });
+  });
+
+  describe('View Transform Shortcuts', () => {
+    it('Shift+R should call rotateActiveImageCW', () => {
+      dispatchKeyDown('R', { shiftKey: true });
+      expect(mockActions.rotateActiveImageCW).toHaveBeenCalled();
+    });
+
+    it('Shift+L should call rotateActiveImageCCW', () => {
+      dispatchKeyDown('L', { shiftKey: true });
+      expect(mockActions.rotateActiveImageCCW).toHaveBeenCalled();
+    });
+
+    it('Shift+H should call flipActiveImageH', () => {
+      dispatchKeyDown('H', { shiftKey: true });
+      expect(mockActions.flipActiveImageH).toHaveBeenCalled();
+    });
+
+    it('Shift+V should call flipActiveImageV', () => {
+      dispatchKeyDown('V', { shiftKey: true });
+      expect(mockActions.flipActiveImageV).toHaveBeenCalled();
+    });
+
+    it('Shift+0 should call resetActiveImageView', () => {
+      // DEFAULT_KEYBOARD_SHORTCUTS.resetView is ')'
+      dispatchKeyDown(')', { shiftKey: true });
+      expect(mockActions.resetActiveImageView).toHaveBeenCalled();
+
+      vi.clearAllMocks();
+      dispatchKeyDown('0', { shiftKey: true });
+      expect(mockActions.resetActiveImageView).toHaveBeenCalled();
+    });
+
+    it('Plain r (no shift) should NOT call rotation, but should call rectangle tool', () => {
+      dispatchKeyDown('r');
+      expect(mockActions.rotateActiveImageCW).not.toHaveBeenCalled();
+      expect(mockActions.setActiveTool).toHaveBeenCalledWith('rectangle');
     });
   });
 

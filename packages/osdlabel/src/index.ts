@@ -19,10 +19,16 @@ export type {
   ConstraintStatus,
   KeyboardShortcutMap,
   RawAnnotationData,
+  ViewTransform,
 } from './core/types.js';
 
 // ID factory functions
-export { createAnnotationId, createImageId, createAnnotationContextId } from './core/types.js';
+export {
+  createAnnotationId,
+  createImageId,
+  createAnnotationContextId,
+  DEFAULT_VIEW_TRANSFORM,
+} from './core/types.js';
 
 // Context scoping
 export { isContextScopedToImage } from './core/context-scoping.js';
@@ -62,6 +68,7 @@ export {
 // Components
 export { default as ViewerCell } from './components/ViewerCell.js';
 export { default as Toolbar } from './components/Toolbar.js';
+export { default as ViewControls } from './components/ViewControls.js';
 export { default as StatusBar } from './components/StatusBar.js';
 export { default as ContextSwitcher } from './components/ContextSwitcher.js';
 export { default as GridView } from './components/GridView.js';

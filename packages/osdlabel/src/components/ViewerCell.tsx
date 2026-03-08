@@ -3,7 +3,7 @@ import type { Component } from 'solid-js';
 import OpenSeadragon from 'openseadragon';
 import { FabricOverlay } from '../overlay/fabric-overlay.js';
 import type { OverlayMode } from '../overlay/fabric-overlay.js';
-import type { ImageSource } from '../core/types.js';
+import type { ImageSource, ViewTransform } from '../core/types.js';
 import { useAnnotationTool } from '../hooks/useAnnotationTool.js';
 import { useAnnotator } from '../state/annotator-context.js';
 import { createFabricObjectFromRawData } from '../core/fabric-utils.js';
@@ -114,6 +114,22 @@ const ViewerCell: Component<ViewerCellProps> = (props) => {
       }
       ov.canvas.requestRenderAll();
     })();
+  });
+
+  // Sync view transform (rotation/flip) from state to OSD viewer
+  // Use separate effect to avoid interfering with annotation sync
+  // Use setTimeout to push to next tick, avoiding race conditions with tool activation
+  createEffect(() => {
+    const ov = overlay();
+    const imageId = props.imageSource?.id;
+    if (!ov || !imageId) return;
+
+    const transform = annotationState.viewTransforms[imageId];
+    if (transform) {
+      setTimeout(() => ov.applyViewTransform(transform), 0);
+    } else {
+      setTimeout(() => ov.resetView(), 0);
+    }
   });
 
   return (

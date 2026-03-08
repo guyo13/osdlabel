@@ -1,7 +1,8 @@
 import OpenSeadragon from 'openseadragon';
 import { Canvas as FabricCanvas } from 'fabric';
 import type { TMat2D } from 'fabric';
-import type { Point } from '../core/types.js';
+import type { Point, ViewTransform } from '../core/types.js';
+import { DEFAULT_VIEW_TRANSFORM } from '../core/types.js';
 import {
   POINTER_DOWN,
   POINTER_MOVE,
@@ -31,18 +32,22 @@ export interface OverlayOptions {
 export function computeViewportTransform(viewer: OpenSeadragon.Viewer): TMat2D {
   const origin = new OpenSeadragon.Point(0, 0);
   const unitX = new OpenSeadragon.Point(1, 0);
+  const unitY = new OpenSeadragon.Point(0, 1);
 
   const screenOrigin = viewer.viewport.imageToViewerElementCoordinates(origin);
   const screenUnitX = viewer.viewport.imageToViewerElementCoordinates(unitX);
+  const screenUnitY = viewer.viewport.imageToViewerElementCoordinates(unitY);
 
-  // The vector from origin to unitX on screen encodes both scale and rotation
+  // The vectors from origin to unitX and unitY on screen encode scale, rotation, and flip.
   const dx = screenUnitX.x - screenOrigin.x;
   const dy = screenUnitX.y - screenOrigin.y;
+  const dyx = screenUnitY.x - screenOrigin.x;
+  const dyy = screenUnitY.y - screenOrigin.y;
 
   // Affine matrix: [a, b, c, d, tx, ty]
-  // a = cos(θ)*scale = dx, b = sin(θ)*scale = dy
-  // c = -sin(θ)*scale = -dy, d = cos(θ)*scale = dx
-  return [dx, dy, -dy, dx, screenOrigin.x, screenOrigin.y] as TMat2D;
+  // a = x-scale component, b = x-skew component
+  // c = y-skew component, d = y-scale component
+  return [dx, dy, dyx, dyy, screenOrigin.x, screenOrigin.y] as TMat2D;
 }
 
 /**
@@ -178,6 +183,43 @@ export class FabricOverlay {
     const vpt = computeViewportTransform(this._viewer);
     this._fabricCanvas.setViewportTransform(vpt);
     this._fabricCanvas.renderAll();
+  }
+
+  /**
+   * Apply a view transform (rotation and flip) to the OSD viewer.
+   * Vertical flip is implemented as horizontal flip + 180° rotation.
+   */
+  applyViewTransform(transform: ViewTransform): void {
+    const { rotation, flippedH, flippedV } = transform;
+
+    // OSD only supports horizontal flip directly.
+    // Vertical flip = FlipH + 180 deg rotation.
+    const effectiveFlip = flippedH !== flippedV;
+    const rotationOffset = flippedV ? 180 : 0;
+    const effectiveRotation = (rotation + rotationOffset) % 360;
+
+    const currentRotation = this._viewer.viewport.getRotation();
+    const currentFlip = (this._viewer as any).getFlip();
+
+    if (currentRotation !== effectiveRotation || currentFlip !== effectiveFlip) {
+      (this._viewer as any).setFlip(effectiveFlip);
+      this._viewer.viewport.setRotation(effectiveRotation, true); // immediate
+    }
+  }
+
+  /** Get current viewport rotation in degrees */
+  getRotation(): number {
+    return this._viewer.viewport.getRotation();
+  }
+
+  /** Get current viewport flip state */
+  getFlip(): boolean {
+    return (this._viewer as any).getFlip();
+  }
+
+  /** Reset rotation and flip to default */
+  resetView(): void {
+    this.applyViewTransform(DEFAULT_VIEW_TRANSFORM);
   }
 
   /** Set the overlay interaction mode */
