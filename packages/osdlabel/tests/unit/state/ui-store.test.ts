@@ -12,7 +12,7 @@ describe('UI Store', () => {
       expect(state.activeCellIndex).toBe(0);
       expect(state.gridColumns).toBe(1);
       expect(state.gridRows).toBe(1);
-      expect(state.gridAssignments).toEqual({ 0: '' });
+      expect(state.gridAssignments).toEqual({});
       expect(state.selectedAnnotationId).toBeNull();
 
       dispose();
