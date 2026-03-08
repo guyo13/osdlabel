@@ -1,6 +1,6 @@
 import { FabricObject } from 'fabric';
-import { BaseTool, ToolCallbacks } from './base-tool.js';
-import { AnnotationId, ImageId, Point, KeyboardShortcutMap } from '../types.js';
+import { BaseTool, type ToolCallbacks } from './base-tool.js';
+import type { AnnotationId, ImageId, Point, KeyboardShortcutMap } from '../types.js';
 import type { FabricOverlay } from '../../overlay/fabric-overlay.js';
 import '../fabric-module.js';
 
@@ -47,9 +47,9 @@ export class SelectTool extends BaseTool {
     super.deactivate();
   }
 
-  onPointerDown(_event: PointerEvent, _imagePoint: Point): void {}
-  onPointerMove(_event: PointerEvent, _imagePoint: Point): void {}
-  onPointerUp(_event: PointerEvent, _imagePoint: Point): void {}
+  onPointerDown(_event: PointerEvent, _imagePoint: Point): void { }
+  onPointerMove(_event: PointerEvent, _imagePoint: Point): void { }
+  onPointerUp(_event: PointerEvent, _imagePoint: Point): void { }
 
   cancel(): void {
     this.overlay?.canvas.discardActiveObject();

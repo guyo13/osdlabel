@@ -1,6 +1,6 @@
 import { Polyline, Polygon } from 'fabric';
 import { BaseTool } from './base-tool.js';
-import { AnnotationType, Point, AnnotationStyle, createAnnotationId } from '../types.js';
+import { type AnnotationType, type Point, type AnnotationStyle, createAnnotationId } from '../types.js';
 import { DEFAULT_ANNOTATION_STYLE } from '../constants.js';
 import { getFabricOptions } from '../fabric-utils.js';
 import { generateId } from '../../utils/id.js';

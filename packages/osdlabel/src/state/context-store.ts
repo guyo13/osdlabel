@@ -1,6 +1,6 @@
 import { createStore } from 'solid-js/store';
 import { createMemo } from 'solid-js';
-import {
+import type {
   ContextState,
   AnnotationContextId,
   AnnotationState,

@@ -1,6 +1,6 @@
 import { FabricObject } from 'fabric';
 import type { FabricOverlay } from '../../overlay/fabric-overlay.js';
-import {
+import type {
   AnnotationType,
   Point,
   ImageId,

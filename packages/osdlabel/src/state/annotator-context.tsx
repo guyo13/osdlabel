@@ -1,6 +1,6 @@
-import { createContext, useContext, createEffect, on, JSX, Accessor } from 'solid-js';
+import { createContext, useContext, createEffect, on, type JSX, type Accessor } from 'solid-js';
 import { produce } from 'solid-js/store';
-import {
+import type {
   Annotation,
   AnnotationState,
   UIState,

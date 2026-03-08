@@ -1,5 +1,5 @@
-import { SetStoreFunction, produce } from 'solid-js/store';
-import {
+import { type SetStoreFunction, produce } from 'solid-js/store';
+import type {
   Annotation,
   AnnotationId,
   ImageId,

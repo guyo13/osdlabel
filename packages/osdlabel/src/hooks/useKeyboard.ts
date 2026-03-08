@@ -1,7 +1,7 @@
 import { onMount, onCleanup } from 'solid-js';
-import { useAnnotator, ActiveToolKeyHandlerRef } from '../state/annotator-context.js';
+import { useAnnotator, type ActiveToolKeyHandlerRef } from '../state/annotator-context.js';
 import { useConstraints } from './useConstraints.js';
-import { KeyboardShortcutMap } from '../core/types.js';
+import type { KeyboardShortcutMap } from '../core/types.js';
 import { MAX_GRID_SIZE } from '../core/constants.js';
 
 export const DEFAULT_KEYBOARD_SHORTCUTS: KeyboardShortcutMap = {
