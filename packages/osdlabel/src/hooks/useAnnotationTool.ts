@@ -1,7 +1,11 @@
 import { createEffect, onCleanup } from 'solid-js';
 import type { FabricObject } from 'fabric';
 import type { FabricOverlay } from '../overlay/fabric-overlay.js';
-import type { AnnotationTool, ToolCallbacks, AddAnnotationParams } from '../core/tools/base-tool.js';
+import type {
+  AnnotationTool,
+  ToolCallbacks,
+  AddAnnotationParams,
+} from '../core/tools/base-tool.js';
 import { RectangleTool } from '../core/tools/rectangle-tool.js';
 import { CircleTool } from '../core/tools/circle-tool.js';
 import { LineTool } from '../core/tools/line-tool.js';

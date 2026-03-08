@@ -47,9 +47,9 @@ export class SelectTool extends BaseTool {
     super.deactivate();
   }
 
-  onPointerDown(_event: PointerEvent, _imagePoint: Point): void { }
-  onPointerMove(_event: PointerEvent, _imagePoint: Point): void { }
-  onPointerUp(_event: PointerEvent, _imagePoint: Point): void { }
+  onPointerDown(_event: PointerEvent, _imagePoint: Point): void {}
+  onPointerMove(_event: PointerEvent, _imagePoint: Point): void {}
+  onPointerUp(_event: PointerEvent, _imagePoint: Point): void {}
 
   cancel(): void {
     this.overlay?.canvas.discardActiveObject();
