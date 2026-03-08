@@ -115,8 +115,8 @@ function AppContent() {
     if (!json.trim()) return;
     try {
       const parsed: unknown = JSON.parse(json);
-      const byImage = deserialize(parsed);
-      actions.loadAnnotations(byImage);
+      const result = deserialize(parsed);
+      actions.loadAnnotations(result.byImage, result.viewTransforms);
       setShowImportPanel(false);
       setImportJsonText('');
     } catch (err) {

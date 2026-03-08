@@ -103,6 +103,7 @@ export interface ImageAnnotations {
   readonly imageId: ImageId;
   readonly sourceUrl: string;
   readonly annotations: readonly Annotation[];
+  readonly viewTransform?: ViewTransform | undefined;
 }
 
 // ── Constraint System ────────────────────────────────────────────────────
@@ -137,6 +138,22 @@ export interface ImageSource {
   readonly label?: string | undefined;
 }
 
+// ── View Transform ───────────────────────────────────────────────────────
+
+/** Per-image view transform (rotation/flip state) */
+export interface ViewTransform {
+  readonly rotation: number;
+  readonly flippedH: boolean;
+  readonly flippedV: boolean;
+}
+
+/** Default view transform (no rotation, no flip) */
+export const DEFAULT_VIEW_TRANSFORM: ViewTransform = {
+  rotation: 0,
+  flippedH: false,
+  flippedV: false,
+} as const;
+
 // ── State Types ──────────────────────────────────────────────────────────
 // Note: State container types intentionally omit `readonly` — SolidJS store
 // proxies enforce immutability at runtime, and `readonly` here would conflict
@@ -146,6 +163,7 @@ export interface ImageSource {
 /** Root state for the annotation system */
 export interface AnnotationState {
   byImage: Record<ImageId, Record<AnnotationId, Annotation>>;
+  viewTransforms: Record<ImageId, ViewTransform>;
   /** Monotonically increasing counter; incremented on every mutation for O(1) change detection */
   changeCounter: number;
 }
@@ -207,4 +225,9 @@ export interface KeyboardShortcutMap {
   readonly pathFinish: string;
   readonly pathClose: string;
   readonly pathCancel: string;
+  readonly rotateCW: string;
+  readonly rotateCCW: string;
+  readonly flipHorizontal: string;
+  readonly flipVertical: string;
+  readonly resetView: string;
 }

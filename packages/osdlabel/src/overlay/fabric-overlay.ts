@@ -1,7 +1,7 @@
 import OpenSeadragon from 'openseadragon';
 import { Canvas as FabricCanvas } from 'fabric';
 import type { TMat2D } from 'fabric';
-import type { Point } from '../core/types.js';
+import type { Point, ViewTransform } from '../core/types.js';
 import {
   POINTER_DOWN,
   POINTER_MOVE,
@@ -234,6 +234,34 @@ export class FabricOverlay {
       new OpenSeadragon.Point(imagePoint.x, imagePoint.y),
     );
     return { x: osdPoint.x, y: osdPoint.y };
+  }
+
+  /** Apply a view transform (rotation + flip) to the OSD viewer */
+  applyViewTransform(transform: ViewTransform): void {
+    // Vertical flip is simulated as horizontal flip + 180° rotation offset
+    const flipH = transform.flippedH !== transform.flippedV;
+    const rotationOffset = transform.flippedV ? 180 : 0;
+    const rotation = (transform.rotation + rotationOffset) % 360;
+
+    this._viewer.viewport.setRotation(rotation);
+    // OSD types don't include setFlip/getFlip but they exist at runtime
+    (this._viewer as unknown as { setFlip(flip: boolean): void }).setFlip(flipH);
+  }
+
+  /** Get the current OSD rotation in degrees */
+  getRotation(): number {
+    return this._viewer.viewport.getRotation();
+  }
+
+  /** Get the current OSD horizontal flip state */
+  getFlip(): boolean {
+    return (this._viewer as unknown as { getFlip(): boolean }).getFlip();
+  }
+
+  /** Reset view to no rotation and no flip */
+  resetView(): void {
+    this._viewer.viewport.setRotation(0);
+    (this._viewer as unknown as { setFlip(flip: boolean): void }).setFlip(false);
   }
 
   /** Clean up all event listeners and DOM elements */

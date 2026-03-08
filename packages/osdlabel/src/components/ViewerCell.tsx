@@ -3,7 +3,8 @@ import type { Component } from 'solid-js';
 import OpenSeadragon from 'openseadragon';
 import { FabricOverlay } from '../overlay/fabric-overlay.js';
 import type { OverlayMode } from '../overlay/fabric-overlay.js';
-import type { ImageSource } from '../core/types.js';
+import type { ImageSource, ViewTransform } from '../core/types.js';
+import { DEFAULT_VIEW_TRANSFORM } from '../core/types.js';
 import { useAnnotationTool } from '../hooks/useAnnotationTool.js';
 import { useAnnotator } from '../state/annotator-context.js';
 import { createFabricObjectFromRawData } from '../core/fabric-utils.js';
@@ -114,6 +115,16 @@ const ViewerCell: Component<ViewerCellProps> = (props) => {
       }
       ov.canvas.requestRenderAll();
     })();
+  });
+
+  // Sync view transform state → OSD viewer
+  createEffect(() => {
+    const ov = overlay();
+    const imageId = props.imageSource?.id;
+    if (!ov || !imageId) return;
+    const transform: ViewTransform =
+      annotationState.viewTransforms[imageId] ?? DEFAULT_VIEW_TRANSFORM;
+    ov.applyViewTransform(transform);
   });
 
   return (

@@ -6,4 +6,5 @@ export { default as GridView } from './GridView.js';
 export { default as StatusBar } from './StatusBar.js';
 export { default as Toolbar } from './Toolbar.js';
 export { default as ContextSwitcher } from './ContextSwitcher.js';
+export { default as ViewControls } from './ViewControls.js';
 export { default as ViewerCell } from './ViewerCell.js';

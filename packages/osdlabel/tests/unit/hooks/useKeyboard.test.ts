@@ -9,6 +9,11 @@ const mockActions = {
   deleteAnnotation: vi.fn(),
   setActiveCell: vi.fn(),
   setGridDimensions: vi.fn(),
+  rotateActiveImageCW: vi.fn(),
+  rotateActiveImageCCW: vi.fn(),
+  flipActiveImageH: vi.fn(),
+  flipActiveImageV: vi.fn(),
+  resetActiveImageView: vi.fn(),
 };
 
 // Mock UI state
@@ -50,8 +55,12 @@ vi.mock('../../../src/hooks/useConstraints.js', () => ({
 }));
 
 // Helper to simulate a keyboard event
-function dispatchKeyDown(key: string, target?: Partial<HTMLElement>) {
-  const event = new KeyboardEvent('keydown', { key });
+function dispatchKeyDown(
+  key: string,
+  target?: Partial<HTMLElement>,
+  options?: { shiftKey?: boolean },
+) {
+  const event = new KeyboardEvent('keydown', { key, shiftKey: options?.shiftKey });
   if (target) {
     Object.defineProperty(event, 'target', { value: target, enumerable: true });
   } else {
@@ -275,6 +284,59 @@ describe('useKeyboard', () => {
       dispatchKeyDown(DEFAULT_KEYBOARD_SHORTCUTS.decreaseGridColumns);
 
       expect(mockActions.setGridDimensions).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('View Transform Shortcuts', () => {
+    it('Shift+R calls rotateActiveImageCW', () => {
+      dispatchKeyDown('R', undefined, { shiftKey: true });
+      expect(mockActions.rotateActiveImageCW).toHaveBeenCalled();
+    });
+
+    it('Shift+L calls rotateActiveImageCCW', () => {
+      dispatchKeyDown('L', undefined, { shiftKey: true });
+      expect(mockActions.rotateActiveImageCCW).toHaveBeenCalled();
+    });
+
+    it('Shift+H calls flipActiveImageH', () => {
+      dispatchKeyDown('H', undefined, { shiftKey: true });
+      expect(mockActions.flipActiveImageH).toHaveBeenCalled();
+    });
+
+    it('Shift+V calls flipActiveImageV', () => {
+      dispatchKeyDown('V', undefined, { shiftKey: true });
+      expect(mockActions.flipActiveImageV).toHaveBeenCalled();
+    });
+
+    it(') (Shift+0) calls resetActiveImageView', () => {
+      dispatchKeyDown(')');
+      expect(mockActions.resetActiveImageView).toHaveBeenCalled();
+    });
+
+    it('plain r (no shift) still triggers rectangle tool, NOT rotation', () => {
+      dispatchKeyDown('r');
+      expect(mockActions.setActiveTool).toHaveBeenCalledWith('rectangle');
+      expect(mockActions.rotateActiveImageCW).not.toHaveBeenCalled();
+    });
+
+    it('plain l (no shift) still triggers line tool, NOT rotation', () => {
+      dispatchKeyDown('l');
+      expect(mockActions.setActiveTool).toHaveBeenCalledWith('line');
+      expect(mockActions.rotateActiveImageCCW).not.toHaveBeenCalled();
+    });
+
+    it('shortcuts respect shouldSkipTargetPredicate', () => {
+      disposeRoot();
+
+      const predicate = vi.fn((target: HTMLElement) => target.className === 'ignore-me');
+
+      createRoot((dispose) => {
+        disposeRoot = dispose;
+        useKeyboard(DEFAULT_KEYBOARD_SHORTCUTS, activeToolKeyHandlerRef, predicate);
+      });
+
+      dispatchKeyDown('R', { className: 'ignore-me', tagName: 'DIV' }, { shiftKey: true });
+      expect(mockActions.rotateActiveImageCW).not.toHaveBeenCalled();
     });
   });
 

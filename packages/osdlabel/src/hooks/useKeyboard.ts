@@ -30,6 +30,11 @@ export const DEFAULT_KEYBOARD_SHORTCUTS: KeyboardShortcutMap = {
   pathFinish: 'Enter',
   pathClose: 'c',
   pathCancel: 'Escape',
+  rotateCW: 'R',
+  rotateCCW: 'L',
+  flipHorizontal: 'H',
+  flipVertical: 'V',
+  resetView: ')',
 } as const;
 
 export function useKeyboard(
@@ -59,6 +64,24 @@ export function useKeyboard(
 
     const key = e.key;
     const keyLower = key.toLowerCase();
+
+    // View transform shortcuts (Shift+key) — must come before tool shortcuts
+    if (e.shiftKey && keyLower === shortcuts.rotateCW.toLowerCase()) {
+      actions.rotateActiveImageCW();
+      return;
+    } else if (e.shiftKey && keyLower === shortcuts.rotateCCW.toLowerCase()) {
+      actions.rotateActiveImageCCW();
+      return;
+    } else if (e.shiftKey && keyLower === shortcuts.flipHorizontal.toLowerCase()) {
+      actions.flipActiveImageH();
+      return;
+    } else if (e.shiftKey && keyLower === shortcuts.flipVertical.toLowerCase()) {
+      actions.flipActiveImageV();
+      return;
+    } else if (key === shortcuts.resetView) {
+      actions.resetActiveImageView();
+      return;
+    }
 
     // Tools
     if (keyLower === shortcuts.selectTool.toLowerCase()) {

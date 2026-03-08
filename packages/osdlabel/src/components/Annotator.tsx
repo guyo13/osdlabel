@@ -7,6 +7,7 @@ import StatusBar from './StatusBar.js';
 import GridView from './GridView.js';
 import Filmstrip from './Filmstrip.js';
 import GridControls from './GridControls.js';
+import ViewControls from './ViewControls.js';
 import ContextSwitcher from './ContextSwitcher.js';
 import type { ImageSource, AnnotationContext } from '../core/types.js';
 
@@ -17,6 +18,8 @@ export interface AnnotatorProps extends Omit<AnnotatorProviderProps, 'children'>
   readonly contexts: readonly AnnotationContext[];
   /** Whether to show the filmstrip sidebar (default: true) */
   readonly showFilmstrip?: boolean | undefined;
+  /** Whether to show the view controls (default: true) */
+  readonly showViewControls?: boolean | undefined;
   /** Whether to show the grid controls (default: false) */
   readonly showGridControls?: boolean | undefined;
   /** Whether to show the context switcher (default: false) */
@@ -39,6 +42,7 @@ const AnnotatorInner: Component<Omit<AnnotatorProps, keyof AnnotatorProviderProp
 
   const filmstripPosition = () => props.filmstripPosition ?? 'left';
   const showFilmstrip = () => props.showFilmstrip !== false;
+  const showViewControls = () => props.showViewControls !== false;
   const showGridControls = () => props.showGridControls === true;
   const showContextSwitcher = () => props.showContextSwitcher === true;
   const maxCols = () => props.maxGridSize?.columns ?? 4;
@@ -66,6 +70,7 @@ const AnnotatorInner: Component<Omit<AnnotatorProps, keyof AnnotatorProviderProp
         }}
       >
         <Toolbar />
+        {showViewControls() && <ViewControls />}
         {showContextSwitcher() && <ContextSwitcher label="Context:" />}
         {showGridControls() && (
           <div style={{ 'margin-left': 'auto' }}>
@@ -119,6 +124,7 @@ const Annotator: Component<AnnotatorProps> = (props) => {
         images={props.images}
         contexts={props.contexts}
         showFilmstrip={props.showFilmstrip}
+        showViewControls={props.showViewControls}
         showGridControls={props.showGridControls}
         showContextSwitcher={props.showContextSwitcher}
         filmstripPosition={props.filmstripPosition}
