@@ -150,3 +150,100 @@ describe('Coordinate conversion round-trip', () => {
     });
   }
 });
+
+/** Create a mock OSD viewer with flip (simulates setFlip(true)) */
+function createMockViewerWithFlip(options: {
+  scale: number;
+  offsetX: number;
+  offsetY: number;
+  rotationDeg?: number;
+  flipH?: boolean;
+}): OpenSeadragon.Viewer {
+  const { scale, offsetX, offsetY, rotationDeg = 0, flipH = false } = options;
+  const rad = (rotationDeg * Math.PI) / 180;
+  const cosR = Math.cos(rad);
+  const sinR = Math.sin(rad);
+  const flipSign = flipH ? -1 : 1;
+
+  return {
+    viewport: {
+      imageToViewerElementCoordinates: vi.fn((point: { x: number; y: number }) => {
+        // Apply flip to x, then rotation + scale, then translate
+        const fx = flipSign * point.x;
+        const sx = cosR * scale * fx - sinR * scale * point.y + offsetX;
+        const sy = sinR * scale * fx + cosR * scale * point.y + offsetY;
+        return { x: sx, y: sy };
+      }),
+      viewerElementToImageCoordinates: vi.fn((point: { x: number; y: number }) => {
+        const px = point.x - offsetX;
+        const py = point.y - offsetY;
+        const ix = (cosR * px + sinR * py) / scale;
+        const iy = (-sinR * px + cosR * py) / scale;
+        return { x: flipSign * ix, y: iy };
+      }),
+    },
+  } as unknown as OpenSeadragon.Viewer;
+}
+
+describe('computeViewportTransform with flip', () => {
+  it('returns matrix with negative a component when flipped horizontally', () => {
+    const viewer = createMockViewerWithFlip({ scale: 1, offsetX: 0, offsetY: 0, flipH: true });
+    const vpt = computeViewportTransform(viewer);
+
+    // With flipH, dx = -1 (unitX maps to -1 on screen). The formula [dx, dy, -dy, dx]
+    // copies dx into both a and d positions, so both are negative.
+    expect(vpt[0]).toBeCloseTo(-1); // a = dx = -1
+    expect(vpt[1]).toBeCloseTo(0);  // b = dy = 0
+    expect(vpt[2]).toBeCloseTo(0);  // c = -dy = 0
+    expect(vpt[3]).toBeCloseTo(-1); // d = dx = -1 (formula limitation: assumes rotation+scale)
+  });
+
+  it('returns correct matrix with 90° rotation + flipH', () => {
+    const viewer = createMockViewerWithFlip({
+      scale: 1, offsetX: 0, offsetY: 0, rotationDeg: 90, flipH: true,
+    });
+    const vpt = computeViewportTransform(viewer);
+
+    // cos(90°) ≈ 0, sin(90°) = 1, flip negates x
+    // a = cos * scale * flipSign = 0 * 1 * -1 ≈ 0
+    // The origin→unitX vector represents the flipped+rotated transform
+    expect(vpt[0]).toBeCloseTo(0);   // a
+    expect(vpt[1]).toBeCloseTo(-1);  // b (sin * scale * flipSign)
+  });
+
+  it('returns correct matrix with 180° rotation + flipH (simulates vertical flip)', () => {
+    const viewer = createMockViewerWithFlip({
+      scale: 2, offsetX: 0, offsetY: 0, rotationDeg: 180, flipH: true,
+    });
+    const vpt = computeViewportTransform(viewer);
+
+    // 180° + flipH: cos(180°)=-1, sin(180°)≈0, flipSign=-1
+    // unitX(1,0) → fx=-1, sx=cos*scale*fx = (-1)*2*(-1) = 2, sy≈0
+    // dx=2, dy≈0, matrix=[dx, dy, -dy, dx] = [2, 0, 0, 2]
+    expect(vpt[0]).toBeCloseTo(2);  // a = dx
+    expect(vpt[3]).toBeCloseTo(2);  // d = dx (formula uses dx for both a and d)
+  });
+
+  it('round-trips correctly with flip', () => {
+    const flipConfigs = [
+      { scale: 1, offsetX: 0, offsetY: 0, rotationDeg: 0, flipH: true },
+      { scale: 2, offsetX: 50, offsetY: 50, rotationDeg: 90, flipH: true },
+      { scale: 1.5, offsetX: 100, offsetY: -30, rotationDeg: 180, flipH: true },
+    ];
+
+    for (const config of flipConfigs) {
+      const viewer = createMockViewerWithFlip(config);
+      const originalPoint = { x: 100, y: 200 };
+
+      const screenPoint = viewer.viewport.imageToViewerElementCoordinates(
+        originalPoint as OpenSeadragon.Point,
+      );
+      const roundTripped = viewer.viewport.viewerElementToImageCoordinates(
+        screenPoint as OpenSeadragon.Point,
+      );
+
+      expect(roundTripped.x).toBeCloseTo(originalPoint.x, 6);
+      expect(roundTripped.y).toBeCloseTo(originalPoint.y, 6);
+    }
+  });
+});

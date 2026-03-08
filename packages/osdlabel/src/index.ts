@@ -1,4 +1,3 @@
-// Core types
 export type {
   AnnotationId,
   ImageId,
@@ -19,10 +18,11 @@ export type {
   ConstraintStatus,
   KeyboardShortcutMap,
   RawAnnotationData,
+  ViewTransform,
 } from './core/types.js';
 
 // ID factory functions
-export { createAnnotationId, createImageId, createAnnotationContextId } from './core/types.js';
+export { createAnnotationId, createImageId, createAnnotationContextId, DEFAULT_VIEW_TRANSFORM } from './core/types.js';
 
 // Context scoping
 export { isContextScopedToImage } from './core/context-scoping.js';
@@ -68,6 +68,7 @@ export { default as GridView } from './components/GridView.js';
 export { default as Filmstrip } from './components/Filmstrip.js';
 export { default as GridControls } from './components/GridControls.js';
 export { default as Annotator } from './components/Annotator.js';
+export { default as ViewControls } from './components/ViewControls.js';
 export type { AnnotatorProps } from './components/Annotator.js';
 
 // Hooks

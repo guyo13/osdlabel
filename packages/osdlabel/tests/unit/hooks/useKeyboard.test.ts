@@ -9,6 +9,11 @@ const mockActions = {
   deleteAnnotation: vi.fn(),
   setActiveCell: vi.fn(),
   setGridDimensions: vi.fn(),
+  rotateActiveImageCW: vi.fn(),
+  rotateActiveImageCCW: vi.fn(),
+  flipActiveImageH: vi.fn(),
+  flipActiveImageV: vi.fn(),
+  resetActiveImageView: vi.fn(),
 };
 
 // Mock UI state
@@ -50,8 +55,8 @@ vi.mock('../../../src/hooks/useConstraints.js', () => ({
 }));
 
 // Helper to simulate a keyboard event
-function dispatchKeyDown(key: string, target?: Partial<HTMLElement>) {
-  const event = new KeyboardEvent('keydown', { key });
+function dispatchKeyDown(key: string, target?: Partial<HTMLElement>, options?: { shiftKey?: boolean }) {
+  const event = new KeyboardEvent('keydown', { key, shiftKey: options?.shiftKey ?? false });
   if (target) {
     Object.defineProperty(event, 'target', { value: target, enumerable: true });
   } else {
@@ -275,6 +280,52 @@ describe('useKeyboard', () => {
       dispatchKeyDown(DEFAULT_KEYBOARD_SHORTCUTS.decreaseGridColumns);
 
       expect(mockActions.setGridDimensions).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('View Transform Shortcuts', () => {
+    it('Shift+R should call rotateActiveImageCW', () => {
+      dispatchKeyDown('R', undefined, { shiftKey: true });
+      expect(mockActions.rotateActiveImageCW).toHaveBeenCalled();
+      expect(mockActions.setActiveTool).not.toHaveBeenCalled();
+    });
+
+    it('Shift+L should call rotateActiveImageCCW', () => {
+      dispatchKeyDown('L', undefined, { shiftKey: true });
+      expect(mockActions.rotateActiveImageCCW).toHaveBeenCalled();
+      expect(mockActions.setActiveTool).not.toHaveBeenCalled();
+    });
+
+    it('Shift+H should call flipActiveImageH', () => {
+      dispatchKeyDown('H', undefined, { shiftKey: true });
+      expect(mockActions.flipActiveImageH).toHaveBeenCalled();
+    });
+
+    it('Shift+V should call flipActiveImageV', () => {
+      dispatchKeyDown('V', undefined, { shiftKey: true });
+      expect(mockActions.flipActiveImageV).toHaveBeenCalled();
+    });
+
+    it('plain r (no shift) should still trigger rectangle tool, NOT rotation', () => {
+      dispatchKeyDown('r');
+      expect(mockActions.setActiveTool).toHaveBeenCalledWith('rectangle');
+      expect(mockActions.rotateActiveImageCW).not.toHaveBeenCalled();
+    });
+
+    it('plain l (no shift) should still trigger line tool, NOT rotation', () => {
+      dispatchKeyDown('l');
+      expect(mockActions.setActiveTool).toHaveBeenCalledWith('line');
+      expect(mockActions.rotateActiveImageCCW).not.toHaveBeenCalled();
+    });
+
+    it(') (Shift+0) should call resetActiveImageView', () => {
+      dispatchKeyDown(')');
+      expect(mockActions.resetActiveImageView).toHaveBeenCalled();
+    });
+
+    it('Shift+key shortcuts should respect shouldSkipTargetPredicate', () => {
+      dispatchKeyDown('R', { tagName: 'INPUT' }, { shiftKey: true });
+      expect(mockActions.rotateActiveImageCW).not.toHaveBeenCalled();
     });
   });
 

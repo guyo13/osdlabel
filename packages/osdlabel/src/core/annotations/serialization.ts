@@ -7,8 +7,9 @@ import type {
   ImageAnnotations,
   ImageId,
   ImageSource,
+  ViewTransform,
 } from '../types.js';
-import { createImageId } from '../types.js';
+import { createImageId, DEFAULT_VIEW_TRANSFORM } from '../types.js';
 import {
   normalizeFabricType,
   isFiniteNumber,
@@ -40,11 +41,16 @@ export function serialize(
   const imageAnnotations: ImageAnnotations[] = images.map((image) => {
     const annMap = state.byImage[image.id];
     const annotations: Annotation[] = annMap ? Object.values(annMap) : [];
-    return {
+    const vt = state.viewTransforms?.[image.id];
+    const hasNonDefaultVT =
+      vt && (vt.rotation !== 0 || vt.flippedH !== false || vt.flippedV !== false);
+    const entry: ImageAnnotations = {
       imageId: image.id,
       sourceUrl: image.dziUrl,
       annotations,
+      ...(hasNonDefaultVT ? { viewTransform: vt } : {}),
     };
+    return entry;
   });
 
   return {
@@ -58,7 +64,9 @@ export function serialize(
  * Deserialize a document back into the byImage store structure.
  * Validates the document and throws SerializationError on invalid input.
  */
-export function deserialize(doc: unknown): Record<ImageId, Record<AnnotationId, Annotation>> {
+export function deserialize(
+  doc: unknown,
+): { byImage: Record<ImageId, Record<AnnotationId, Annotation>>; viewTransforms: Record<ImageId, ViewTransform> } {
   if (!isObject(doc)) {
     throw new SerializationError('Document must be an object');
   }
@@ -80,6 +88,7 @@ export function deserialize(doc: unknown): Record<ImageId, Record<AnnotationId, 
   }
 
   const byImage: Record<ImageId, Record<AnnotationId, Annotation>> = {};
+  const viewTransforms: Record<ImageId, ViewTransform> = {};
 
   for (const imageEntry of d.images) {
     if (!isObject(imageEntry)) {
@@ -107,9 +116,23 @@ export function deserialize(doc: unknown): Record<ImageId, Record<AnnotationId, 
     }
 
     byImage[imageId] = annMap;
+
+    // Parse optional viewTransform
+    if (entry.viewTransform !== undefined && entry.viewTransform !== null) {
+      const vt = validateViewTransform(entry.viewTransform);
+      if (vt) {
+        viewTransforms[imageId] = vt;
+      } else {
+        throw new SerializationError(
+          `Invalid viewTransform in image ${entry.imageId}`,
+        );
+      }
+    } else {
+      viewTransforms[imageId] = { ...DEFAULT_VIEW_TRANSFORM };
+    }
   }
 
-  return byImage;
+  return { byImage, viewTransforms };
 }
 
 /**
@@ -247,6 +270,22 @@ function validateGeometry(value: unknown): boolean {
     default:
       return false;
   }
+}
+
+/**
+ * Validate a viewTransform object's shape and return it if valid, or null if invalid.
+ */
+function validateViewTransform(value: unknown): ViewTransform | null {
+  if (!isObject(value)) return null;
+  const v = value as Record<string, unknown>;
+  if (typeof v.rotation !== 'number' || !isFiniteNumber(v.rotation)) return null;
+  if (typeof v.flippedH !== 'boolean') return null;
+  if (typeof v.flippedV !== 'boolean') return null;
+  return {
+    rotation: v.rotation,
+    flippedH: v.flippedH,
+    flippedV: v.flippedV,
+  };
 }
 
 /**

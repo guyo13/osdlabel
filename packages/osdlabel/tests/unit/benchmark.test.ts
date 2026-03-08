@@ -19,9 +19,9 @@ describe('version counter', () => {
   function createTestStore() {
     return createRoot((dispose) => {
       const { state: annotationState, setState: setAnnotationState } = createAnnotationStore();
-      const { setState: setUIState } = createUIStore();
+      const { state: uiState, setState: setUIState } = createUIStore();
       const { state: contextState, setState: setContextState } = createContextStore();
-      const actions = createActions(setAnnotationState, setUIState, setContextState, contextState);
+      const actions = createActions(setAnnotationState, setUIState, setContextState, contextState, uiState);
       return { annotationState, actions, dispose };
     });
   }

@@ -8,6 +8,7 @@ import GridView from './GridView.js';
 import Filmstrip from './Filmstrip.js';
 import GridControls from './GridControls.js';
 import ContextSwitcher from './ContextSwitcher.js';
+import ViewControls from './ViewControls.js';
 import type { ImageSource, AnnotationContext } from '../core/types.js';
 
 export interface AnnotatorProps extends Omit<AnnotatorProviderProps, 'children'> {
@@ -19,6 +20,8 @@ export interface AnnotatorProps extends Omit<AnnotatorProviderProps, 'children'>
   readonly showFilmstrip?: boolean | undefined;
   /** Whether to show the grid controls (default: false) */
   readonly showGridControls?: boolean | undefined;
+  /** Whether to show the view controls (rotation/flip) (default: true) */
+  readonly showViewControls?: boolean | undefined;
   /** Whether to show the context switcher (default: false) */
   readonly showContextSwitcher?: boolean | undefined;
   /** Filmstrip position (default: 'left') */
@@ -40,6 +43,7 @@ const AnnotatorInner: Component<Omit<AnnotatorProps, keyof AnnotatorProviderProp
   const filmstripPosition = () => props.filmstripPosition ?? 'left';
   const showFilmstrip = () => props.showFilmstrip !== false;
   const showGridControls = () => props.showGridControls === true;
+  const showViewControls = () => props.showViewControls !== false;
   const showContextSwitcher = () => props.showContextSwitcher === true;
   const maxCols = () => props.maxGridSize?.columns ?? 4;
   const maxRows = () => props.maxGridSize?.rows ?? 4;
@@ -66,6 +70,7 @@ const AnnotatorInner: Component<Omit<AnnotatorProps, keyof AnnotatorProviderProp
         }}
       >
         <Toolbar />
+        {showViewControls() && <ViewControls />}
         {showContextSwitcher() && <ContextSwitcher label="Context:" />}
         {showGridControls() && (
           <div style={{ 'margin-left': 'auto' }}>
@@ -120,6 +125,7 @@ const Annotator: Component<AnnotatorProps> = (props) => {
         contexts={props.contexts}
         showFilmstrip={props.showFilmstrip}
         showGridControls={props.showGridControls}
+        showViewControls={props.showViewControls}
         showContextSwitcher={props.showContextSwitcher}
         filmstripPosition={props.filmstripPosition}
         maxGridSize={props.maxGridSize}

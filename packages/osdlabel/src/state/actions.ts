@@ -9,7 +9,9 @@ import type {
   AnnotationContext,
   AnnotationContextId,
   ContextState,
+  ViewTransform,
 } from '../core/types.js';
+import { DEFAULT_VIEW_TRANSFORM } from '../core/types.js';
 import { isContextScopedToImage } from '../core/context-scoping.js';
 
 export function createActions(
@@ -17,6 +19,7 @@ export function createActions(
   setUIState: SetStoreFunction<UIState>,
   setContextState: SetStoreFunction<ContextState>,
   contextState: ContextState,
+  uiState: UIState,
 ) {
   function addAnnotation(annotation: Omit<Annotation, 'createdAt' | 'updatedAt'>): void {
     const ctx = contextState.contexts.find((c) => c.id === annotation.contextId);
@@ -105,10 +108,91 @@ export function createActions(
     setContextState('activeContextId', contextId);
   }
 
-  function loadAnnotations(byImage: Record<ImageId, Record<AnnotationId, Annotation>>): void {
+  function loadAnnotations(
+    byImage: Record<ImageId, Record<AnnotationId, Annotation>>,
+    viewTransforms?: Record<ImageId, ViewTransform>,
+  ): void {
     setAnnotationState(
       produce((state) => {
         state.byImage = byImage;
+        if (viewTransforms) {
+          state.viewTransforms = viewTransforms;
+        }
+        state.changeCounter += 1;
+      }),
+    );
+  }
+
+  function _getActiveImageId(): ImageId | undefined {
+    return uiState.gridAssignments[uiState.activeCellIndex];
+  }
+
+  function rotateActiveImageCW(): void {
+    const imageId = _getActiveImageId();
+    if (!imageId) return;
+    setAnnotationState(
+      produce((state) => {
+        const current = state.viewTransforms[imageId] ?? { ...DEFAULT_VIEW_TRANSFORM };
+        state.viewTransforms[imageId] = {
+          ...current,
+          rotation: (current.rotation + 90) % 360,
+        };
+        state.changeCounter += 1;
+      }),
+    );
+  }
+
+  function rotateActiveImageCCW(): void {
+    const imageId = _getActiveImageId();
+    if (!imageId) return;
+    setAnnotationState(
+      produce((state) => {
+        const current = state.viewTransforms[imageId] ?? { ...DEFAULT_VIEW_TRANSFORM };
+        state.viewTransforms[imageId] = {
+          ...current,
+          rotation: (current.rotation + 270) % 360,
+        };
+        state.changeCounter += 1;
+      }),
+    );
+  }
+
+  function flipActiveImageH(): void {
+    const imageId = _getActiveImageId();
+    if (!imageId) return;
+    setAnnotationState(
+      produce((state) => {
+        const current = state.viewTransforms[imageId] ?? { ...DEFAULT_VIEW_TRANSFORM };
+        state.viewTransforms[imageId] = {
+          ...current,
+          flippedH: !current.flippedH,
+        };
+        state.changeCounter += 1;
+      }),
+    );
+  }
+
+  function flipActiveImageV(): void {
+    const imageId = _getActiveImageId();
+    if (!imageId) return;
+    setAnnotationState(
+      produce((state) => {
+        const current = state.viewTransforms[imageId] ?? { ...DEFAULT_VIEW_TRANSFORM };
+        state.viewTransforms[imageId] = {
+          ...current,
+          flippedV: !current.flippedV,
+        };
+        state.changeCounter += 1;
+      }),
+    );
+  }
+
+  function resetActiveImageView(): void {
+    const imageId = _getActiveImageId();
+    if (!imageId) return;
+    setAnnotationState(
+      produce((state) => {
+        state.viewTransforms[imageId] = { ...DEFAULT_VIEW_TRANSFORM };
         state.changeCounter += 1;
       }),
     );
@@ -126,5 +210,10 @@ export function createActions(
     setContexts,
     setActiveContext,
     loadAnnotations,
+    rotateActiveImageCW,
+    rotateActiveImageCCW,
+    flipActiveImageH,
+    flipActiveImageV,
+    resetActiveImageView,
   };
 }

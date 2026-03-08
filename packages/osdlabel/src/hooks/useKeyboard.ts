@@ -30,6 +30,11 @@ export const DEFAULT_KEYBOARD_SHORTCUTS: KeyboardShortcutMap = {
   pathFinish: 'Enter',
   pathClose: 'c',
   pathCancel: 'Escape',
+  rotateCW: 'R',
+  rotateCCW: 'L',
+  flipHorizontal: 'H',
+  flipVertical: 'V',
+  resetView: ')',
 } as const;
 
 export function useKeyboard(
@@ -60,8 +65,22 @@ export function useKeyboard(
     const key = e.key;
     const keyLower = key.toLowerCase();
 
-    // Tools
-    if (keyLower === shortcuts.selectTool.toLowerCase()) {
+    // View transform shortcuts (Shift+key) — checked BEFORE tool shortcuts
+    // to prevent Shift+R from triggering the rectangle tool
+    if (e.shiftKey && keyLower === shortcuts.rotateCW.toLowerCase()) {
+      actions.rotateActiveImageCW();
+    } else if (e.shiftKey && keyLower === shortcuts.rotateCCW.toLowerCase()) {
+      actions.rotateActiveImageCCW();
+    } else if (e.shiftKey && keyLower === shortcuts.flipHorizontal.toLowerCase()) {
+      actions.flipActiveImageH();
+    } else if (e.shiftKey && keyLower === shortcuts.flipVertical.toLowerCase()) {
+      actions.flipActiveImageV();
+    } else if (key === shortcuts.resetView) {
+      // ')' is Shift+0 — e.key is ')' directly
+      actions.resetActiveImageView();
+    }
+    // Tools (no shift modifier)
+    else if (keyLower === shortcuts.selectTool.toLowerCase()) {
       actions.setActiveTool('select');
     } else if (keyLower === shortcuts.rectangleTool.toLowerCase()) {
       if (isToolEnabled('rectangle')) actions.setActiveTool('rectangle');

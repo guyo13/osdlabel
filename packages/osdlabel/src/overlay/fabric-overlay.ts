@@ -1,7 +1,8 @@
 import OpenSeadragon from 'openseadragon';
 import { Canvas as FabricCanvas } from 'fabric';
 import type { TMat2D } from 'fabric';
-import type { Point } from '../core/types.js';
+import type { Point, ViewTransform } from '../core/types.js';
+import { DEFAULT_VIEW_TRANSFORM } from '../core/types.js';
 import {
   POINTER_DOWN,
   POINTER_MOVE,
@@ -245,6 +246,37 @@ export class FabricOverlay {
     this._viewer.removeHandler(OSD_OPEN, this._onOpen);
     this._fabricCanvas.dispose();
     this._canvasEl.remove();
+  }
+
+  /**
+   * Apply a ViewTransform (rotation + flip) to the OSD viewer.
+   * Vertical flip is implemented as horizontal flip + 180° rotation offset.
+   */
+  applyViewTransform(transform: ViewTransform): void {
+    const { rotation, flippedH, flippedV } = transform;
+    // Vertical flip = horizontal flip + 180° rotation
+    const needsFlip = flippedH !== flippedV; // XOR: exactly one flip = setFlip(true)
+    const rotationOffset = flippedV ? 180 : 0;
+    const finalRotation = (rotation + rotationOffset) % 360;
+
+    this._viewer.viewport.setRotation(finalRotation);
+    (this._viewer as any).setFlip(needsFlip);
+    this.sync();
+  }
+
+  /** Get the current OSD rotation in degrees */
+  getRotation(): number {
+    return this._viewer.viewport.getRotation();
+  }
+
+  /** Get the current OSD horizontal flip state */
+  getFlip(): boolean {
+    return (this._viewer as any).getFlip();
+  }
+
+  /** Reset the view transform to defaults */
+  resetView(): void {
+    this.applyViewTransform(DEFAULT_VIEW_TRANSFORM);
   }
 
   // ── Private: Event forwarding ──────────────────────────────────
