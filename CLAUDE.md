@@ -29,6 +29,8 @@ This is `osdlabel`, a DZI image annotation library built with SolidJS, Fabric.js
 - **Do NOT use `fabric.Canvas` in detached/offscreen mode.** The canvas must be attached to a visible DOM `<canvas>` element for event handling to work.
 - **`viewportTransform` is a 6-element array** `[scaleX, skewY, skewX, scaleY, translateX, translateY]`. Use `canvas.setViewportTransform(matrix)` to update it. After setting it, call `canvas.requestRenderAll()`.
 - **Fabric objects use image-space coordinates.** Store annotation geometry in image-space and use the overlay's `viewportTransform` to map to screen-space. Do not convert coordinates on each object — that's what the canvas transform does.
+- **`canvas.getZoom()` assumes `viewportTransform[0]` is the zoom level**, which is only true for scale+translate matrices. With rotation, `vpt[0] = cos(θ)·scale` — zero at 90°, negative at 180°. This breaks object caching. Override with `Math.sqrt(vpt[0]² + vpt[1]²)`.
+- **Set `skipOffscreen: false`** when the viewportTransform includes rotation. Fabric's offscreen culling doesn't account for rotation and incorrectly hides visible objects.
 - **All Fabric API calls must go through the overlay interface** (`FabricOverlay`). Components should never import from `'fabric'` directly or access the Fabric canvas instance except through the overlay.
 
 ### OpenSeaDragon
@@ -37,6 +39,8 @@ This is `osdlabel`, a DZI image annotation library built with SolidJS, Fabric.js
 - **Subscribe to `'animation'` event for smooth overlay sync**, not `'animation-finish'`. The `animation` event fires on every frame during pan/zoom animations.
 - **Toggle mouse navigation** with `viewer.setMouseNavEnabled(boolean)`. Use this to switch between navigation mode (OSD handles input) and annotation mode (Fabric handles input).
 - **Each OSD viewer must have a unique DOM container.** Never try to attach two OSD viewers to the same element.
+- **`imageToViewerElementCoordinates` does NOT account for flip.** Flip is applied only in OSD's drawer rendering pipeline (`context.scale(-1,1)`). The Fabric viewportTransform must compose flip separately — see `computeViewportTransform`.
+- **`viewport.setRotation(degrees)` uses spring animation by default.** Pass `immediately=true` to snap; otherwise `sync()` computes a matrix for an intermediate rotation angle.
 - **For dev/testing, use OSD's `type: 'image'` tile source** with local images. This avoids needing a DZI tile server during development. The library should also support DZI for production.
 
 ### Architecture
@@ -116,6 +120,7 @@ pnpm build        # generates LLM page + astro build
 
 - **Use `legacy: { collections: true }` in `astro.config.mjs`.** The `docsLoader()` content layer API has issues with build-time content resolution in this monorepo setup. Legacy collections with `src/content/config.ts` (no loader, schema only) work reliably.
 - **Branded ID types in docs examples:** Use `createAnnotationContextId()` factory functions instead of `as AnnotationContextId` casts — keeps examples consistent with the library's public API.
+- **Adding new docs pages:** Create `.md` in `apps/docs/src/content/docs/` and add a sidebar entry in `apps/docs/astro.config.mjs`. Use `.md` for reference/prose, `.mdx` for guides needing interactive components.
 - **LLM page:** Generated at build time by `scripts/generate-llm-page.js`. Also produces `public/llms.txt` for the llms.txt convention.
 
 ### Incremental Verification

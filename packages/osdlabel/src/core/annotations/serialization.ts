@@ -7,8 +7,9 @@ import type {
   ImageAnnotations,
   ImageId,
   ImageSource,
+  ViewTransform,
 } from '../types.js';
-import { createImageId } from '../types.js';
+import { createImageId, DEFAULT_VIEW_TRANSFORM } from '../types.js';
 import {
   normalizeFabricType,
   isFiniteNumber,
@@ -40,10 +41,19 @@ export function serialize(
   const imageAnnotations: ImageAnnotations[] = images.map((image) => {
     const annMap = state.byImage[image.id];
     const annotations: Annotation[] = annMap ? Object.values(annMap) : [];
+    
+    const transform = state.viewTransforms[image.id];
+    const isDefaultTransform = !transform || (
+      transform.rotation === DEFAULT_VIEW_TRANSFORM.rotation &&
+      transform.flippedH === DEFAULT_VIEW_TRANSFORM.flippedH &&
+      transform.flippedV === DEFAULT_VIEW_TRANSFORM.flippedV
+    );
+
     return {
       imageId: image.id,
       sourceUrl: image.dziUrl,
       annotations,
+      ...(!isDefaultTransform ? { viewTransform: transform } : {}),
     };
   });
 
@@ -54,11 +64,17 @@ export function serialize(
   };
 }
 
+/** Result of deserializing an annotation document */
+export interface DeserializeResult {
+  readonly byImage: Record<ImageId, Record<AnnotationId, Annotation>>;
+  readonly viewTransforms: Record<ImageId, ViewTransform>;
+}
+
 /**
  * Deserialize a document back into the byImage store structure.
  * Validates the document and throws SerializationError on invalid input.
  */
-export function deserialize(doc: unknown): Record<ImageId, Record<AnnotationId, Annotation>> {
+export function deserialize(doc: unknown): DeserializeResult {
   if (!isObject(doc)) {
     throw new SerializationError('Document must be an object');
   }
@@ -80,6 +96,7 @@ export function deserialize(doc: unknown): Record<ImageId, Record<AnnotationId, 
   }
 
   const byImage: Record<ImageId, Record<AnnotationId, Annotation>> = {};
+  const viewTransforms: Record<ImageId, ViewTransform> = {};
 
   for (const imageEntry of d.images) {
     if (!isObject(imageEntry)) {
@@ -107,9 +124,26 @@ export function deserialize(doc: unknown): Record<ImageId, Record<AnnotationId, 
     }
 
     byImage[imageId] = annMap;
+
+    let viewTransform = { ...DEFAULT_VIEW_TRANSFORM };
+    if (entry.viewTransform !== undefined) {
+      if (!isObject(entry.viewTransform)) {
+        throw new SerializationError(`Invalid viewTransform in image ${entry.imageId}`);
+      }
+      const vt = entry.viewTransform as Record<string, unknown>;
+      if (typeof vt.rotation !== 'number' || typeof vt.flippedH !== 'boolean' || typeof vt.flippedV !== 'boolean') {
+        throw new SerializationError(`Invalid viewTransform shape in image ${entry.imageId}`);
+      }
+      viewTransform = {
+        rotation: vt.rotation,
+        flippedH: vt.flippedH,
+        flippedV: vt.flippedV,
+      };
+    }
+    viewTransforms[imageId] = viewTransform;
   }
 
-  return byImage;
+  return { byImage, viewTransforms };
 }
 
 /**

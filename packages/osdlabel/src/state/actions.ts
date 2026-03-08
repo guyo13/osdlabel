@@ -9,14 +9,17 @@ import type {
   AnnotationContext,
   AnnotationContextId,
   ContextState,
+  ViewTransform,
 } from '../core/types.js';
 import { isContextScopedToImage } from '../core/context-scoping.js';
+import { DEFAULT_VIEW_TRANSFORM } from '../core/types.js';
 
 export function createActions(
   setAnnotationState: SetStoreFunction<AnnotationState>,
   setUIState: SetStoreFunction<UIState>,
   setContextState: SetStoreFunction<ContextState>,
   contextState: ContextState,
+  uiState: UIState,
 ) {
   function addAnnotation(annotation: Omit<Annotation, 'createdAt' | 'updatedAt'>): void {
     const ctx = contextState.contexts.find((c) => c.id === annotation.contextId);
@@ -105,13 +108,61 @@ export function createActions(
     setContextState('activeContextId', contextId);
   }
 
-  function loadAnnotations(byImage: Record<ImageId, Record<AnnotationId, Annotation>>): void {
+  function loadAnnotations(
+    byImage: Record<ImageId, Record<AnnotationId, Annotation>>,
+    viewTransforms: Record<ImageId, ViewTransform> = {},
+  ): void {
     setAnnotationState(
       produce((state) => {
         state.byImage = byImage;
+        state.viewTransforms = viewTransforms;
         state.changeCounter += 1;
       }),
     );
+  }
+
+  function getActiveImageId(): ImageId | undefined {
+    return uiState.gridAssignments[uiState.activeCellIndex];
+  }
+
+  function modifyViewTransform(imageId: ImageId, modifier: (vt: ViewTransform) => ViewTransform): void {
+    setAnnotationState(
+      produce((state) => {
+        const current = state.viewTransforms[imageId] ?? { ...DEFAULT_VIEW_TRANSFORM };
+        state.viewTransforms[imageId] = modifier(current);
+        state.changeCounter += 1;
+      }),
+    );
+  }
+
+  function rotateActiveImageCW(): void {
+    const imageId = getActiveImageId();
+    if (!imageId) return;
+    modifyViewTransform(imageId, (vt) => ({ ...vt, rotation: (vt.rotation + 90) % 360 }));
+  }
+
+  function rotateActiveImageCCW(): void {
+    const imageId = getActiveImageId();
+    if (!imageId) return;
+    modifyViewTransform(imageId, (vt) => ({ ...vt, rotation: (vt.rotation + 270) % 360 }));
+  }
+
+  function flipActiveImageH(): void {
+    const imageId = getActiveImageId();
+    if (!imageId) return;
+    modifyViewTransform(imageId, (vt) => ({ ...vt, flippedH: !vt.flippedH }));
+  }
+
+  function flipActiveImageV(): void {
+    const imageId = getActiveImageId();
+    if (!imageId) return;
+    modifyViewTransform(imageId, (vt) => ({ ...vt, flippedV: !vt.flippedV }));
+  }
+
+  function resetActiveImageView(): void {
+    const imageId = getActiveImageId();
+    if (!imageId) return;
+    modifyViewTransform(imageId, () => ({ ...DEFAULT_VIEW_TRANSFORM }));
   }
 
   return {
@@ -126,5 +177,10 @@ export function createActions(
     setContexts,
     setActiveContext,
     loadAnnotations,
+    rotateActiveImageCW,
+    rotateActiveImageCCW,
+    flipActiveImageH,
+    flipActiveImageV,
+    resetActiveImageView,
   };
 }

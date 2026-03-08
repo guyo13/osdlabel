@@ -22,7 +22,7 @@ describe('State Management', () => {
       const { state: uiState, setState: setUIState } = createUIStore();
       const { state: contextState, setState: setContextState } = createContextStore();
 
-      const actions = createActions(setAnnotationState, setUIState, setContextState, contextState);
+      const actions = createActions(setAnnotationState, setUIState, setContextState, contextState, uiState);
       // Assign image to cell 0 so constraint status has a currentImageId
       setUIState('gridAssignments', 0, dummyImageId);
       const currentImageId = () => uiState.gridAssignments[uiState.activeCellIndex];

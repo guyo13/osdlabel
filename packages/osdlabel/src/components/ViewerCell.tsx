@@ -4,6 +4,7 @@ import OpenSeadragon from 'openseadragon';
 import { FabricOverlay } from '../overlay/fabric-overlay.js';
 import type { OverlayMode } from '../overlay/fabric-overlay.js';
 import type { ImageSource } from '../core/types.js';
+import { DEFAULT_VIEW_TRANSFORM } from '../core/types.js';
 import { useAnnotationTool } from '../hooks/useAnnotationTool.js';
 import { useAnnotator } from '../state/annotator-context.js';
 import { createFabricObjectFromRawData } from '../core/fabric-utils.js';
@@ -73,6 +74,17 @@ const ViewerCell: Component<ViewerCellProps> = (props) => {
       { defer: true },
     ),
   );
+
+  // Sync view transforms from state to canvas
+  createEffect(() => {
+    const ov = overlay();
+    const imageId = props.imageSource?.id;
+    if (!ov || !imageId) return;
+    
+    // Explicitly track the viewTransform state
+    const transform = annotationState.viewTransforms[imageId] ?? DEFAULT_VIEW_TRANSFORM;
+    ov.applyViewTransform(transform);
+  });
 
   // Use annotation tool hook
   useAnnotationTool(

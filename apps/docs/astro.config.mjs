@@ -41,6 +41,7 @@ export default defineConfig({
             { label: 'Serialization', slug: 'guides/serialization' },
             { label: 'Keyboard Shortcuts', slug: 'guides/keyboard-shortcuts' },
             { label: 'Coordinate Systems', slug: 'guides/coordinate-systems' },
+            { label: 'OSD-Fabric Integration', slug: 'guides/osd-fabric-integration' },
           ],
         },
         {

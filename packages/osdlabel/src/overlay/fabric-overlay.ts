@@ -1,7 +1,9 @@
 import OpenSeadragon from 'openseadragon';
 import { Canvas as FabricCanvas } from 'fabric';
 import type { TMat2D } from 'fabric';
-import type { Point } from '../core/types.js';
+import type { Point, ViewTransform } from '../core/types.js';
+import { DEFAULT_VIEW_TRANSFORM } from '../core/types.js';
+
 import {
   POINTER_DOWN,
   POINTER_MOVE,
@@ -26,23 +28,47 @@ export interface OverlayOptions {
  * Computes the Fabric viewportTransform matrix that maps image-space to
  * screen-space for the current OSD viewport state.
  *
+ * OSD's `imageToViewerElementCoordinates` accounts for zoom, pan, and rotation
+ * but NOT for flip (flip is applied in the drawer's rendering pipeline).
+ * We handle flip separately by mirroring the matrix horizontally.
+ *
  * Exported for unit testing.
  */
 export function computeViewportTransform(viewer: OpenSeadragon.Viewer): TMat2D {
   const origin = new OpenSeadragon.Point(0, 0);
   const unitX = new OpenSeadragon.Point(1, 0);
+  const unitY = new OpenSeadragon.Point(0, 1);
 
   const screenOrigin = viewer.viewport.imageToViewerElementCoordinates(origin);
   const screenUnitX = viewer.viewport.imageToViewerElementCoordinates(unitX);
+  const screenUnitY = viewer.viewport.imageToViewerElementCoordinates(unitY);
 
-  // The vector from origin to unitX on screen encodes both scale and rotation
-  const dx = screenUnitX.x - screenOrigin.x;
-  const dy = screenUnitX.y - screenOrigin.y;
+  // The vector from origin to unitX on screen encodes scaleX and skewY (rotation)
+  const a = screenUnitX.x - screenOrigin.x;
+  const b = screenUnitX.y - screenOrigin.y;
 
-  // Affine matrix: [a, b, c, d, tx, ty]
-  // a = cos(θ)*scale = dx, b = sin(θ)*scale = dy
-  // c = -sin(θ)*scale = -dy, d = cos(θ)*scale = dx
-  return [dx, dy, -dy, dx, screenOrigin.x, screenOrigin.y] as TMat2D;
+  // The vector from origin to unitY on screen encodes skewX and scaleY
+  const c = screenUnitY.x - screenOrigin.x;
+  const d = screenUnitY.y - screenOrigin.y;
+
+  let tx = screenOrigin.x;
+  const ty = screenOrigin.y;
+
+  // OSD's imageToViewerElementCoordinates does NOT account for flip.
+  // The drawer flips tiles via context2d scale(-1,1) during rendering.
+  // We must compose the same horizontal flip into the Fabric viewportTransform
+  // so annotations match the flipped image. The flip mirrors around x = W/2
+  // where W is the container width.
+  if (viewer.viewport.getFlip()) {
+    const containerWidth = viewer.viewport.getContainerSize().x;
+    // Horizontal flip: x' = W - x
+    // Composing with affine [a, b, c, d, tx, ty]:
+    //   x' = W - (a*ix + c*iy + tx) = -a*ix + -c*iy + (W - tx)
+    //   y' = b*ix + d*iy + ty  (unchanged)
+    return [-a, b, -c, d, containerWidth - tx, ty] as TMat2D;
+  }
+
+  return [a, b, c, d, tx, ty] as TMat2D;
 }
 
 /**
@@ -97,6 +123,12 @@ export class FabricOverlay {
     this._fabricCanvas.setDimensions({ width: size.x, height: size.y });
     this.sync();
   };
+  private readonly _onFlip = (): void => {
+    this.sync();
+  };
+  private readonly _onRotate = (): void => {
+    this.sync();
+  };
 
   constructor(viewer: OpenSeadragon.Viewer, options?: OverlayOptions) {
     this._viewer = viewer;
@@ -123,9 +155,22 @@ export class FabricOverlay {
     this._fabricCanvas = new FabricCanvas(this._canvasEl, {
       selection: false,
       renderOnAddRemove: false,
-      skipOffscreen: true,
+      // skipOffscreen must be false: when the viewportTransform includes rotation
+      // (90°/270°), Fabric's offscreen culling incorrectly hides objects that are
+      // actually visible on the rotated canvas.
+      skipOffscreen: false,
       enablePointerEvents: true,
     });
+
+    // Fabric's getZoom() returns viewportTransform[0], which is only correct
+    // for scale+translate matrices. When the viewportTransform includes rotation,
+    // element [0] is cos(θ)*scale — which is 0 at 90° and negative at 180°.
+    // This breaks object caching (cache canvas dimensions become 0 or negative).
+    // Override to extract the actual scale as the magnitude of the first column vector.
+    this._fabricCanvas.getZoom = () => {
+      const vpt = this._fabricCanvas.viewportTransform;
+      return Math.sqrt(vpt[0] * vpt[0] + vpt[1] * vpt[1]);
+    };
 
     this._fabricCanvas.setDimensions({
       width: containerSize.x,
@@ -147,6 +192,8 @@ export class FabricOverlay {
     viewer.addHandler(OSD_ANIMATION_FINISH, this._onAnimationFinish);
     viewer.addHandler(OSD_RESIZE, this._onResize);
     viewer.addHandler(OSD_OPEN, this._onOpen);
+    viewer.addHandler('flip', this._onFlip);
+    viewer.addHandler('rotate', this._onRotate);
 
     // Initial sync if the viewer is already open
     if (viewer.isOpen()) {
@@ -164,6 +211,36 @@ export class FabricOverlay {
   /** The Fabric.js Canvas instance */
   get canvas(): FabricCanvas {
     return this._fabricCanvas;
+  }
+
+  /** Apply a view transform (rotation/flip) to the OpenSeadragon viewer */
+  applyViewTransform(transform: ViewTransform): void {
+    let rotation = transform.rotation;
+    // OSD horizontal flip doesn't natively do vertical flip.
+    // Vertical flip = horizontal flip + 180 degree rotation.
+    const isFlipped = transform.flippedH !== transform.flippedV;
+
+    if (transform.flippedV) {
+      rotation = (rotation + 180) % 360;
+    }
+
+    this._viewer.viewport.setFlip(isFlipped);
+    // Use immediately=true to avoid spring animation — the rotation should
+    // snap to the target so that sync() computes the correct matrix.
+    this._viewer.viewport.setRotation(rotation, true);
+    this.sync();
+  }
+
+  getRotation(): number {
+    return this._viewer.viewport.getRotation();
+  }
+
+  getFlip(): boolean {
+    return this._viewer.viewport.getFlip();
+  }
+
+  resetView(): void {
+    this.applyViewTransform(DEFAULT_VIEW_TRANSFORM);
   }
 
   /**
@@ -243,6 +320,8 @@ export class FabricOverlay {
     this._viewer.removeHandler(OSD_ANIMATION_FINISH, this._onAnimationFinish);
     this._viewer.removeHandler(OSD_RESIZE, this._onResize);
     this._viewer.removeHandler(OSD_OPEN, this._onOpen);
+    this._viewer.removeHandler('flip', this._onFlip);
+    this._viewer.removeHandler('rotate', this._onRotate);
     this._fabricCanvas.dispose();
     this._canvasEl.remove();
   }
