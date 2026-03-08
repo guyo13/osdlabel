@@ -10,7 +10,8 @@ export default defineConfig({
   integrations: [
     starlight({
       title: 'osdlabel',
-      description: 'DZI image annotation library for SolidJS',
+      description:
+        'Web-based image annotation library with rich controls, customization, and serialization',
       social: [
         {
           icon: 'github',
