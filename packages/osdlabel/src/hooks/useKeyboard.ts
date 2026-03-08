@@ -30,6 +30,11 @@ export const DEFAULT_KEYBOARD_SHORTCUTS: KeyboardShortcutMap = {
   pathFinish: 'Enter',
   pathClose: 'c',
   pathCancel: 'Escape',
+  rotateCW: 'R',
+  rotateCCW: 'L',
+  flipHorizontal: 'H',
+  flipVertical: 'V',
+  resetView: ')',
 } as const;
 
 export function useKeyboard(
@@ -60,18 +65,31 @@ export function useKeyboard(
     const key = e.key;
     const keyLower = key.toLowerCase();
 
+    // View Transforms (Shift+Key) - must come before tools to avoid interference
+    if (e.shiftKey && keyLower === shortcuts.rotateCW.toLowerCase()) {
+      actions.rotateActiveImageCW();
+    } else if (e.shiftKey && keyLower === shortcuts.rotateCCW.toLowerCase()) {
+      actions.rotateActiveImageCCW();
+    } else if (e.shiftKey && keyLower === shortcuts.flipHorizontal.toLowerCase()) {
+      actions.flipActiveImageH();
+    } else if (e.shiftKey && keyLower === shortcuts.flipVertical.toLowerCase()) {
+      actions.flipActiveImageV();
+    } else if (key === shortcuts.resetView || (e.shiftKey && keyLower === '0')) {
+      actions.resetActiveImageView();
+    }
+
     // Tools
-    if (keyLower === shortcuts.selectTool.toLowerCase()) {
+    else if (!e.shiftKey && keyLower === shortcuts.selectTool.toLowerCase()) {
       actions.setActiveTool('select');
-    } else if (keyLower === shortcuts.rectangleTool.toLowerCase()) {
+    } else if (!e.shiftKey && keyLower === shortcuts.rectangleTool.toLowerCase()) {
       if (isToolEnabled('rectangle')) actions.setActiveTool('rectangle');
-    } else if (keyLower === shortcuts.circleTool.toLowerCase()) {
+    } else if (!e.shiftKey && keyLower === shortcuts.circleTool.toLowerCase()) {
       if (isToolEnabled('circle')) actions.setActiveTool('circle');
-    } else if (keyLower === shortcuts.lineTool.toLowerCase()) {
+    } else if (!e.shiftKey && keyLower === shortcuts.lineTool.toLowerCase()) {
       if (isToolEnabled('line')) actions.setActiveTool('line');
-    } else if (keyLower === shortcuts.pointTool.toLowerCase()) {
+    } else if (!e.shiftKey && keyLower === shortcuts.pointTool.toLowerCase()) {
       if (isToolEnabled('point')) actions.setActiveTool('point');
-    } else if (keyLower === shortcuts.pathTool.toLowerCase()) {
+    } else if (!e.shiftKey && keyLower === shortcuts.pathTool.toLowerCase()) {
       if (isToolEnabled('path')) actions.setActiveTool('path');
     }
 

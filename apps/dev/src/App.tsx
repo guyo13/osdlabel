@@ -6,6 +6,7 @@ import {
   GridView,
   Filmstrip,
   GridControls,
+  ViewControls,
   createImageId,
   AnnotatorProvider,
   useAnnotator,
@@ -115,8 +116,8 @@ function AppContent() {
     if (!json.trim()) return;
     try {
       const parsed: unknown = JSON.parse(json);
-      const byImage = deserialize(parsed);
-      actions.loadAnnotations(byImage);
+      const { byImage, viewTransforms } = deserialize(parsed);
+      actions.loadAnnotations(byImage, viewTransforms);
       setShowImportPanel(false);
       setImportJsonText('');
     } catch (err) {
@@ -177,6 +178,7 @@ function AppContent() {
         </select>
 
         <Toolbar />
+        <ViewControls />
 
         <GridControls maxColumns={4} maxRows={4} />
 

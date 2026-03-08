@@ -2,22 +2,33 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { computeViewportTransform } from '../../../src/overlay/fabric-overlay.js';
 import type OpenSeadragon from 'openseadragon';
 
-/** Create a mock OSD viewer with a configurable viewport transform */
+/**
+ * Create a mock OSD viewer with a configurable viewport transform.
+ *
+ * Mirrors real OSD behavior:
+ * - imageToViewerElementCoordinates handles zoom, pan, rotation — but NOT flip
+ * - Flip is a separate flag read by computeViewportTransform and composed into the matrix
+ * - containerWidth is used for the flip mirror axis
+ */
 function createMockViewer(options: {
   scale: number;
   offsetX: number;
   offsetY: number;
   rotationDeg?: number;
+  flip?: boolean;
+  containerWidth?: number;
 }): OpenSeadragon.Viewer {
-  const { scale, offsetX, offsetY, rotationDeg = 0 } = options;
+  const { scale, offsetX, offsetY, rotationDeg = 0, flip = false, containerWidth = 800 } = options;
   const rad = (rotationDeg * Math.PI) / 180;
   const cosR = Math.cos(rad);
   const sinR = Math.sin(rad);
 
   return {
     viewport: {
+      getFlip: () => flip,
+      getContainerSize: () => ({ x: containerWidth, y: 600 }),
       imageToViewerElementCoordinates: vi.fn((point: { x: number; y: number }) => {
-        // Apply rotation + scale, then translate
+        // Rotation + scale + translate — NO flip (matches real OSD behavior)
         const sx = cosR * scale * point.x - sinR * scale * point.y + offsetX;
         const sy = sinR * scale * point.x + cosR * scale * point.y + offsetY;
         return { x: sx, y: sy };
@@ -100,7 +111,52 @@ describe('computeViewportTransform', () => {
     expect(vpt[5]).toBeCloseTo(50);
   });
 
-  it('produces a matrix that correctly transforms image-space points to screen', () => {
+  it('returns correct matrix with horizontal flip', () => {
+    // OSD imageToViewerElementCoordinates does NOT include flip.
+    // computeViewportTransform reads viewport.getFlip() and mirrors the matrix.
+    // For flip with scale=1, offset=0, containerWidth=800:
+    //   unflipped: [1, 0, 0, 1, 0, 0]
+    //   flipped: [-1, 0, 0, 1, 800, 0]
+    const viewer = createMockViewer({ scale: 1, offsetX: 0, offsetY: 0, flip: true, containerWidth: 800 });
+    const vpt = computeViewportTransform(viewer);
+
+    expect(vpt[0]).toBeCloseTo(-1); // -a
+    expect(vpt[1]).toBeCloseTo(0);
+    expect(vpt[2]).toBeCloseTo(0);  // -c (c was 0)
+    expect(vpt[3]).toBeCloseTo(1);  // d unchanged
+    expect(vpt[4]).toBeCloseTo(800); // containerWidth - tx
+    expect(vpt[5]).toBeCloseTo(0);
+  });
+
+  it('returns correct matrix with combined 90° rotation and horizontal flip', () => {
+    // Unflipped 90°: [0, 1, -1, 0, 0, 0]
+    // Flipped: [-0, 1, 1, 0, 800, 0] = [0, 1, 1, 0, 800, 0]
+    const viewer = createMockViewer({ scale: 1, offsetX: 0, offsetY: 0, rotationDeg: 90, flip: true, containerWidth: 800 });
+    const vpt = computeViewportTransform(viewer);
+
+    expect(vpt[0]).toBeCloseTo(0);   // -a (a≈0)
+    expect(vpt[1]).toBeCloseTo(1);   // b (sin(90)*scale)
+    expect(vpt[2]).toBeCloseTo(1);   // -c (c was -1)
+    expect(vpt[3]).toBeCloseTo(0);   // d (cos(90)*scale ≈ 0)
+    expect(vpt[4]).toBeCloseTo(800); // containerWidth - 0
+    expect(vpt[5]).toBeCloseTo(0);
+  });
+
+  it('returns correct matrix with 180° rotation and horizontal flip (simulates vertical flip)', () => {
+    // Unflipped 180°: [-1, 0, 0, -1, 0, 0]
+    // Flipped: [1, 0, 0, -1, 800, 0]
+    const viewer = createMockViewer({ scale: 1, offsetX: 0, offsetY: 0, rotationDeg: 180, flip: true, containerWidth: 800 });
+    const vpt = computeViewportTransform(viewer);
+
+    expect(vpt[0]).toBeCloseTo(1);   // -(-1) = 1
+    expect(vpt[1]).toBeCloseTo(0);
+    expect(vpt[2]).toBeCloseTo(0);   // -(0) = 0
+    expect(vpt[3]).toBeCloseTo(-1);  // d unchanged
+    expect(vpt[4]).toBeCloseTo(800); // containerWidth - 0
+    expect(vpt[5]).toBeCloseTo(0);
+  });
+
+  it('produces a matrix that correctly transforms image-space points to screen (no flip)', () => {
     const viewer = createMockViewer({ scale: 2.5, offsetX: 30, offsetY: 20 });
     const vpt = computeViewportTransform(viewer);
 
@@ -110,7 +166,7 @@ describe('computeViewportTransform', () => {
     const screenX = vpt[0] * imgX + vpt[2] * imgY + vpt[4];
     const screenY = vpt[1] * imgX + vpt[3] * imgY + vpt[5];
 
-    // Compare with what the OSD mock would produce
+    // Without flip, the matrix matches imageToViewerElementCoordinates exactly
     const expected = viewer.viewport.imageToViewerElementCoordinates({
       x: imgX,
       y: imgY,
@@ -118,9 +174,31 @@ describe('computeViewportTransform', () => {
     expect(screenX).toBeCloseTo(expected.x);
     expect(screenY).toBeCloseTo(expected.y);
   });
+
+  it('produces a flipped matrix that mirrors screen X around container center', () => {
+    const containerWidth = 800;
+    const viewer = createMockViewer({ scale: 2, offsetX: 50, offsetY: 30, flip: true, containerWidth });
+    const vpt = computeViewportTransform(viewer);
+
+    const imgX = 40;
+    const imgY = 60;
+
+    // The unflipped screen position
+    const unflipped = viewer.viewport.imageToViewerElementCoordinates({
+      x: imgX,
+      y: imgY,
+    } as OpenSeadragon.Point);
+
+    // The flipped matrix should mirror X: flippedX = containerWidth - unflippedX
+    const screenX = vpt[0] * imgX + vpt[2] * imgY + vpt[4];
+    const screenY = vpt[1] * imgX + vpt[3] * imgY + vpt[5];
+
+    expect(screenX).toBeCloseTo(containerWidth - unflipped.x);
+    expect(screenY).toBeCloseTo(unflipped.y);
+  });
 });
 
-describe('Coordinate conversion round-trip', () => {
+describe('Coordinate conversion round-trip (OSD coordinate API, no flip)', () => {
   const configs = [
     { scale: 1, offsetX: 0, offsetY: 0, rotationDeg: 0 },
     { scale: 2, offsetX: 100, offsetY: -50, rotationDeg: 0 },
@@ -131,22 +209,55 @@ describe('Coordinate conversion round-trip', () => {
 
   for (const config of configs) {
     it(`round-trips correctly for scale=${config.scale}, offset=(${config.offsetX},${config.offsetY}), rotation=${config.rotationDeg}°`, () => {
-      const viewer = createMockViewer(config);
+      const viewer = createMockViewer({ ...config, flip: false });
 
       const originalImagePoint = { x: 150, y: 250 };
 
-      // image → screen
+      // image → screen via OSD
       const screenPoint = viewer.viewport.imageToViewerElementCoordinates(
         originalImagePoint as OpenSeadragon.Point,
       );
 
-      // screen → image
+      // screen → image via OSD
       const roundTripped = viewer.viewport.viewerElementToImageCoordinates(
         screenPoint as OpenSeadragon.Point,
       );
 
       expect(roundTripped.x).toBeCloseTo(originalImagePoint.x, 6);
       expect(roundTripped.y).toBeCloseTo(originalImagePoint.y, 6);
+    });
+  }
+});
+
+describe('Flip matrix correctness', () => {
+  const configs = [
+    { scale: 1, offsetX: 0, offsetY: 0, rotationDeg: 0, containerWidth: 800 },
+    { scale: 2, offsetX: 50, offsetY: 50, rotationDeg: 90, containerWidth: 1024 },
+    { scale: 1.5, offsetX: -20, offsetY: 80, rotationDeg: 180, containerWidth: 600 },
+  ];
+
+  for (const config of configs) {
+    it(`flipped matrix mirrors X correctly for rotation=${config.rotationDeg}°, scale=${config.scale}`, () => {
+      const unflippedViewer = createMockViewer({ ...config, flip: false });
+      const flippedViewer = createMockViewer({ ...config, flip: true });
+
+      const unflippedVpt = computeViewportTransform(unflippedViewer);
+      const flippedVpt = computeViewportTransform(flippedViewer);
+
+      const imgX = 150;
+      const imgY = 250;
+
+      // Unflipped screen position
+      const ux = unflippedVpt[0] * imgX + unflippedVpt[2] * imgY + unflippedVpt[4];
+      const uy = unflippedVpt[1] * imgX + unflippedVpt[3] * imgY + unflippedVpt[5];
+
+      // Flipped screen position
+      const fx = flippedVpt[0] * imgX + flippedVpt[2] * imgY + flippedVpt[4];
+      const fy = flippedVpt[1] * imgX + flippedVpt[3] * imgY + flippedVpt[5];
+
+      // Flipped X should be mirrored around containerWidth/2
+      expect(fx).toBeCloseTo(config.containerWidth - ux);
+      expect(fy).toBeCloseTo(uy); // Y unchanged
     });
   }
 });
