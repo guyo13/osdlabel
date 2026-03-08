@@ -8,6 +8,7 @@ import GridView from './GridView.js';
 import Filmstrip from './Filmstrip.js';
 import GridControls from './GridControls.js';
 import ContextSwitcher from './ContextSwitcher.js';
+import { ViewControls } from './ViewControls.js';
 import type { ImageSource, AnnotationContext } from '../core/types.js';
 
 export interface AnnotatorProps extends Omit<AnnotatorProviderProps, 'children'> {
@@ -21,6 +22,8 @@ export interface AnnotatorProps extends Omit<AnnotatorProviderProps, 'children'>
   readonly showGridControls?: boolean | undefined;
   /** Whether to show the context switcher (default: false) */
   readonly showContextSwitcher?: boolean | undefined;
+  /** Whether to show the view controls (default: true) */
+  readonly showViewControls?: boolean | undefined;
   /** Filmstrip position (default: 'left') */
   readonly filmstripPosition?: 'left' | 'right' | 'bottom' | undefined;
   /** Maximum grid dimensions */
@@ -41,6 +44,7 @@ const AnnotatorInner: Component<Omit<AnnotatorProps, keyof AnnotatorProviderProp
   const showFilmstrip = () => props.showFilmstrip !== false;
   const showGridControls = () => props.showGridControls === true;
   const showContextSwitcher = () => props.showContextSwitcher === true;
+  const showViewControls = () => props.showViewControls !== false;
   const maxCols = () => props.maxGridSize?.columns ?? 4;
   const maxRows = () => props.maxGridSize?.rows ?? 4;
 
@@ -66,6 +70,7 @@ const AnnotatorInner: Component<Omit<AnnotatorProps, keyof AnnotatorProviderProp
         }}
       >
         <Toolbar />
+        {showViewControls() && <ViewControls />}
         {showContextSwitcher() && <ContextSwitcher label="Context:" />}
         {showGridControls() && (
           <div style={{ 'margin-left': 'auto' }}>
@@ -121,6 +126,7 @@ const Annotator: Component<AnnotatorProps> = (props) => {
         showFilmstrip={props.showFilmstrip}
         showGridControls={props.showGridControls}
         showContextSwitcher={props.showContextSwitcher}
+        showViewControls={props.showViewControls}
         filmstripPosition={props.filmstripPosition}
         maxGridSize={props.maxGridSize}
         style={props.style}

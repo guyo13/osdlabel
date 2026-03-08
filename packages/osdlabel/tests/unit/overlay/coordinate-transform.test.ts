@@ -8,27 +8,32 @@ function createMockViewer(options: {
   offsetX: number;
   offsetY: number;
   rotationDeg?: number;
+  flip?: boolean;
 }): OpenSeadragon.Viewer {
-  const { scale, offsetX, offsetY, rotationDeg = 0 } = options;
+  const { scale, offsetX, offsetY, rotationDeg = 0, flip = false } = options;
   const rad = (rotationDeg * Math.PI) / 180;
   const cosR = Math.cos(rad);
   const sinR = Math.sin(rad);
+  const flipSign = flip ? -1 : 1;
 
   return {
+    getFlip: () => flip,
     viewport: {
       imageToViewerElementCoordinates: vi.fn((point: { x: number; y: number }) => {
-        // Apply rotation + scale, then translate
-        const sx = cosR * scale * point.x - sinR * scale * point.y + offsetX;
-        const sy = sinR * scale * point.x + cosR * scale * point.y + offsetY;
+        // Apply flip, then rotation + scale, then translate
+        const fx = point.x * flipSign;
+        const fy = point.y;
+        const sx = cosR * scale * fx - sinR * scale * fy + offsetX;
+        const sy = sinR * scale * fx + cosR * scale * fy + offsetY;
         return { x: sx, y: sy };
       }),
       viewerElementToImageCoordinates: vi.fn((point: { x: number; y: number }) => {
-        // Inverse: undo translate, then undo rotation+scale
+        // Inverse: undo translate, then undo rotation+scale, then flip
         const px = point.x - offsetX;
         const py = point.y - offsetY;
         const ix = (cosR * px + sinR * py) / scale;
         const iy = (-sinR * px + cosR * py) / scale;
-        return { x: ix, y: iy };
+        return { x: ix * flipSign, y: iy };
       }),
     },
   } as unknown as OpenSeadragon.Viewer;
@@ -100,6 +105,43 @@ describe('computeViewportTransform', () => {
     expect(vpt[5]).toBeCloseTo(50);
   });
 
+  it('returns correct matrix with horizontal flip', () => {
+    const viewer = createMockViewer({ scale: 1, offsetX: 0, offsetY: 0, flip: true });
+    const vpt = computeViewportTransform(viewer);
+
+    expect(vpt[0]).toBeCloseTo(-1); // scaleX is flipped
+    expect(vpt[1]).toBeCloseTo(0);
+    expect(vpt[2]).toBeCloseTo(0);
+    expect(vpt[3]).toBeCloseTo(1); // scaleY is normal
+    expect(vpt[4]).toBeCloseTo(0);
+    expect(vpt[5]).toBeCloseTo(0);
+  });
+
+  it('returns correct matrix with combined 90° rotation and horizontal flip', () => {
+    const viewer = createMockViewer({ scale: 1, offsetX: 0, offsetY: 0, rotationDeg: 90, flip: true });
+    const vpt = computeViewportTransform(viewer);
+
+    expect(vpt[0]).toBeCloseTo(0);
+    expect(vpt[1]).toBeCloseTo(-1); // sin(90) * -1
+    expect(vpt[2]).toBeCloseTo(-1); // -sin(90)
+    expect(vpt[3]).toBeCloseTo(0);
+    expect(vpt[4]).toBeCloseTo(0);
+    expect(vpt[5]).toBeCloseTo(0);
+  });
+
+  it('returns correct matrix with 180° rotation and horizontal flip (simulates vertical flip)', () => {
+    const viewer = createMockViewer({ scale: 1, offsetX: 0, offsetY: 0, rotationDeg: 180, flip: true });
+    const vpt = computeViewportTransform(viewer);
+
+    // cos(180) = -1, sin(180) = 0
+    expect(vpt[0]).toBeCloseTo(1); // cos(180) * -1 = 1
+    expect(vpt[1]).toBeCloseTo(0); // sin(180) * -1 = 0
+    expect(vpt[2]).toBeCloseTo(0); // -sin(180) = 0
+    expect(vpt[3]).toBeCloseTo(-1); // cos(180) = -1
+    expect(vpt[4]).toBeCloseTo(0);
+    expect(vpt[5]).toBeCloseTo(0);
+  });
+
   it('produces a matrix that correctly transforms image-space points to screen', () => {
     const viewer = createMockViewer({ scale: 2.5, offsetX: 30, offsetY: 20 });
     const vpt = computeViewportTransform(viewer);
@@ -122,15 +164,18 @@ describe('computeViewportTransform', () => {
 
 describe('Coordinate conversion round-trip', () => {
   const configs = [
-    { scale: 1, offsetX: 0, offsetY: 0, rotationDeg: 0 },
-    { scale: 2, offsetX: 100, offsetY: -50, rotationDeg: 0 },
-    { scale: 0.5, offsetX: 300, offsetY: 200, rotationDeg: 0 },
-    { scale: 3, offsetX: 0, offsetY: 0, rotationDeg: 45 },
-    { scale: 1.5, offsetX: -100, offsetY: 50, rotationDeg: 90 },
+    { scale: 1, offsetX: 0, offsetY: 0, rotationDeg: 0, flip: false },
+    { scale: 2, offsetX: 100, offsetY: -50, rotationDeg: 0, flip: false },
+    { scale: 0.5, offsetX: 300, offsetY: 200, rotationDeg: 0, flip: false },
+    { scale: 3, offsetX: 0, offsetY: 0, rotationDeg: 45, flip: false },
+    { scale: 1.5, offsetX: -100, offsetY: 50, rotationDeg: 90, flip: false },
+    { scale: 1, offsetX: 0, offsetY: 0, rotationDeg: 0, flip: true },
+    { scale: 2, offsetX: 50, offsetY: 50, rotationDeg: 90, flip: true },
+    { scale: 1.5, offsetX: -20, offsetY: 80, rotationDeg: 180, flip: true },
   ];
 
   for (const config of configs) {
-    it(`round-trips correctly for scale=${config.scale}, offset=(${config.offsetX},${config.offsetY}), rotation=${config.rotationDeg}°`, () => {
+    it(`round-trips correctly for scale=${config.scale}, offset=(${config.offsetX},${config.offsetY}), rotation=${config.rotationDeg}°, flip=${config.flip}`, () => {
       const viewer = createMockViewer(config);
 
       const originalImagePoint = { x: 150, y: 250 };

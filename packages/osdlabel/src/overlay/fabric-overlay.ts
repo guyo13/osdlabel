@@ -1,7 +1,8 @@
 import OpenSeadragon from 'openseadragon';
 import { Canvas as FabricCanvas } from 'fabric';
 import type { TMat2D } from 'fabric';
-import type { Point } from '../core/types.js';
+import type { Point, ViewTransform } from '../core/types.js';
+import { DEFAULT_VIEW_TRANSFORM } from '../core/types.js';
 import {
   POINTER_DOWN,
   POINTER_MOVE,
@@ -31,18 +32,24 @@ export interface OverlayOptions {
 export function computeViewportTransform(viewer: OpenSeadragon.Viewer): TMat2D {
   const origin = new OpenSeadragon.Point(0, 0);
   const unitX = new OpenSeadragon.Point(1, 0);
+  const unitY = new OpenSeadragon.Point(0, 1);
 
   const screenOrigin = viewer.viewport.imageToViewerElementCoordinates(origin);
   const screenUnitX = viewer.viewport.imageToViewerElementCoordinates(unitX);
+  const screenUnitY = viewer.viewport.imageToViewerElementCoordinates(unitY);
 
-  // The vector from origin to unitX on screen encodes both scale and rotation
-  const dx = screenUnitX.x - screenOrigin.x;
-  const dy = screenUnitX.y - screenOrigin.y;
+  // The vector from origin to unitX on screen encodes scaleX and skewY (rotation)
+  // a = scaleX * cos(θ), b = scaleX * sin(θ)
+  const a = screenUnitX.x - screenOrigin.x;
+  const b = screenUnitX.y - screenOrigin.y;
+  
+  // The vector from origin to unitY on screen encodes skewX and scaleY
+  // c = -scaleY * sin(θ), d = scaleY * cos(θ)
+  const c = screenUnitY.x - screenOrigin.x;
+  const d = screenUnitY.y - screenOrigin.y;
 
   // Affine matrix: [a, b, c, d, tx, ty]
-  // a = cos(θ)*scale = dx, b = sin(θ)*scale = dy
-  // c = -sin(θ)*scale = -dy, d = cos(θ)*scale = dx
-  return [dx, dy, -dy, dx, screenOrigin.x, screenOrigin.y] as TMat2D;
+  return [a, b, c, d, screenOrigin.x, screenOrigin.y] as TMat2D;
 }
 
 /**
@@ -97,6 +104,12 @@ export class FabricOverlay {
     this._fabricCanvas.setDimensions({ width: size.x, height: size.y });
     this.sync();
   };
+  private readonly _onFlip = (): void => {
+    this.sync();
+  };
+  private readonly _onRotate = (): void => {
+    this.sync();
+  };
 
   constructor(viewer: OpenSeadragon.Viewer, options?: OverlayOptions) {
     this._viewer = viewer;
@@ -147,6 +160,8 @@ export class FabricOverlay {
     viewer.addHandler(OSD_ANIMATION_FINISH, this._onAnimationFinish);
     viewer.addHandler(OSD_RESIZE, this._onResize);
     viewer.addHandler(OSD_OPEN, this._onOpen);
+    viewer.addHandler('flip', this._onFlip);
+    viewer.addHandler('rotate', this._onRotate);
 
     // Initial sync if the viewer is already open
     if (viewer.isOpen()) {
@@ -164,6 +179,37 @@ export class FabricOverlay {
   /** The Fabric.js Canvas instance */
   get canvas(): FabricCanvas {
     return this._fabricCanvas;
+  }
+
+  /** Apply a view transform (rotation/flip) to the OpenSeadragon viewer */
+  applyViewTransform(transform: ViewTransform): void {
+    let rotation = transform.rotation;
+    // OSD horizontal flip doesn't natively do vertical flip.
+    // Vertical flip = horizontal flip + 180 degree rotation.
+    const isFlipped = transform.flippedH !== transform.flippedV;
+    
+    if (transform.flippedV) {
+      rotation = (rotation + 180) % 360;
+    }
+
+    // Note: OpenSeadragon typing might not include setFlip, so we cast to any
+    if ((this._viewer as any).setFlip) {
+      (this._viewer as any).setFlip(isFlipped);
+    }
+    this._viewer.viewport.setRotation(rotation);
+    this.sync();
+  }
+
+  getRotation(): number {
+    return this._viewer.viewport.getRotation();
+  }
+
+  getFlip(): boolean {
+    return (this._viewer as any).getFlip ? (this._viewer as any).getFlip() : false;
+  }
+
+  resetView(): void {
+    this.applyViewTransform(DEFAULT_VIEW_TRANSFORM);
   }
 
   /**

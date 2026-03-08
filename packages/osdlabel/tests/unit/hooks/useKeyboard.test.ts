@@ -9,6 +9,11 @@ const mockActions = {
   deleteAnnotation: vi.fn(),
   setActiveCell: vi.fn(),
   setGridDimensions: vi.fn(),
+  rotateActiveImageCW: vi.fn(),
+  rotateActiveImageCCW: vi.fn(),
+  flipActiveImageH: vi.fn(),
+  flipActiveImageV: vi.fn(),
+  resetActiveImageView: vi.fn(),
 };
 
 // Mock UI state
@@ -50,8 +55,8 @@ vi.mock('../../../src/hooks/useConstraints.js', () => ({
 }));
 
 // Helper to simulate a keyboard event
-function dispatchKeyDown(key: string, target?: Partial<HTMLElement>) {
-  const event = new KeyboardEvent('keydown', { key });
+function dispatchKeyDown(key: string, target?: Partial<HTMLElement>, shiftKey = false) {
+  const event = new KeyboardEvent('keydown', { key, shiftKey });
   if (target) {
     Object.defineProperty(event, 'target', { value: target, enumerable: true });
   } else {
@@ -172,6 +177,52 @@ describe('useKeyboard', () => {
       // But should allow others
       dispatchKeyDown(DEFAULT_KEYBOARD_SHORTCUTS.circleTool);
       expect(mockActions.setActiveTool).toHaveBeenCalledWith('circle');
+    });
+  });
+
+  describe('View Transform Shortcuts', () => {
+    it('should rotate CW on Shift+R', () => {
+      dispatchKeyDown('R', undefined, true);
+      expect(mockActions.rotateActiveImageCW).toHaveBeenCalled();
+    });
+
+    it('should rotate CCW on Shift+L', () => {
+      dispatchKeyDown('L', undefined, true);
+      expect(mockActions.rotateActiveImageCCW).toHaveBeenCalled();
+    });
+
+    it('should flip horizontal on Shift+H', () => {
+      dispatchKeyDown('H', undefined, true);
+      expect(mockActions.flipActiveImageH).toHaveBeenCalled();
+    });
+
+    it('should flip vertical on Shift+V', () => {
+      dispatchKeyDown('V', undefined, true);
+      expect(mockActions.flipActiveImageV).toHaveBeenCalled();
+    });
+
+    it('should reset view on Reset View key', () => {
+      dispatchKeyDown(DEFAULT_KEYBOARD_SHORTCUTS.resetView);
+      expect(mockActions.resetActiveImageView).toHaveBeenCalled();
+    });
+    
+    it('should reset view on Shift+0', () => {
+      dispatchKeyDown(')', undefined, true);
+      expect(mockActions.resetActiveImageView).toHaveBeenCalled();
+      dispatchKeyDown('0', undefined, true);
+      expect(mockActions.resetActiveImageView).toHaveBeenCalledTimes(2);
+    });
+
+    it('plain r should still trigger rectangle tool, not rotation', () => {
+      dispatchKeyDown('r', undefined, false);
+      expect(mockActions.rotateActiveImageCW).not.toHaveBeenCalled();
+      expect(mockActions.setActiveTool).toHaveBeenCalledWith('rectangle');
+    });
+
+    it('plain l should still trigger line tool, not rotation', () => {
+      dispatchKeyDown('l', undefined, false);
+      expect(mockActions.rotateActiveImageCCW).not.toHaveBeenCalled();
+      expect(mockActions.setActiveTool).toHaveBeenCalledWith('line');
     });
   });
 
