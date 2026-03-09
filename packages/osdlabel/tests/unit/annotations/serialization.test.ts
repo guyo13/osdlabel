@@ -124,10 +124,17 @@ describe('Serialization', () => {
   describe('deserialize', () => {
     it('should round-trip serialize → deserialize preserving all data', () => {
       const state = createTestState([annotation1, annotation2]);
+      state.viewTransforms = {
+        [imageId]: { rotation: 90, flippedH: true, flippedV: false },
+      };
       const doc = serialize(state, imageSources);
+
+      // Check that viewTransform was serialized
+      expect(doc.images[0].viewTransform).toEqual({ rotation: 90, flippedH: true, flippedV: false });
+
       const json = JSON.stringify(doc);
       const parsed: unknown = JSON.parse(json);
-      const result = deserialize(parsed);
+      const { byImage: result, viewTransforms } = deserialize(parsed);
 
       expect(result[imageId]).toBeDefined();
       const restoredAnn1 = result[imageId][annId1];
@@ -139,6 +146,8 @@ describe('Serialization', () => {
 
       const restoredAnn2 = result[imageId][annId2];
       expect(restoredAnn2.geometry).toEqual(annotation2.geometry);
+
+      expect(viewTransforms[imageId]).toEqual({ rotation: 90, flippedH: true, flippedV: false });
     });
 
     it('should reject non-object input', () => {

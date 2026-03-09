@@ -89,6 +89,17 @@ export interface Annotation {
   readonly updatedAt: string;
 }
 
+// ── View Transform ───────────────────────────────────────────────────────
+
+/** Per-image view transform (rotation/flip state) */
+export interface ViewTransform {
+  readonly rotation: number; // degrees (0, 90, 180, 270)
+  readonly flippedH: boolean;
+  readonly flippedV: boolean;
+}
+
+export const DEFAULT_VIEW_TRANSFORM: ViewTransform = { rotation: 0, flippedH: false, flippedV: false };
+
 // ── Serialization Types ──────────────────────────────────────────────────
 
 /** Top-level serialization envelope */
@@ -103,6 +114,7 @@ export interface ImageAnnotations {
   readonly imageId: ImageId;
   readonly sourceUrl: string;
   readonly annotations: readonly Annotation[];
+  readonly viewTransform?: ViewTransform | undefined;
 }
 
 // ── Constraint System ────────────────────────────────────────────────────
@@ -146,6 +158,7 @@ export interface ImageSource {
 /** Root state for the annotation system */
 export interface AnnotationState {
   byImage: Record<ImageId, Record<AnnotationId, Annotation>>;
+  viewTransforms: Record<ImageId, ViewTransform>;
   /** Monotonically increasing counter; incremented on every mutation for O(1) change detection */
   changeCounter: number;
 }
@@ -182,6 +195,11 @@ export type ConstraintStatus = Record<
 
 /** Keyboard shortcut map */
 export interface KeyboardShortcutMap {
+  readonly rotateCW: string;
+  readonly rotateCCW: string;
+  readonly flipHorizontal: string;
+  readonly flipVertical: string;
+  readonly resetView: string;
   readonly selectTool: string;
   readonly rectangleTool: string;
   readonly circleTool: string;
