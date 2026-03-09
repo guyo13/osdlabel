@@ -5,6 +5,11 @@ import type { KeyboardShortcutMap } from '../core/types.js';
 import { MAX_GRID_SIZE } from '../core/constants.js';
 
 export const DEFAULT_KEYBOARD_SHORTCUTS: KeyboardShortcutMap = {
+  rotateCW: 'r',
+  rotateCCW: 'l',
+  flipHorizontal: 'h',
+  flipVertical: 'v',
+  resetView: ')', // Shift+0
   selectTool: 'v',
   rectangleTool: 'r',
   circleTool: 'c',
