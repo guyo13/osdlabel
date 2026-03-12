@@ -22,6 +22,7 @@ import { Annotator } from 'osdlabel/components';
 | `showFilmstrip`                       | `boolean`                                           | `true`                    | Show the filmstrip sidebar       |
 | `showGridControls`                    | `boolean`                                           | `false`                   | Show the grid size controls      |
 | `showContextSwitcher`                 | `boolean`                                           | `false`                   | Show the context selector        |
+| `showFps`                             | `boolean`                                           | `false`                   | Show the FPS counter             |
 | `filmstripPosition`                   | `'left' \| 'right' \| 'bottom'`                     | `'left'`                  | Filmstrip placement              |
 | `maxGridSize`                         | `{ columns: number; rows: number }`                 | `{ columns: 4, rows: 4 }` | Maximum grid dimensions          |
 | `style`                               | `JSX.CSSProperties`                                 | —                         | Custom style for root container  |
@@ -123,6 +124,7 @@ import { StatusBar } from 'osdlabel/components';
 | Prop      | Type                   | Description                     |
 | --------- | ---------------------- | ------------------------------- |
 | `imageId` | `ImageId \| undefined` | The image ID of the active cell |
+| `showFps` | `boolean`               | Show the FPS counter            |
 
 ---
 

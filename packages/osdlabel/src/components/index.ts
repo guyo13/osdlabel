@@ -8,3 +8,4 @@ export { default as Toolbar } from './Toolbar.js';
 export { default as ContextSwitcher } from './ContextSwitcher.js';
 export { default as ViewerCell } from './ViewerCell.js';
 export { ViewControls } from './ViewControls.js';
+export { default as FpsCounter } from './FpsCounter.js';
