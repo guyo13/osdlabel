@@ -212,4 +212,85 @@ describe('State Management', () => {
     expect(status.circle.enabled).toBe(false);
     dispose();
   });
+
+  describe('View Controls Actions', () => {
+    it('toggleActiveImageNegative toggles the inverted state', () => {
+      const { annotationState, actions, dispose } = createTestStore();
+      actions.toggleActiveImageNegative();
+
+      let vt = annotationState.viewTransforms[dummyImageId];
+      expect(vt.inverted).toBe(true);
+
+      actions.toggleActiveImageNegative();
+      vt = annotationState.viewTransforms[dummyImageId];
+      expect(vt.inverted).toBe(false);
+      dispose();
+    });
+
+    it('increaseActiveImageExposure increments by 0.1 and clamps to 1', () => {
+      const { annotationState, actions, dispose } = createTestStore();
+
+      // Set to 0.9 first to test clamp at next step
+      actions.setActiveImageExposure(0.9);
+      actions.increaseActiveImageExposure();
+      let vt = annotationState.viewTransforms[dummyImageId];
+      expect(vt.exposure).toBe(1.0);
+
+      // Clamps to 1
+      actions.increaseActiveImageExposure();
+      vt = annotationState.viewTransforms[dummyImageId];
+      expect(vt.exposure).toBe(1.0);
+
+      dispose();
+    });
+
+    it('decreaseActiveImageExposure decrements by 0.1 and clamps to -1', () => {
+      const { annotationState, actions, dispose } = createTestStore();
+
+      // Set to -0.9 first to test clamp at next step
+      actions.setActiveImageExposure(-0.9);
+      actions.decreaseActiveImageExposure();
+      let vt = annotationState.viewTransforms[dummyImageId];
+      expect(vt.exposure).toBe(-1.0);
+
+      // Clamps to -1
+      actions.decreaseActiveImageExposure();
+      vt = annotationState.viewTransforms[dummyImageId];
+      expect(vt.exposure).toBe(-1.0);
+
+      dispose();
+    });
+
+    it('setActiveImageExposure sets specific value and clamps', () => {
+      const { annotationState, actions, dispose } = createTestStore();
+
+      actions.setActiveImageExposure(0.5);
+      let vt = annotationState.viewTransforms[dummyImageId];
+      expect(vt.exposure).toBe(0.5);
+
+      actions.setActiveImageExposure(1.5);
+      vt = annotationState.viewTransforms[dummyImageId];
+      expect(vt.exposure).toBe(1.0);
+
+      actions.setActiveImageExposure(-2.0);
+      vt = annotationState.viewTransforms[dummyImageId];
+      expect(vt.exposure).toBe(-1.0);
+
+      dispose();
+    });
+
+    it('resetActiveImageView resets exposure and inverted to defaults', () => {
+      const { annotationState, actions, dispose } = createTestStore();
+
+      actions.toggleActiveImageNegative();
+      actions.setActiveImageExposure(0.5);
+
+      actions.resetActiveImageView();
+      const vt = annotationState.viewTransforms[dummyImageId];
+      expect(vt.exposure).toBe(0);
+      expect(vt.inverted).toBe(false);
+
+      dispose();
+    });
+  });
 });

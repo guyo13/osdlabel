@@ -14,6 +14,9 @@ test.describe('View Controls', () => {
     await expect(page.locator('[data-testid="view-rotate-ccw"]')).toBeVisible();
     await expect(page.locator('[data-testid="view-flip-h"]')).toBeVisible();
     await expect(page.locator('[data-testid="view-flip-v"]')).toBeVisible();
+    await expect(page.locator('[data-testid="view-negative"]')).toBeVisible();
+    await expect(page.locator('[data-testid="view-exposure-increase"]')).toBeVisible();
+    await expect(page.locator('[data-testid="view-exposure-decrease"]')).toBeVisible();
     // Reset button should not be visible initially as view is not transformed
     await expect(page.locator('[data-testid="view-reset"]')).not.toBeVisible();
   });
@@ -54,6 +57,64 @@ test.describe('View Controls', () => {
     await flipHBtn.click();
     await expect(flipHBtn).toHaveCSS('background-color', 'rgb(51, 51, 51)');
     await expect(resetBtn).not.toBeVisible();
+  });
+
+  test('Negative toggle applies invert filter and shows active state', async ({ page }) => {
+    const negativeBtn = page.locator('[data-testid="view-negative"]');
+    const resetBtn = page.locator('[data-testid="view-reset"]');
+
+    // The main OSD drawing canvas typically doesn't have data-fabric.
+    // However, some timing issues might make Playwright not find it immediately.
+    // Wait for the main canvas block to be available.
+    // OSD canvas usually has "position: absolute" in its inline style.
+    const drawerCanvas = page.locator('.openseadragon-canvas canvas').nth(0);
+
+    // Default inactive background color is #333
+    await expect(negativeBtn).toHaveCSS('background-color', 'rgb(51, 51, 51)');
+
+    await negativeBtn.click();
+    await expect(negativeBtn).toHaveCSS('background-color', 'rgb(33, 150, 243)');
+    await expect(resetBtn).toBeVisible();
+
+    await expect(drawerCanvas).toHaveCSS('filter', 'invert(1)');
+
+    await negativeBtn.click();
+    await expect(negativeBtn).toHaveCSS('background-color', 'rgb(51, 51, 51)');
+    await expect(resetBtn).not.toBeVisible();
+    await expect(drawerCanvas).toHaveCSS('filter', 'none');
+  });
+
+  test('Exposure buttons apply brightness filter and handles bounds', async ({ page }) => {
+    const increaseBtn = page.locator('[data-testid="view-exposure-increase"]');
+    const decreaseBtn = page.locator('[data-testid="view-exposure-decrease"]');
+    const resetBtn = page.locator('[data-testid="view-reset"]');
+    const drawerCanvas = page.locator('.openseadragon-canvas canvas').nth(0);
+
+    await increaseBtn.click();
+    await expect(resetBtn).toBeVisible();
+    // +0.1 exposure -> brightness 1.1
+    await expect(drawerCanvas).toHaveCSS('filter', 'brightness(1.1)');
+
+    await decreaseBtn.click();
+    // Back to 0 exposure
+    await expect(resetBtn).not.toBeVisible();
+    await expect(drawerCanvas).toHaveCSS('filter', 'none');
+
+    await decreaseBtn.click();
+    await expect(resetBtn).toBeVisible();
+    // -0.1 exposure -> brightness 0.9
+    await expect(drawerCanvas).toHaveCSS('filter', 'brightness(0.9)');
+
+    // Test max limits by repeatedly clicking
+    for (let i = 0; i < 15; i++) {
+      await increaseBtn.click();
+    }
+    await expect(drawerCanvas).toHaveCSS('filter', 'brightness(2)');
+
+    for (let i = 0; i < 25; i++) {
+      await decreaseBtn.click();
+    }
+    await expect(drawerCanvas).toHaveCSS('filter', 'brightness(0)');
   });
 
   test('Reset clears rotation and flip', async ({ page }) => {
@@ -136,11 +197,22 @@ test.describe('View Controls', () => {
   test('Keyboard shortcuts for view transforms', async ({ page }) => {
     const flipHBtn = page.locator('[data-testid="view-flip-h"]');
     const resetBtn = page.locator('[data-testid="view-reset"]');
+    const negativeBtn = page.locator('[data-testid="view-negative"]');
+    const drawerCanvas = page.locator('.openseadragon-canvas canvas').nth(0);
 
     // Press Shift+H
     await page.keyboard.press('Shift+H');
     await expect(flipHBtn).toHaveCSS('background-color', 'rgb(33, 150, 243)');
     await expect(resetBtn).toBeVisible();
+
+    // Press Shift+N (Negative)
+    await page.keyboard.press('Shift+N');
+    await expect(negativeBtn).toHaveCSS('background-color', 'rgb(33, 150, 243)');
+    await expect(drawerCanvas).toHaveCSS('filter', 'invert(1)');
+
+    // Press Shift+E (Exposure increase)
+    await page.keyboard.press('Shift+E');
+    await expect(drawerCanvas).toHaveCSS('filter', 'brightness(1.1) invert(1)');
 
     // Press Shift+R
     await page.keyboard.press('Shift+R');
@@ -149,6 +221,8 @@ test.describe('View Controls', () => {
     await page.keyboard.press('Shift+0');
     
     await expect(flipHBtn).toHaveCSS('background-color', 'rgb(51, 51, 51)');
+    await expect(negativeBtn).toHaveCSS('background-color', 'rgb(51, 51, 51)');
+    await expect(drawerCanvas).toHaveCSS('filter', 'none');
     await expect(resetBtn).not.toBeVisible();
     
     // Plain 'r' triggers rectangle tool, not rotation
