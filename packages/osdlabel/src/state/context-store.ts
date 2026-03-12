@@ -27,7 +27,7 @@ export function createConstraintStatus(
     const activeContext = contextState.contexts.find((c) => c.id === contextState.activeContextId);
     const imgId = currentImageId();
 
-    const allTypes: AnnotationType[] = ['rectangle', 'circle', 'line', 'point', 'path'];
+    const allTypes: AnnotationType[] = ['rectangle', 'circle', 'line', 'point', 'path', 'freeHandPath'];
     const result: Partial<ConstraintStatus> = {};
 
     if (!activeContext || !imgId || !isContextScopedToImage(activeContext, imgId)) {

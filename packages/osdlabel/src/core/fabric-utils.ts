@@ -156,6 +156,23 @@ export function getGeometryFromFabricObject(
     }
   }
 
+  if (type === 'freeHandPath') {
+    if (obj instanceof Polyline) {
+      const matrix = obj.calcTransformMatrix();
+      const pathOffset = obj.pathOffset || { x: 0, y: 0 };
+      const points = (obj.points || []).map((p) => {
+        const centeredP = { x: p.x - pathOffset.x, y: p.y - pathOffset.y };
+        const tp = util.transformPoint(centeredP, matrix);
+        return { x: tp.x, y: tp.y };
+      });
+      return {
+        type: 'freeHandPath',
+        points: points,
+        closed: obj instanceof Polygon,
+      };
+    }
+  }
+
   return null;
 }
 
