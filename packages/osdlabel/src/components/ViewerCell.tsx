@@ -84,6 +84,7 @@ const ViewerCell: Component<ViewerCellProps> = (props) => {
     // Explicitly track the viewTransform state
     const transform = annotationState.viewTransforms[imageId] ?? DEFAULT_VIEW_TRANSFORM;
     ov.applyViewTransform(transform);
+    ov.applyImageFilters(transform.exposure, transform.inverted);
   });
 
   // Use annotation tool hook

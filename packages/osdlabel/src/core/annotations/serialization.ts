@@ -138,6 +138,8 @@ export function deserialize(doc: unknown): DeserializeResult {
         rotation: vt.rotation,
         flippedH: vt.flippedH,
         flippedV: vt.flippedV,
+          exposure: (vt as any).exposure ?? 0,
+          inverted: (vt as any).inverted ?? false,
       };
     }
     viewTransforms[imageId] = viewTransform;

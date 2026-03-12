@@ -145,9 +145,17 @@ export interface ViewTransform {
   readonly rotation: number;      // degrees (0, 90, 180, 270)
   readonly flippedH: boolean;
   readonly flippedV: boolean;
+  readonly exposure: number;      // -1 to 1 (0 = default, maps to CSS brightness 0.0–2.0)
+  readonly inverted: boolean;     // false = normal, true = CSS invert(1)
 }
 
-export const DEFAULT_VIEW_TRANSFORM: ViewTransform = { rotation: 0, flippedH: false, flippedV: false };
+export const DEFAULT_VIEW_TRANSFORM: ViewTransform = {
+  rotation: 0,
+  flippedH: false,
+  flippedV: false,
+  exposure: 0,
+  inverted: false,
+};
 
 // ── State Types ──────────────────────────────────────────────────────────
 // Note: State container types intentionally omit `readonly` — SolidJS store
@@ -225,4 +233,7 @@ export interface KeyboardShortcutMap {
   readonly flipHorizontal: string;
   readonly flipVertical: string;
   readonly resetView: string;
+  readonly toggleNegative: string;
+  readonly increaseExposure: string;
+  readonly decreaseExposure: string;
 }
