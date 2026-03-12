@@ -14,6 +14,7 @@ describe('UI Store', () => {
       expect(state.gridRows).toBe(1);
       expect(state.gridAssignments).toEqual({});
       expect(state.selectedAnnotationId).toBeNull();
+      expect(state.cellTransforms).toEqual({});
 
       dispose();
     });

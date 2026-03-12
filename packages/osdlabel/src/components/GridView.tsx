@@ -54,6 +54,7 @@ const GridView: Component<GridViewProps> = (props) => {
                 <ViewerCell
                   imageSource={imageSource()}
                   isActive={isActive()}
+                  cellIndex={cellIndex}
                   onActivate={() => actions.setActiveCell(cellIndex)}
                 />
               ) : (

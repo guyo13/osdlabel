@@ -4,7 +4,7 @@ import OpenSeadragon from 'openseadragon';
 import { FabricOverlay } from '../overlay/fabric-overlay.js';
 import type { OverlayMode } from '../overlay/fabric-overlay.js';
 import type { ImageSource } from '../core/types.js';
-import { DEFAULT_VIEW_TRANSFORM } from '../core/types.js';
+import { DEFAULT_VIEW_TRANSFORM, DEFAULT_CELL_TRANSFORM } from '../core/types.js';
 import { useAnnotationTool } from '../hooks/useAnnotationTool.js';
 import { useAnnotator } from '../state/annotator-context.js';
 import { createFabricObjectFromRawData } from '../core/fabric-utils.js';
@@ -13,13 +13,14 @@ import '../core/fabric-module.js';
 export interface ViewerCellProps {
   readonly imageSource: ImageSource | undefined;
   readonly isActive: boolean;
+  readonly cellIndex: number;
   readonly mode?: OverlayMode;
   readonly onActivate: () => void;
   readonly onOverlayReady?: (overlay: FabricOverlay) => void;
 }
 
 const ViewerCell: Component<ViewerCellProps> = (props) => {
-  const { annotationState, contextState } = useAnnotator();
+  const { uiState, annotationState, contextState } = useAnnotator();
   let containerRef: HTMLDivElement | undefined;
   let viewer: OpenSeadragon.Viewer | undefined;
   const [overlay, setOverlay] = createSignal<FabricOverlay>();
@@ -84,6 +85,21 @@ const ViewerCell: Component<ViewerCellProps> = (props) => {
     // Explicitly track the viewTransform state
     const transform = annotationState.viewTransforms[imageId] ?? DEFAULT_VIEW_TRANSFORM;
     ov.applyViewTransform(transform);
+  });
+
+  // Apply cell transforms (exposure and negative) to OSD canvas
+  createEffect(() => {
+    const transform = uiState.cellTransforms[props.cellIndex] ?? DEFAULT_CELL_TRANSFORM;
+
+    if (viewer && (viewer as any).drawer?.canvas) {
+      const canvas = (viewer as any).drawer.canvas as HTMLCanvasElement;
+      const filters: string[] = [];
+      if (transform.negative) filters.push('invert(1)');
+      if (transform.exposure !== undefined && transform.exposure !== 1) {
+        filters.push(`brightness(${transform.exposure})`);
+      }
+      canvas.style.filter = filters.length > 0 ? filters.join(' ') : 'none';
+    }
   });
 
   // Use annotation tool hook

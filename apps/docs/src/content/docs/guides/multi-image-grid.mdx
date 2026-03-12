@@ -63,6 +63,23 @@ actions.setActiveCell(0);
 
 The active cell is highlighted visually and receives all drawing/selection input. Other cells display annotations in read-only mode (navigation only).
 
+## Cell Image Transforms
+
+Each cell maintains its own visual transforms, such as exposure and negative image suppression, which can be controlled via state actions.
+
+```tsx
+const { actions, uiState } = useAnnotator();
+
+// Get the transform for the active cell
+const activeCellTransform = uiState.cellTransforms[uiState.activeCellIndex];
+
+// Toggle negative image effect for the active cell
+actions.toggleActiveCellNegative();
+
+// Change exposure (brightness) for the active cell
+actions.setActiveCellExposure(1.5);
+```
+
 ## Filmstrip
 
 The `Filmstrip` component shows thumbnails of all available images and allows drag-to-assign interaction:

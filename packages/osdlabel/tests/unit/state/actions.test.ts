@@ -212,4 +212,27 @@ describe('State Management', () => {
     expect(status.circle.enabled).toBe(false);
     dispose();
   });
+
+  it('setActiveCellExposure updates exposure for the active cell', () => {
+    const { uiState, actions, dispose } = createTestStore();
+    actions.setActiveCell(1);
+    actions.setActiveCellExposure(1.5);
+    expect(uiState.cellTransforms[1]).toBeDefined();
+    expect(uiState.cellTransforms[1]?.exposure).toBe(1.5);
+    expect(uiState.cellTransforms[1]?.negative).toBe(false);
+    dispose();
+  });
+
+  it('toggleActiveCellNegative toggles negative for the active cell', () => {
+    const { uiState, actions, dispose } = createTestStore();
+    actions.setActiveCell(2);
+    actions.toggleActiveCellNegative();
+    expect(uiState.cellTransforms[2]).toBeDefined();
+    expect(uiState.cellTransforms[2]?.negative).toBe(true);
+    expect(uiState.cellTransforms[2]?.exposure).toBe(1);
+
+    actions.toggleActiveCellNegative();
+    expect(uiState.cellTransforms[2]?.negative).toBe(false);
+    dispose();
+  });
 });

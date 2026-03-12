@@ -1,14 +1,18 @@
 import { type Component, Show } from 'solid-js';
 import { useAnnotator } from '../state/annotator-context.js';
-import { DEFAULT_VIEW_TRANSFORM } from '../core/types.js';
+import { DEFAULT_VIEW_TRANSFORM, DEFAULT_CELL_TRANSFORM } from '../core/types.js';
 
 export const ViewControls: Component = () => {
-  const { annotationState, actions, activeImageId } = useAnnotator();
+  const { uiState, annotationState, actions, activeImageId } = useAnnotator();
 
   const viewTransform = () => {
     const id = activeImageId();
     if (!id) return DEFAULT_VIEW_TRANSFORM;
     return annotationState.viewTransforms[id] ?? DEFAULT_VIEW_TRANSFORM;
+  };
+
+  const cellTransform = () => {
+    return uiState.cellTransforms[uiState.activeCellIndex] ?? DEFAULT_CELL_TRANSFORM;
   };
 
   const isActive = () => !!activeImageId();
@@ -133,13 +137,62 @@ export const ViewControls: Component = () => {
         </svg>
       </button>
 
-      <Show when={viewTransform().rotation !== 0 || viewTransform().flippedH || viewTransform().flippedV}>
+      <div style={{ width: '1px', height: '24px', 'background-color': '#555', margin: '0 4px' }} />
+
+      <button
+        type="button"
+        title="Toggle Negative"
+        data-testid="view-negative"
+        disabled={!isActive()}
+        onClick={() => actions.toggleActiveCellNegative()}
+        style={{
+          padding: '0 8px',
+          height: '32px',
+          'background-color': cellTransform().negative ? '#2196F3' : '#333',
+          border: 'none',
+          'border-radius': '4px',
+          color: 'white',
+          cursor: isActive() ? 'pointer' : 'default',
+          opacity: isActive() ? '1' : '0.5',
+          display: 'flex',
+          'align-items': 'center',
+          'justify-content': 'center',
+          'font-size': '12px',
+          'font-weight': cellTransform().negative ? 'bold' : 'normal',
+        }}
+      >
+        Neg
+      </button>
+
+      <div style={{ display: 'flex', 'align-items': 'center', gap: '4px', opacity: isActive() ? '1' : '0.5' }}>
+        <span style={{ color: '#ccc', 'font-size': '12px' }}>Exp</span>
+        <input
+          type="range"
+          min="0"
+          max="5"
+          step="0.1"
+          data-testid="view-exposure"
+          disabled={!isActive()}
+          value={cellTransform().exposure}
+          onInput={(e) => actions.setActiveCellExposure(parseFloat(e.currentTarget.value))}
+          style={{ width: '60px', cursor: isActive() ? 'pointer' : 'default' }}
+        />
+        <span style={{ color: '#ccc', 'font-size': '12px', 'min-width': '20px', 'text-align': 'right' }}>
+          {cellTransform().exposure.toFixed(1)}
+        </span>
+      </div>
+
+      <Show when={viewTransform().rotation !== 0 || viewTransform().flippedH || viewTransform().flippedV || cellTransform().negative || cellTransform().exposure !== 1}>
         <div style={{ width: '1px', height: '24px', 'background-color': '#555', margin: '0 4px' }} />
         <button
           type="button"
-          title="Reset View (Shift+0)"
+          title="Reset View"
           data-testid="view-reset"
-          onClick={() => actions.resetActiveImageView()}
+          onClick={() => {
+            actions.resetActiveImageView();
+            if (cellTransform().negative) actions.toggleActiveCellNegative();
+            if (cellTransform().exposure !== 1) actions.setActiveCellExposure(1);
+          }}
           style={{
             padding: '0 8px',
             height: '32px',
