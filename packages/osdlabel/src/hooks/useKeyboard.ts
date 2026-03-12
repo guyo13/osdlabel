@@ -42,7 +42,7 @@ export function useKeyboard(
   activeToolKeyHandlerRef: ActiveToolKeyHandlerRef,
   shouldSkipTargetPredicate?: (target: HTMLElement) => boolean,
 ) {
-  const { actions, uiState } = useAnnotator();
+  const { actions, uiState, activeImageId } = useAnnotator();
   const { isToolEnabled } = useConstraints();
 
   const handleKeyDown = (e: KeyboardEvent) => {
@@ -104,9 +104,9 @@ export function useKeyboard(
 
     // Delete
     else if (key === shortcuts.delete || key === shortcuts.deleteAlt) {
-      const activeImageId = uiState.gridAssignments[uiState.activeCellIndex];
-      if (uiState.selectedAnnotationId && activeImageId) {
-        actions.deleteAnnotation(uiState.selectedAnnotationId, activeImageId);
+      const imgId = activeImageId();
+      if (uiState.selectedAnnotationId && imgId) {
+        actions.deleteAnnotation(uiState.selectedAnnotationId, imgId);
         actions.setSelectedAnnotation(null);
       }
     }

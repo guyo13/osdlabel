@@ -91,13 +91,11 @@ function CustomToolbar() {
 }
 
 function AppContent() {
-  const { uiState, actions } = useAnnotator();
+  const { uiState, actions, activeImageId } = useAnnotator();
 
   actions.setContexts(contexts);
   actions.setActiveContext(contexts[0]!.id);
   actions.assignImageToCell(0, images[0]!.id);
-
-  const activeImageId = () => uiState.gridAssignments[uiState.activeCellIndex];
 
   return (
     <div style={{ width: '100vw', height: '100vh', display: 'flex', 'flex-direction': 'column' }}>

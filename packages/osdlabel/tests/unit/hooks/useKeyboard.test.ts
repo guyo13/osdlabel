@@ -39,6 +39,7 @@ const mockUiState = {
 const mockState = {
   uiState: mockUiState,
   actions: mockActions,
+  activeImageId: () => mockUiState.gridAssignments[mockUiState.activeCellIndex],
 };
 
 // Mock constraints

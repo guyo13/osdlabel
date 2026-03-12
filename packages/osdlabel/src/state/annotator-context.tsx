@@ -29,6 +29,7 @@ interface AnnotatorContextValue {
   actions: ReturnType<typeof createActions>;
   activeToolKeyHandlerRef: ActiveToolKeyHandlerRef;
   shortcuts: KeyboardShortcutMap;
+  activeImageId: Accessor<ImageId | undefined>;
 }
 
 const KeyboardHandler = (props: {
@@ -61,8 +62,8 @@ export function AnnotatorProvider(props: AnnotatorProviderProps) {
   const { state: contextState, setState: setContextState } = createContextStore();
 
   const actions = createActions(setAnnotationState, setUIState, setContextState, contextState, uiState);
-  const currentImageId = () => uiState.gridAssignments[uiState.activeCellIndex];
-  const constraintStatus = createConstraintStatus(contextState, annotationState, currentImageId);
+  const activeImageId = () => uiState.gridAssignments[uiState.activeCellIndex];
+  const constraintStatus = createConstraintStatus(contextState, annotationState, activeImageId);
 
   const activeToolKeyHandlerRef: ActiveToolKeyHandlerRef = { handler: null };
   const mergedShortcuts = { ...DEFAULT_KEYBOARD_SHORTCUTS, ...props.keyboardShortcuts };
@@ -114,6 +115,7 @@ export function AnnotatorProvider(props: AnnotatorProviderProps) {
     actions,
     activeToolKeyHandlerRef,
     shortcuts: mergedShortcuts,
+    activeImageId,
   };
 
   return (
