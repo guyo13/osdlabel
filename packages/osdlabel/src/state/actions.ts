@@ -12,7 +12,7 @@ import type {
   ViewTransform,
 } from '../core/types.js';
 import { isContextScopedToImage } from '../core/context-scoping.js';
-import { DEFAULT_VIEW_TRANSFORM } from '../core/types.js';
+import { DEFAULT_VIEW_TRANSFORM, DEFAULT_CELL_TRANSFORM } from '../core/types.js';
 
 export function createActions(
   setAnnotationState: SetStoreFunction<AnnotationState>,
@@ -165,6 +165,26 @@ export function createActions(
     modifyViewTransform(imageId, () => ({ ...DEFAULT_VIEW_TRANSFORM }));
   }
 
+  function setActiveCellExposure(exposure: number): void {
+    setUIState(
+      produce((state) => {
+        const cellIndex = state.activeCellIndex;
+        const current = state.cellTransforms[cellIndex] ?? { ...DEFAULT_CELL_TRANSFORM };
+        state.cellTransforms[cellIndex] = { ...current, exposure };
+      }),
+    );
+  }
+
+  function toggleActiveCellNegative(): void {
+    setUIState(
+      produce((state) => {
+        const cellIndex = state.activeCellIndex;
+        const current = state.cellTransforms[cellIndex] ?? { ...DEFAULT_CELL_TRANSFORM };
+        state.cellTransforms[cellIndex] = { ...current, negative: !current.negative };
+      }),
+    );
+  }
+
   return {
     addAnnotation,
     updateAnnotation,
@@ -182,5 +202,7 @@ export function createActions(
     flipActiveImageH,
     flipActiveImageV,
     resetActiveImageView,
+    setActiveCellExposure,
+    toggleActiveCellNegative,
   };
 }

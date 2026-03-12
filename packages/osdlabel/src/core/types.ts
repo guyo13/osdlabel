@@ -149,6 +149,16 @@ export interface ViewTransform {
 
 export const DEFAULT_VIEW_TRANSFORM: ViewTransform = { rotation: 0, flippedH: false, flippedV: false };
 
+// ── Cell Transform ───────────────────────────────────────────────────────
+
+/** Per-cell transform (exposure/negative state) */
+export interface CellTransform {
+  readonly exposure: number;
+  readonly negative: boolean;
+}
+
+export const DEFAULT_CELL_TRANSFORM: CellTransform = { exposure: 1, negative: false };
+
 // ── State Types ──────────────────────────────────────────────────────────
 // Note: State container types intentionally omit `readonly` — SolidJS store
 // proxies enforce immutability at runtime, and `readonly` here would conflict
@@ -171,6 +181,7 @@ export interface UIState {
   gridRows: number;
   gridAssignments: Record<number, ImageId>;
   selectedAnnotationId: AnnotationId | null;
+  cellTransforms: Record<number, CellTransform>;
 }
 
 /** Context state */
