@@ -1,9 +1,12 @@
 import type { Component } from 'solid-js';
+import { Show } from 'solid-js';
 import { useAnnotator } from '../state/annotator-context.js';
 import type { ImageId } from '../core/types.js';
+import FpsCounter from './FpsCounter.js';
 
 export interface StatusBarProps {
   readonly imageId: ImageId | undefined;
+  readonly showFps?: boolean | undefined;
 }
 
 const StatusBar: Component<StatusBarProps> = (props) => {
@@ -52,6 +55,9 @@ const StatusBar: Component<StatusBarProps> = (props) => {
       <span data-testid="status-count">
         Annotations: <strong style={{ color: '#fff' }}>{totalAnnotationCount()}</strong>
       </span>
+      <Show when={props.showFps}>
+        <FpsCounter />
+      </Show>
     </div>
   );
 };

@@ -208,7 +208,7 @@ function AppContent() {
       </div>
 
       {/* Status bar */}
-      <StatusBar imageId={activeImageId()} />
+      <StatusBar imageId={activeImageId()} showFps={true} />
 
       {/* JSON import panel */}
       {showImportPanel() && (

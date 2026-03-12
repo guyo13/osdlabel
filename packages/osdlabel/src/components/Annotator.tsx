@@ -30,6 +30,8 @@ export interface AnnotatorProps extends Omit<AnnotatorProviderProps, 'children'>
   readonly maxGridSize?: { readonly columns: number; readonly rows: number } | undefined;
   /** Custom style for the root container */
   readonly style?: JSX.CSSProperties | undefined;
+  /** Whether to show the FPS counter (default: false) */
+  readonly showFps?: boolean | undefined;
 }
 
 const AnnotatorInner: Component<Omit<AnnotatorProps, keyof AnnotatorProviderProps>> = (props) => {
@@ -105,7 +107,7 @@ const AnnotatorInner: Component<Omit<AnnotatorProps, keyof AnnotatorProviderProp
           <Filmstrip images={props.images} position="bottom" />
         )}
       </div>
-      <StatusBar imageId={activeImageId()} />
+      <StatusBar imageId={activeImageId()} showFps={props.showFps} />
     </div>
   );
 };
@@ -130,6 +132,7 @@ const Annotator: Component<AnnotatorProps> = (props) => {
         filmstripPosition={props.filmstripPosition}
         maxGridSize={props.maxGridSize}
         style={props.style}
+        showFps={props.showFps}
       />
     </AnnotatorProvider>
   );
