@@ -3,10 +3,8 @@ import { useAnnotator } from '../state/annotator-context.js';
 import { DEFAULT_VIEW_TRANSFORM } from '../core/types.js';
 
 export const ViewControls: Component = () => {
-  const { uiState, annotationState, actions } = useAnnotator();
+  const { annotationState, actions, activeImageId } = useAnnotator();
 
-  const activeImageId = () => uiState.gridAssignments[uiState.activeCellIndex];
-  
   const viewTransform = () => {
     const id = activeImageId();
     if (!id) return DEFAULT_VIEW_TRANSFORM;

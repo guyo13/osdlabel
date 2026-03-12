@@ -30,7 +30,7 @@ const contexts: AnnotationContext[] = [
 ];
 
 function GridControlsDemoContent() {
-  const { uiState, actions } = useAnn();
+  const { uiState, actions, activeImageId } = useAnn();
 
   onMount(() => {
     actions.setContexts(contexts);
@@ -38,8 +38,6 @@ function GridControlsDemoContent() {
     actions.assignImageToCell(0, images[0]!.id);
     actions.assignImageToCell(1, images[1]!.id);
   });
-
-  const activeImageId = () => uiState.gridAssignments[uiState.activeCellIndex];
 
   return (
     <div

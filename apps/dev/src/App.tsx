@@ -70,7 +70,7 @@ const CONTEXTS: AnnotationContext[] = [
 ];
 
 function AppContent() {
-  const { uiState, annotationState, actions } = useAnnotator();
+  const { uiState, annotationState, actions, activeImageId } = useAnnotator();
   const [copyLabel, setCopyLabel] = createSignal('Copy JSON');
   const [activeCtxIdx, setActiveCtxIdx] = createSignal(0);
   const [exportedJson, setExportedJson] = createSignal('');
@@ -83,8 +83,6 @@ function AppContent() {
 
   // Auto-assign first image to cell 0
   actions.assignImageToCell(0, IMAGES[0]!.id);
-
-  const activeImageId = () => uiState.gridAssignments[uiState.activeCellIndex];
 
   const copyAnnotationsToClipboard = () => {
     const json = JSON.stringify(annotationState.byImage, null, 2);
