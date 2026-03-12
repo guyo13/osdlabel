@@ -53,6 +53,7 @@ const CONTEXTS: AnnotationContext[] = [
     label: 'Pneumothorax',
     tools: [
       { type: 'path', maxCount: 3 },
+      { type: 'freeHandPath', maxCount: 2 },
       { type: 'circle', maxCount: 2 },
     ],
   },
@@ -65,6 +66,7 @@ const CONTEXTS: AnnotationContext[] = [
       { type: 'line' },
       { type: 'point' },
       { type: 'path' },
+      { type: 'freeHandPath' },
     ],
   },
 ];
