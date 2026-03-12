@@ -259,6 +259,20 @@ interface ImageSource {
 
 The `dziUrl` can point to a `.dzi` file for tiled deep zoom images, or a standard image URL (`.jpg`, `.png`) for simple images.
 
+### ViewTransform
+
+Per-image view transform applied during rendering without modifying annotation data.
+
+```ts
+interface ViewTransform {
+  readonly rotation: number;      // degrees (0, 90, 180, 270)
+  readonly flippedH: boolean;
+  readonly flippedV: boolean;
+  readonly exposure: number;      // -1 to 1 (0 = default)
+  readonly inverted: boolean;     // false = normal, true = CSS invert(1)
+}
+```
+
 ---
 
 ## State types
@@ -329,6 +343,9 @@ interface KeyboardShortcutMap {
   readonly pathFinish: string;
   readonly pathClose: string;
   readonly pathCancel: string;
+  readonly toggleNegative: string;
+  readonly increaseExposure: string;
+  readonly decreaseExposure: string;
 }
 ```
 

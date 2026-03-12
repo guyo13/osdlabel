@@ -138,6 +138,8 @@ export function deserialize(doc: unknown): DeserializeResult {
         rotation: vt.rotation,
         flippedH: vt.flippedH,
         flippedV: vt.flippedV,
+        exposure: typeof vt.exposure === 'number' ? vt.exposure : 0,
+        inverted: typeof vt.inverted === 'boolean' ? vt.inverted : false,
       };
     }
     viewTransforms[imageId] = viewTransform;

@@ -159,6 +159,30 @@ export function createActions(
     modifyViewTransform(imageId, (vt) => ({ ...vt, flippedV: !vt.flippedV }));
   }
 
+  function toggleActiveImageNegative(): void {
+    const imageId = getActiveImageId();
+    if (!imageId) return;
+    modifyViewTransform(imageId, (vt) => ({ ...vt, inverted: !vt.inverted }));
+  }
+
+  function increaseActiveImageExposure(): void {
+    const imageId = getActiveImageId();
+    if (!imageId) return;
+    modifyViewTransform(imageId, (vt) => ({ ...vt, exposure: Math.min(1, vt.exposure + 0.1) }));
+  }
+
+  function decreaseActiveImageExposure(): void {
+    const imageId = getActiveImageId();
+    if (!imageId) return;
+    modifyViewTransform(imageId, (vt) => ({ ...vt, exposure: Math.max(-1, vt.exposure - 0.1) }));
+  }
+
+  function setActiveImageExposure(value: number): void {
+    const imageId = getActiveImageId();
+    if (!imageId) return;
+    modifyViewTransform(imageId, (vt) => ({ ...vt, exposure: Math.max(-1, Math.min(1, value)) }));
+  }
+
   function resetActiveImageView(): void {
     const imageId = getActiveImageId();
     if (!imageId) return;
@@ -181,6 +205,10 @@ export function createActions(
     rotateActiveImageCCW,
     flipActiveImageH,
     flipActiveImageV,
+    toggleActiveImageNegative,
+    increaseActiveImageExposure,
+    decreaseActiveImageExposure,
+    setActiveImageExposure,
     resetActiveImageView,
   };
 }

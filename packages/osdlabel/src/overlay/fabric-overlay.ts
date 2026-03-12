@@ -231,6 +231,15 @@ export class FabricOverlay {
     this.sync();
   }
 
+  /** Apply image adjustment filters (exposure/invert) to the OSD drawer canvas */
+  applyImageFilters(exposure: number, inverted: boolean): void {
+    const drawerCanvas = this._viewer.drawer.canvas as HTMLElement;
+    const parts: string[] = [];
+    if (exposure !== 0) parts.push(`brightness(${1 + exposure})`);
+    if (inverted) parts.push('invert(1)');
+    drawerCanvas.style.filter = parts.length > 0 ? parts.join(' ') : '';
+  }
+
   getRotation(): number {
     return this._viewer.viewport.getRotation();
   }
