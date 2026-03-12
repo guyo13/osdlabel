@@ -35,6 +35,9 @@ export const DEFAULT_KEYBOARD_SHORTCUTS: KeyboardShortcutMap = {
   flipHorizontal: 'H',
   flipVertical: 'V',
   resetView: ')',
+  toggleNegative: 'N',
+  increaseExposure: 'E',
+  decreaseExposure: 'D',
 } as const;
 
 export function useKeyboard(
@@ -74,6 +77,12 @@ export function useKeyboard(
       actions.flipActiveImageH();
     } else if (e.shiftKey && keyLower === shortcuts.flipVertical.toLowerCase()) {
       actions.flipActiveImageV();
+    } else if (e.shiftKey && keyLower === shortcuts.toggleNegative.toLowerCase()) {
+      actions.toggleActiveImageNegative();
+    } else if (e.shiftKey && keyLower === shortcuts.increaseExposure.toLowerCase()) {
+      actions.increaseActiveImageExposure();
+    } else if (e.shiftKey && keyLower === shortcuts.decreaseExposure.toLowerCase()) {
+      actions.decreaseActiveImageExposure();
     } else if (key === shortcuts.resetView || (e.shiftKey && keyLower === '0')) {
       actions.resetActiveImageView();
     }

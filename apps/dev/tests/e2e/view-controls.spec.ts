@@ -14,6 +14,9 @@ test.describe('View Controls', () => {
     await expect(page.locator('[data-testid="view-rotate-ccw"]')).toBeVisible();
     await expect(page.locator('[data-testid="view-flip-h"]')).toBeVisible();
     await expect(page.locator('[data-testid="view-flip-v"]')).toBeVisible();
+    await expect(page.locator('[data-testid="view-negative"]')).toBeVisible();
+    await expect(page.locator('[data-testid="view-exposure-increase"]')).toBeVisible();
+    await expect(page.locator('[data-testid="view-exposure-decrease"]')).toBeVisible();
     // Reset button should not be visible initially as view is not transformed
     await expect(page.locator('[data-testid="view-reset"]')).not.toBeVisible();
   });
@@ -53,6 +56,40 @@ test.describe('View Controls', () => {
     
     await flipHBtn.click();
     await expect(flipHBtn).toHaveCSS('background-color', 'rgb(51, 51, 51)');
+    await expect(resetBtn).not.toBeVisible();
+  });
+
+  test('Negative button toggles and shows active state', async ({ page }) => {
+    const negativeBtn = page.locator('[data-testid="view-negative"]');
+    const resetBtn = page.locator('[data-testid="view-reset"]');
+
+    await expect(negativeBtn).toHaveCSS('background-color', 'rgb(51, 51, 51)');
+    
+    await negativeBtn.click();
+    await expect(negativeBtn).toHaveCSS('background-color', 'rgb(33, 150, 243)');
+    await expect(resetBtn).toBeVisible();
+    
+    await negativeBtn.click();
+    await expect(negativeBtn).toHaveCSS('background-color', 'rgb(51, 51, 51)');
+    await expect(resetBtn).not.toBeVisible();
+  });
+
+  test('Exposure buttons adjust exposure and show reset', async ({ page }) => {
+    const increaseBtn = page.locator('[data-testid="view-exposure-increase"]');
+    const decreaseBtn = page.locator('[data-testid="view-exposure-decrease"]');
+    const resetBtn = page.locator('[data-testid="view-reset"]');
+
+    await increaseBtn.click();
+    await expect(resetBtn).toBeVisible();
+    
+    await decreaseBtn.click();
+    // Exposure should be back to 0, so reset disappears
+    await expect(resetBtn).not.toBeVisible();
+
+    await decreaseBtn.click();
+    await expect(resetBtn).toBeVisible();
+    
+    await resetBtn.click();
     await expect(resetBtn).not.toBeVisible();
   });
 
@@ -144,13 +181,28 @@ test.describe('View Controls', () => {
 
     // Press Shift+R
     await page.keyboard.press('Shift+R');
-    
     // Press Shift+0 (Reset)
     await page.keyboard.press('Shift+0');
-    
+
     await expect(flipHBtn).toHaveCSS('background-color', 'rgb(51, 51, 51)');
     await expect(resetBtn).not.toBeVisible();
-    
+
+    const negativeBtn = page.locator('[data-testid="view-negative"]');
+    // Press Shift+N
+    await page.keyboard.press('Shift+N');
+    await expect(negativeBtn).toHaveCSS('background-color', 'rgb(33, 150, 243)');
+    await expect(resetBtn).toBeVisible();
+
+    // Press Shift+E
+    await page.keyboard.press('Shift+E');
+    // Press Shift+D
+    await page.keyboard.press('Shift+D');
+
+    // Press Shift+0 (Reset)
+    await page.keyboard.press('Shift+0');
+    await expect(negativeBtn).toHaveCSS('background-color', 'rgb(51, 51, 51)');
+    await expect(resetBtn).not.toBeVisible();
+
     // Plain 'r' triggers rectangle tool, not rotation
     await page.keyboard.press('r');
     await expect(page.locator('[data-testid="tool-rectangle"]')).toHaveCSS('background-color', 'rgb(33, 150, 243)');
