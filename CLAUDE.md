@@ -53,7 +53,7 @@ This is `osdlabel`, a DZI image annotation library built with SolidJS, Fabric.js
 ### Testing
 
 - Run `pnpm test` (Vitest) after implementing any core logic.
-- Run `pnpm test:e2e` (Playwright) after implementing any UI interaction.
+- Run `pnpm test:e2e` (Playwright) after implementing any UI interaction. For parallel worktree runs, use `PORT=5174 pnpm test:e2e` to avoid port conflicts (default: 5173).
 - Write tests for the module you just built before moving to the next task.
 - **For canvas E2E tests:** Use Playwright's `page.mouse.move()`, `page.mouse.down()`, `page.mouse.up()` for precise drawing simulation. Use `page.screenshot()` with `expect(screenshot).toMatchSnapshot()` for visual regression.
 
