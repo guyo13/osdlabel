@@ -140,8 +140,8 @@ describe('FreeHandPathTool', () => {
     tool.onPointerMove({ type: 'pointermove', shiftKey: false } as PointerEvent, { x: 50, y: 50 });
 
     const preview = mockCanvas.add.mock.calls[0][0];
-    // Should have initial point + one far point = 2 points
-    expect(preview.points.length).toBe(2);
+    // Should have initial point + one far point + current cursor = 3 points
+    expect(preview.points.length).toBe(3);
   });
 
   it('should respect a custom minSampleDistancePx', () => {
@@ -157,7 +157,7 @@ describe('FreeHandPathTool', () => {
     tool.onPointerMove({ type: 'pointermove', shiftKey: false } as PointerEvent, { x: 25, y: 0 });
 
     const preview = mockCanvas.add.mock.calls[0][0];
-    expect(preview.points.length).toBe(2); // initial + one sampled point
+    expect(preview.points.length).toBe(3); // initial + one sampled point + current cursor
   });
 
   it('should not create annotation when no active context', () => {
