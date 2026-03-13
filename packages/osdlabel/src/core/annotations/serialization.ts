@@ -29,7 +29,7 @@ export class SerializationError extends Error {
 }
 
 const SUPPORTED_VERSION = '1.0.0';
-const ANNOTATION_TYPES: readonly string[] = ['rectangle', 'circle', 'line', 'point', 'path'];
+const ANNOTATION_TYPES: readonly string[] = ['rectangle', 'circle', 'line', 'point', 'path', 'freeHandPath'];
 
 /**
  * Serialize annotation state into a portable JSON document.
@@ -273,6 +273,7 @@ function validateGeometry(value: unknown): boolean {
       return validatePointValue(g.position);
 
     case 'path':
+    case 'freeHandPath':
       if (typeof g.closed !== 'boolean') return false;
       if (!Array.isArray(g.points)) return false;
       if (g.points.length < 2) return false;

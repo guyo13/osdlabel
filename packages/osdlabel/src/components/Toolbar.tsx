@@ -8,6 +8,7 @@ const TOOL_LABELS: Record<AnnotationType, string> = {
   line: 'Line',
   point: 'Point',
   path: 'Path',
+  freeHandPath: 'Free Draw',
 };
 
 const Toolbar: Component = () => {
