@@ -64,11 +64,15 @@ export class FreeHandPathTool extends BaseTool {
     const dy = currentScreen.y - lastScreen.y;
     const dist = Math.sqrt(dx * dx + dy * dy);
 
-    if (dist < this.minSampleDistancePx) return;
+    if (dist >= this.minSampleDistancePx) {
+      this.vertices.push({ x: imagePoint.x, y: imagePoint.y });
+    }
 
-    this.vertices.push({ x: imagePoint.x, y: imagePoint.y });
     this.preview.set({
-      points: this.vertices.map((p) => ({ x: p.x, y: p.y })),
+      points: [
+        ...this.vertices.map((p) => ({ x: p.x, y: p.y })),
+        { x: imagePoint.x, y: imagePoint.y },
+      ],
       dirty: true,
     });
     this.overlay.canvas.requestRenderAll();
@@ -90,7 +94,7 @@ export class FreeHandPathTool extends BaseTool {
   }
 
   onKeyDown(event: KeyboardEvent): boolean {
-    if (this.isDrawing && event.key === 'Escape') {
+    if (this.isDrawing && event.key === this.shortcuts?.cancel) {
       this.cancel();
       return true;
     }
