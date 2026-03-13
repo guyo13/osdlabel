@@ -11,6 +11,7 @@ import { CircleTool } from '../core/tools/circle-tool.js';
 import { LineTool } from '../core/tools/line-tool.js';
 import { PointTool } from '../core/tools/point-tool.js';
 import { PathTool } from '../core/tools/path-tool.js';
+import { FreeHandPathTool } from '../core/tools/free-hand-path-tool.js';
 import { SelectTool } from '../core/tools/select-tool.js';
 import { useAnnotator } from '../state/annotator-context.js';
 import type { AnnotationId, ImageId, Point, AnnotationType } from '../core/types.js';
@@ -114,6 +115,9 @@ export function useAnnotationTool(
         break;
       case 'path':
         tool = new PathTool();
+        break;
+      case 'freeHandPath':
+        tool = new FreeHandPathTool();
         break;
       case 'select':
         tool = new SelectTool();

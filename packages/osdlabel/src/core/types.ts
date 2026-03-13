@@ -30,7 +30,7 @@ export function createAnnotationContextId(value: string): AnnotationContextId {
 // ── Core Geometry Types ──────────────────────────────────────────────────
 
 /** Supported annotation geometry types */
-export type AnnotationType = 'rectangle' | 'circle' | 'line' | 'point' | 'path';
+export type AnnotationType = 'rectangle' | 'circle' | 'line' | 'point' | 'path' | 'freeHandPath';
 
 /** 2D point in image-space coordinates */
 export interface Point {
@@ -50,7 +50,8 @@ export type Geometry =
   | { readonly type: 'circle'; readonly center: Point; readonly radius: number }
   | { readonly type: 'line'; readonly start: Point; readonly end: Point }
   | { readonly type: 'point'; readonly position: Point }
-  | { readonly type: 'path'; readonly points: readonly Point[]; readonly closed: boolean };
+  | { readonly type: 'path'; readonly points: readonly Point[]; readonly closed: boolean }
+  | { readonly type: 'freeHandPath'; readonly points: readonly Point[]; readonly closed: boolean };
 
 // ── Annotation Style ─────────────────────────────────────────────────────
 
@@ -201,6 +202,7 @@ export interface KeyboardShortcutMap {
   readonly lineTool: string;
   readonly pointTool: string;
   readonly pathTool: string;
+  readonly freeHandPathTool: string;
   readonly cancel: string;
   readonly delete: string;
   readonly deleteAlt: string;
