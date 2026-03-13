@@ -11,6 +11,7 @@ export const DEFAULT_KEYBOARD_SHORTCUTS: KeyboardShortcutMap = {
   lineTool: 'l',
   pointTool: 'p',
   pathTool: 'd',
+  freeHandPathTool: 'f',
   cancel: 'Escape',
   delete: 'Delete',
   deleteAlt: 'Backspace',
@@ -100,6 +101,8 @@ export function useKeyboard(
       if (isToolEnabled('point')) actions.setActiveTool('point');
     } else if (!e.shiftKey && keyLower === shortcuts.pathTool.toLowerCase()) {
       if (isToolEnabled('path')) actions.setActiveTool('path');
+    } else if (!e.shiftKey && keyLower === shortcuts.freeHandPathTool.toLowerCase()) {
+      if (isToolEnabled('freeHandPath')) actions.setActiveTool('freeHandPath');
     }
 
     // Cancel / Escape
