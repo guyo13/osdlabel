@@ -132,7 +132,7 @@ describe('FreeHandPathTool', () => {
 
     tool.onPointerDown({ type: 'pointerdown', shiftKey: false } as PointerEvent, { x: 10, y: 10 });
 
-    // Move only 1 pixel — should be ignored (below threshold of 3)
+    // Move only 1 pixel — should be ignored (below default threshold of 3)
     tool.onPointerMove({ type: 'pointermove', shiftKey: false } as PointerEvent, { x: 11, y: 10 });
     tool.onPointerMove({ type: 'pointermove', shiftKey: false } as PointerEvent, { x: 11, y: 11 });
 
@@ -142,6 +142,22 @@ describe('FreeHandPathTool', () => {
     const preview = mockCanvas.add.mock.calls[0][0];
     // Should have initial point + one far point = 2 points
     expect(preview.points.length).toBe(2);
+  });
+
+  it('should respect a custom minSampleDistancePx', () => {
+    tool = new FreeHandPathTool({ minSampleDistancePx: 20 });
+    tool.activate(mockOverlay, imageId, mockCallbacks, mockShortcuts);
+
+    tool.onPointerDown({ type: 'pointerdown', shiftKey: false } as PointerEvent, { x: 0, y: 0 });
+
+    // Move 10px — below custom threshold of 20, should be ignored
+    tool.onPointerMove({ type: 'pointermove', shiftKey: false } as PointerEvent, { x: 10, y: 0 });
+
+    // Move 25px total — above threshold, should be sampled
+    tool.onPointerMove({ type: 'pointermove', shiftKey: false } as PointerEvent, { x: 25, y: 0 });
+
+    const preview = mockCanvas.add.mock.calls[0][0];
+    expect(preview.points.length).toBe(2); // initial + one sampled point
   });
 
   it('should not create annotation when no active context', () => {

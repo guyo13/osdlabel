@@ -10,8 +10,8 @@ import { DEFAULT_ANNOTATION_STYLE } from '../constants.js';
 import { getFabricOptions } from '../fabric-utils.js';
 import { generateId } from '../../utils/id.js';
 
-/** Minimum distance in screen pixels between consecutive sampled points */
-const MIN_SAMPLE_DISTANCE_SCREEN_PX = 3;
+/** Default minimum distance in screen pixels between consecutive sampled points */
+const DEFAULT_MIN_SAMPLE_DISTANCE_SCREEN_PX = 3;
 
 export class FreeHandPathTool extends BaseTool {
   readonly type: AnnotationType = 'freeHandPath';
@@ -19,6 +19,12 @@ export class FreeHandPathTool extends BaseTool {
   private vertices: Point[] = [];
   private isDrawing = false;
   private shiftHeld = false;
+  private readonly minSampleDistancePx: number;
+
+  constructor(options?: { minSampleDistancePx?: number }) {
+    super();
+    this.minSampleDistancePx = options?.minSampleDistancePx ?? DEFAULT_MIN_SAMPLE_DISTANCE_SCREEN_PX;
+  }
 
   onPointerDown(event: PointerEvent, imagePoint: Point): void {
     if (!this.overlay) return;
@@ -58,7 +64,7 @@ export class FreeHandPathTool extends BaseTool {
     const dy = currentScreen.y - lastScreen.y;
     const dist = Math.sqrt(dx * dx + dy * dy);
 
-    if (dist < MIN_SAMPLE_DISTANCE_SCREEN_PX) return;
+    if (dist < this.minSampleDistancePx) return;
 
     this.vertices.push({ x: imagePoint.x, y: imagePoint.y });
     this.preview.set({
