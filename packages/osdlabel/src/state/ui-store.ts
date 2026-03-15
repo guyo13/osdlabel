@@ -9,6 +9,7 @@ export function createUIStore() {
     gridRows: 1,
     gridAssignments: {},
     selectedAnnotationId: null,
+    cellTransforms: {},
   });
   return { state, setState };
 }

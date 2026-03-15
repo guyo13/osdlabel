@@ -230,4 +230,38 @@ test.describe('View Controls', () => {
     await expect(page.locator('[data-testid="tool-rectangle"]')).toHaveCSS('background-color', 'rgb(33, 150, 243)');
     await expect(resetBtn).not.toBeVisible();
   });
+
+  test('Exposure and negative are independent per cell for same image', async ({ page }) => {
+    // 1. Add another row to have multiple cells
+    await page.keyboard.press(']'); 
+    
+    // Grid assignments are done sequentially. Cell 0 already has image 0 by default.
+    // Cell 1 should also be assigned image 0.
+    const cell0 = page.locator('[data-testid="grid-cell-0"]');
+    const cell1 = page.locator('[data-testid="grid-cell-1"]');
+    
+    // Assign 'highsmith' to cell 1
+    await cell1.click();
+    const thumbnail = page.locator('[data-testid="filmstrip-item-highsmith"]');
+    await thumbnail.click();
+    
+    // 3. Select cell 0 and enable negative
+    await cell0.click();
+    await page.locator('[data-testid="view-negative"]').click();
+    
+    // 4. Verify cell 0 has invert filter, cell 1 does not
+    const canvas0 = cell0.locator('canvas').nth(0);
+    const canvas1 = cell1.locator('canvas').nth(0);
+    
+    await expect(canvas0).toHaveCSS('filter', 'invert(1)');
+    await expect(canvas1).toHaveCSS('filter', 'none');
+    
+    // 5. Select cell 1 and increase exposure
+    await cell1.click();
+    await page.locator('[data-testid="view-exposure-increase"]').click();
+    
+    // 6. Verify cell 1 has brightness filter, cell 0 still only has invert
+    await expect(canvas1).toHaveCSS('filter', 'brightness(1.1)');
+    await expect(canvas0).toHaveCSS('filter', 'invert(1)');
+  });
 });

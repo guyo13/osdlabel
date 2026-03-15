@@ -144,7 +144,7 @@ describe('Serialization', () => {
   describe('deserialize', () => {
     it('should round-trip serialize → deserialize preserving all data', () => {
       const state = createTestState([annotation1, annotation2], {
-        [imageId]: { rotation: 180, flippedH: false, flippedV: true, exposure: 0, inverted: false }
+        [imageId]: { rotation: 180, flippedH: false, flippedV: true }
       });
       const doc = serialize(state, imageSources);
       const json = JSON.stringify(doc);
@@ -162,7 +162,7 @@ describe('Serialization', () => {
       const restoredAnn2 = result[imageId][annId2];
       expect(restoredAnn2.geometry).toEqual(annotation2.geometry);
       
-      expect(viewTransforms[imageId]).toEqual({ rotation: 180, flippedH: false, flippedV: true, exposure: 0, inverted: false });
+      expect(viewTransforms[imageId]).toEqual({ rotation: 180, flippedH: false, flippedV: true });
     });
 
     it('should default missing viewTransform to DEFAULT_VIEW_TRANSFORM', () => {
@@ -179,7 +179,7 @@ describe('Serialization', () => {
       };
       
       const { viewTransforms } = deserialize(doc);
-      expect(viewTransforms[createImageId('img1')]).toEqual({ rotation: 0, flippedH: false, flippedV: false, exposure: 0, inverted: false });
+      expect(viewTransforms[createImageId('img1')]).toEqual({ rotation: 0, flippedH: false, flippedV: false });
     });
 
     it('should reject invalid viewTransform (not an object)', () => {

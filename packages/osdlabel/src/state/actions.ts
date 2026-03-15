@@ -11,6 +11,7 @@ import type {
   ContextState,
   ViewTransform,
 } from '../core/types.js';
+import { DEFAULT_CELL_TRANSFORM } from '../core/types.js';
 import { isContextScopedToImage } from '../core/context-scoping.js';
 import { DEFAULT_VIEW_TRANSFORM } from '../core/types.js';
 
@@ -21,6 +22,7 @@ export function createActions(
   contextState: ContextState,
   uiState: UIState,
 ) {
+
   function addAnnotation(annotation: Omit<Annotation, 'createdAt' | 'updatedAt'>): void {
     const ctx = contextState.contexts.find((c) => c.id === annotation.contextId);
     if (ctx && !isContextScopedToImage(ctx, annotation.imageId)) {
@@ -160,42 +162,61 @@ export function createActions(
   }
 
   function toggleActiveImageNegative(): void {
-    const imageId = getActiveImageId();
-    if (!imageId) return;
-    modifyViewTransform(imageId, (vt) => ({ ...vt, inverted: !vt.inverted }));
+    const cellIndex = uiState.activeCellIndex;
+    setUIState(
+      produce((state) => {
+        const current = state.cellTransforms[cellIndex] ?? { ...DEFAULT_CELL_TRANSFORM };
+        state.cellTransforms[cellIndex] = { ...current, inverted: !current.inverted };
+      }),
+    );
   }
 
   function increaseActiveImageExposure(): void {
-    const imageId = getActiveImageId();
-    if (!imageId) return;
-    modifyViewTransform(imageId, (vt) => {
-      const exposure = Math.min((vt.exposure || 0) + 0.1, 1);
-      return { ...vt, exposure: Math.round(exposure * 10) / 10 };
-    });
+    const cellIndex = uiState.activeCellIndex;
+    setUIState(
+      produce((state) => {
+        const current = state.cellTransforms[cellIndex] ?? { ...DEFAULT_CELL_TRANSFORM };
+        const exposure = Math.min(current.exposure + 0.1, 1);
+        state.cellTransforms[cellIndex] = { ...current, exposure: Math.round(exposure * 10) / 10 };
+      }),
+    );
   }
 
   function decreaseActiveImageExposure(): void {
-    const imageId = getActiveImageId();
-    if (!imageId) return;
-    modifyViewTransform(imageId, (vt) => {
-      const exposure = Math.max((vt.exposure || 0) - 0.1, -1);
-      return { ...vt, exposure: Math.round(exposure * 10) / 10 };
-    });
+    const cellIndex = uiState.activeCellIndex;
+    setUIState(
+      produce((state) => {
+        const current = state.cellTransforms[cellIndex] ?? { ...DEFAULT_CELL_TRANSFORM };
+        const exposure = Math.max(current.exposure - 0.1, -1);
+        state.cellTransforms[cellIndex] = { ...current, exposure: Math.round(exposure * 10) / 10 };
+      }),
+    );
   }
 
   function setActiveImageExposure(value: number): void {
-    const imageId = getActiveImageId();
-    if (!imageId) return;
-    modifyViewTransform(imageId, (vt) => {
-      const exposure = Math.max(Math.min(value, 1), -1);
-      return { ...vt, exposure };
-    });
+    const cellIndex = uiState.activeCellIndex;
+    setUIState(
+      produce((state) => {
+        const current = state.cellTransforms[cellIndex] ?? { ...DEFAULT_CELL_TRANSFORM };
+        const exposure = Math.max(Math.min(value, 1), -1);
+        state.cellTransforms[cellIndex] = { ...current, exposure };
+      }),
+    );
   }
 
   function resetActiveImageView(): void {
     const imageId = getActiveImageId();
-    if (!imageId) return;
-    modifyViewTransform(imageId, () => ({ ...DEFAULT_VIEW_TRANSFORM }));
+    if (imageId) {
+      modifyViewTransform(imageId, () => ({ ...DEFAULT_VIEW_TRANSFORM }));
+    }
+    
+    // Reset only the active cell's adjustments; other cells' transforms remain untouched in state
+    const cellIndex = uiState.activeCellIndex;
+    setUIState(
+      produce((state) => {
+        state.cellTransforms[cellIndex] = { ...DEFAULT_CELL_TRANSFORM };
+      }),
+    );
   }
 
   return {

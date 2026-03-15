@@ -145,14 +145,23 @@ export interface ViewTransform {
   readonly rotation: number;      // degrees (0, 90, 180, 270)
   readonly flippedH: boolean;
   readonly flippedV: boolean;
-  readonly exposure: number;      // -1 to 1 (0 = default, maps to CSS brightness 0.0–2.0)
-  readonly inverted: boolean;     // false = normal, true = CSS invert(1)
 }
 
 export const DEFAULT_VIEW_TRANSFORM: ViewTransform = {
   rotation: 0,
   flippedH: false,
   flippedV: false,
+};
+
+// ── Cell Transform ───────────────────────────────────────────────────────
+
+/** Per-cell visual adjustments (not serialized) */
+export interface CellTransform {
+  readonly exposure: number;      // -1 to 1 (0 = default, maps to CSS brightness 0.0–2.0)
+  readonly inverted: boolean;     // false = normal, true = CSS invert(1)
+}
+
+export const DEFAULT_CELL_TRANSFORM: CellTransform = {
   exposure: 0,
   inverted: false,
 };
@@ -179,6 +188,7 @@ export interface UIState {
   gridRows: number;
   gridAssignments: Record<number, ImageId>;
   selectedAnnotationId: AnnotationId | null;
+  cellTransforms: Record<number, CellTransform>;
 }
 
 /** Context state */

@@ -1,14 +1,18 @@
 import { type Component, Show } from 'solid-js';
 import { useAnnotator } from '../state/annotator-context.js';
-import { DEFAULT_VIEW_TRANSFORM } from '../core/types.js';
+import { DEFAULT_VIEW_TRANSFORM, DEFAULT_CELL_TRANSFORM } from '../core/types.js';
 
 export const ViewControls: Component = () => {
-  const { annotationState, actions, activeImageId } = useAnnotator();
+  const { uiState, annotationState, actions, activeImageId } = useAnnotator();
 
   const viewTransform = () => {
     const id = activeImageId();
     if (!id) return DEFAULT_VIEW_TRANSFORM;
     return annotationState.viewTransforms[id] ?? DEFAULT_VIEW_TRANSFORM;
+  };
+
+  const cellTransform = () => {
+    return uiState.cellTransforms[uiState.activeCellIndex] ?? DEFAULT_CELL_TRANSFORM;
   };
 
   const isActive = () => !!activeImageId();
@@ -144,7 +148,7 @@ export const ViewControls: Component = () => {
         style={{
           width: '32px',
           height: '32px',
-          'background-color': viewTransform().inverted ? '#2196F3' : '#333',
+          'background-color': cellTransform().inverted ? '#2196F3' : '#333',
           border: 'none',
           'border-radius': '4px',
           color: 'white',
@@ -203,7 +207,7 @@ export const ViewControls: Component = () => {
           opacity: isActive() ? '1' : '0.5',
         }}
       >
-        {viewTransform().exposure > 0 ? `+${viewTransform().exposure.toFixed(1)}` : viewTransform().exposure.toFixed(1)}
+        {cellTransform().exposure > 0 ? `+${cellTransform().exposure.toFixed(1)}` : cellTransform().exposure.toFixed(1)}
       </div>
 
       <button
@@ -243,8 +247,8 @@ export const ViewControls: Component = () => {
         viewTransform().rotation !== 0 ||
         viewTransform().flippedH ||
         viewTransform().flippedV ||
-        viewTransform().exposure !== 0 ||
-        viewTransform().inverted
+        cellTransform().exposure !== 0 ||
+        cellTransform().inverted
       }>
         <div style={{ width: '1px', height: '24px', 'background-color': '#555', margin: '0 4px' }} />
         <button
