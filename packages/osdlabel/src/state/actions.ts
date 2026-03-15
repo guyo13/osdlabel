@@ -90,7 +90,13 @@ export function createActions(
   }
 
   function assignImageToCell(cellIndex: number, imageId: ImageId): void {
-    setUIState('gridAssignments', cellIndex, imageId);
+    setUIState(
+      produce((state) => {
+        state.gridAssignments[cellIndex] = imageId;
+        // Reset visual adjustments when a new image is assigned to the cell
+        state.cellTransforms[cellIndex] = { ...DEFAULT_CELL_TRANSFORM };
+      }),
+    );
   }
 
   function setGridDimensions(columns: number, rows: number): void {
@@ -98,6 +104,15 @@ export function createActions(
       produce((state) => {
         state.gridColumns = columns;
         state.gridRows = rows;
+
+        // Prune cell transforms for cells that no longer exist in the new grid
+        const maxIndex = columns * rows - 1;
+        for (const indexStr of Object.keys(state.cellTransforms)) {
+          const index = parseInt(indexStr, 10);
+          if (index > maxIndex) {
+            delete state.cellTransforms[index];
+          }
+        }
       }),
     );
   }
@@ -199,7 +214,8 @@ export function createActions(
       produce((state) => {
         const current = state.cellTransforms[cellIndex] ?? { ...DEFAULT_CELL_TRANSFORM };
         const exposure = Math.max(Math.min(value, 1), -1);
-        state.cellTransforms[cellIndex] = { ...current, exposure };
+        // Ensure consistent 1-decimal rounding
+        state.cellTransforms[cellIndex] = { ...current, exposure: Math.round(exposure * 10) / 10 };
       }),
     );
   }

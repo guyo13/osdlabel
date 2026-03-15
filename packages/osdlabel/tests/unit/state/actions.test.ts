@@ -299,5 +299,49 @@ describe('State Management', () => {
 
       dispose();
     });
+
+    it('setGridDimensions prunes stale cell transforms', () => {
+      const { uiState, actions, dispose } = createTestStore();
+      
+      // Setup transforms for indices 0, 1, 2 (2x2 grid has indices 0-3)
+      actions.setGridDimensions(2, 2);
+      actions.setActiveCell(0); actions.toggleActiveImageNegative();
+      actions.setActiveCell(1); actions.toggleActiveImageNegative();
+      actions.setActiveCell(2); actions.toggleActiveImageNegative();
+      
+      expect(Object.keys(uiState.cellTransforms)).toHaveLength(3);
+      
+      // Shrink to 1x1 (index 0 only)
+      actions.setGridDimensions(1, 1);
+      
+      expect(Object.keys(uiState.cellTransforms)).toHaveLength(1);
+      expect(uiState.cellTransforms[0]).toBeDefined();
+      expect(uiState.cellTransforms[1]).toBeUndefined();
+      expect(uiState.cellTransforms[2]).toBeUndefined();
+      
+      dispose();
+    });
+
+    it('assignImageToCell resets transforms for that cell', () => {
+      const { uiState, actions, dispose } = createTestStore();
+      const img1 = createImageId('img1');
+      const img2 = createImageId('img2');
+      
+      actions.setActiveCell(0);
+      actions.assignImageToCell(0, img1);
+      actions.toggleActiveImageNegative();
+      actions.setActiveImageExposure(0.8);
+      
+      expect(uiState.cellTransforms[0]?.inverted).toBe(true);
+      expect(uiState.cellTransforms[0]?.exposure).toBe(0.8);
+      
+      // Reassign cell 0 to img2
+      actions.assignImageToCell(0, img2);
+      
+      expect(uiState.cellTransforms[0]?.inverted).toBe(false);
+      expect(uiState.cellTransforms[0]?.exposure).toBe(0);
+      
+      dispose();
+    });
   });
 });

@@ -264,4 +264,52 @@ test.describe('View Controls', () => {
     await expect(canvas1).toHaveCSS('filter', 'brightness(1.1)');
     await expect(canvas0).toHaveCSS('filter', 'invert(1)');
   });
+
+  test('Image reassignment resets cell filters', async ({ page }) => {
+    const negativeBtn = page.locator('[data-testid="view-negative"]');
+    const drawerCanvas = page.locator('.openseadragon-canvas canvas').nth(0);
+    
+    // 1. Enable negative
+    await negativeBtn.click();
+    await expect(drawerCanvas).toHaveCSS('filter', 'invert(1)');
+    
+    // 2. Reassign different image to active cell
+    const thumbnailDuomo = page.locator('[data-testid="filmstrip-item-duomo"]');
+    await thumbnailDuomo.click();
+    
+    // 3. Verify filter is reset
+    await expect(drawerCanvas).toHaveCSS('filter', 'none');
+    await expect(negativeBtn).toHaveCSS('background-color', 'rgb(51, 51, 51)');
+  });
+
+  test('Grid resizing prunes stale cell filters', async ({ page }) => {
+    // 1. Expand to 2x2
+    await page.keyboard.press(']'); 
+    await page.keyboard.press(']'); 
+    
+    // Indices 0, 1, 2, 3 now exist.
+    // 2. Set negative in cell 1 (index 1)
+    const cell1 = page.locator('[data-testid="grid-cell-1"]');
+    await cell1.click();
+    
+    // Assign an image to cell 1 so controls are enabled
+    const thumbnail = page.locator('[data-testid="filmstrip-item-highsmith"]');
+    await thumbnail.click();
+    
+    await page.locator('[data-testid="view-negative"]').click();
+    
+    const canvas1 = cell1.locator('canvas').nth(0);
+    await expect(canvas1).toHaveCSS('filter', 'invert(1)');
+    
+    // 3. Shrink back to 1x1
+    await page.keyboard.press('['); 
+    await page.keyboard.press('['); 
+    
+    // 4. Expand again to 2x2
+    await page.keyboard.press(']'); 
+    await page.keyboard.press(']'); 
+    
+    // 5. Verify cell 1 filter is gone
+    await expect(canvas1).toHaveCSS('filter', 'none');
+  });
 });

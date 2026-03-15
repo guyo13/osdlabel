@@ -142,6 +142,8 @@ export const ViewControls: Component = () => {
       <button
         type="button"
         title="Toggle Negative (Shift+N)"
+        aria-label="Toggle Negative"
+        aria-pressed={cellTransform().inverted}
         data-testid="view-negative"
         disabled={!isActive()}
         onClick={() => actions.toggleActiveImageNegative()}
@@ -168,6 +170,7 @@ export const ViewControls: Component = () => {
       <button
         type="button"
         title="Decrease Exposure (Shift+D)"
+        aria-label="Decrease Exposure"
         data-testid="view-exposure-decrease"
         disabled={!isActive()}
         onClick={() => actions.decreaseActiveImageExposure()}
@@ -199,6 +202,7 @@ export const ViewControls: Component = () => {
       </button>
 
       <div
+        aria-live="polite"
         style={{
           'min-width': '28px',
           'text-align': 'center',
@@ -213,6 +217,7 @@ export const ViewControls: Component = () => {
       <button
         type="button"
         title="Increase Exposure (Shift+E)"
+        aria-label="Increase Exposure"
         data-testid="view-exposure-increase"
         disabled={!isActive()}
         onClick={() => actions.increaseActiveImageExposure()}
