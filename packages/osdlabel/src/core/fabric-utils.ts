@@ -76,13 +76,14 @@ export async function deserializeFabricObject(
  */
 export async function createFabricObjectFromRawData(
   annotation: Annotation,
+  isActiveContext: boolean = true,
 ): Promise<FabricObject | null> {
   const obj = await deserializeFabricObject(annotation.rawAnnotationData);
   if (!obj) return null;
 
   obj.set({
-    selectable: true,
-    evented: true,
+    selectable: isActiveContext,
+    evented: isActiveContext,
   });
 
   return obj;

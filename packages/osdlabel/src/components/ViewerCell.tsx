@@ -102,16 +102,18 @@ const ViewerCell: Component<ViewerCellProps> = (props) => {
     const ov = overlay();
     const imageId = props.imageSource?.id;
     const contextId = contextState.activeContextId;
+    const displayedIds = contextState.displayedContextIds;
     // Track this as reactive dependencies so the effect re-runs
     void props.isActive;
 
     if (!ov || !imageId) return;
 
-    // Filter annotations by imageId + contextId
+    // Filter annotations by imageId + contextId + displayedContextIds
     const imageAnns = annotationState.byImage[imageId] || {};
-    const matching = contextId
-      ? Object.values(imageAnns).filter((a) => a.contextId === contextId)
-      : Object.values(imageAnns);
+    const isContextDisplayed = (ctxId: string) =>
+      ctxId === contextId || displayedIds.includes(ctxId as any);
+
+    const matching = Object.values(imageAnns).filter((a) => isContextDisplayed(a.contextId));
 
     // Clear all existing annotation objects from canvas
     const toRemove = ov.canvas.getObjects().filter((obj) => obj.id);
@@ -122,7 +124,10 @@ const ViewerCell: Component<ViewerCellProps> = (props) => {
     void (async () => {
       if (props.imageSource?.id !== capturedImageId) return; // stale check
 
-      const promises = matching.map((ann) => createFabricObjectFromRawData(ann));
+      const promises = matching.map((ann) => {
+        const isActiveContext = ann.contextId === contextId;
+        return createFabricObjectFromRawData(ann, isActiveContext);
+      });
       const objects = await Promise.all(promises);
       const validObjects = objects.filter((obj) => obj !== null);
       if (validObjects.length > 0) {
