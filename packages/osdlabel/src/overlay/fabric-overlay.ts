@@ -291,11 +291,13 @@ export class FabricOverlay {
       case 'annotation':
         // Fabric interactive: selection, moving, and drawing.
         // OSD mouse nav is disabled.
+        // Respect per-object _readOnly flag set by displayed-but-not-active contexts.
         this._overlayTracker.setTracking(true);
         this._fabricCanvas.selection = true;
         this._fabricCanvas.forEachObject((obj) => {
-          obj.selectable = true;
-          obj.evented = true;
+          const readOnly = obj._readOnly === true;
+          obj.selectable = !readOnly;
+          obj.evented = !readOnly;
         });
         this._viewer.setMouseNavEnabled(false);
         break;

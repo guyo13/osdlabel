@@ -130,8 +130,10 @@ const ViewerCell: Component<ViewerCellProps> = (props) => {
       const promises = matching.map(async (ann) => {
         const obj = await createFabricObjectFromRawData(ann);
         if (obj) {
-          // Only active context annotations are interactive
+          // Only active context annotations are interactive;
+          // mark non-active as _readOnly so setMode() respects it.
           const isActiveCtx = ann.contextId === activeContextId;
+          obj._readOnly = !isActiveCtx;
           obj.set({
             selectable: isActiveCtx,
             evented: isActiveCtx,
