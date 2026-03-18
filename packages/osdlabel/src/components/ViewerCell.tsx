@@ -3,7 +3,7 @@ import type { Component } from 'solid-js';
 import OpenSeadragon from 'openseadragon';
 import { FabricOverlay } from '../overlay/fabric-overlay.js';
 import type { OverlayMode } from '../overlay/fabric-overlay.js';
-import type { ImageSource } from '../core/types.js';
+import type { ImageSource, AnnotationContextId } from '../core/types.js';
 import { DEFAULT_VIEW_TRANSFORM, DEFAULT_CELL_TRANSFORM } from '../core/types.js';
 import { useAnnotationTool } from '../hooks/useAnnotationTool.js';
 import { useAnnotator } from '../state/annotator-context.js';
@@ -101,16 +101,21 @@ const ViewerCell: Component<ViewerCellProps> = (props) => {
   createEffect(() => {
     const ov = overlay();
     const imageId = props.imageSource?.id;
-    const contextId = contextState.activeContextId;
+    const activeContextId = contextState.activeContextId;
+    const displayedIds = contextState.displayedContextIds;
     // Track this as reactive dependencies so the effect re-runs
     void props.isActive;
 
     if (!ov || !imageId) return;
 
-    // Filter annotations by imageId + contextId
+    // Build set of all context IDs to display (active + explicitly displayed)
+    const visibleSet = new Set<AnnotationContextId>(displayedIds);
+    if (activeContextId) visibleSet.add(activeContextId);
+
+    // Filter annotations by imageId + visible contexts
     const imageAnns = annotationState.byImage[imageId] || {};
-    const matching = contextId
-      ? Object.values(imageAnns).filter((a) => a.contextId === contextId)
+    const matching = visibleSet.size > 0
+      ? Object.values(imageAnns).filter((a) => visibleSet.has(a.contextId))
       : Object.values(imageAnns);
 
     // Clear all existing annotation objects from canvas
@@ -122,7 +127,18 @@ const ViewerCell: Component<ViewerCellProps> = (props) => {
     void (async () => {
       if (props.imageSource?.id !== capturedImageId) return; // stale check
 
-      const promises = matching.map((ann) => createFabricObjectFromRawData(ann));
+      const promises = matching.map(async (ann) => {
+        const obj = await createFabricObjectFromRawData(ann);
+        if (obj) {
+          // Only active context annotations are interactive
+          const isActiveCtx = ann.contextId === activeContextId;
+          obj.set({
+            selectable: isActiveCtx,
+            evented: isActiveCtx,
+          });
+        }
+        return obj;
+      });
       const objects = await Promise.all(promises);
       const validObjects = objects.filter((obj) => obj !== null);
       if (validObjects.length > 0) {

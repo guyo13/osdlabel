@@ -124,6 +124,10 @@ export function createActions(
     setContextState('activeContextId', contextId);
   }
 
+  function setDisplayedContexts(contextIds: AnnotationContextId[]): void {
+    setContextState('displayedContextIds', contextIds);
+  }
+
   function loadAnnotations(
     byImage: Record<ImageId, Record<AnnotationId, Annotation>>,
     viewTransforms: Record<ImageId, ViewTransform> = {},
@@ -248,6 +252,7 @@ export function createActions(
     setGridDimensions,
     setContexts,
     setActiveContext,
+    setDisplayedContexts,
     loadAnnotations,
     rotateActiveImageCW,
     rotateActiveImageCCW,

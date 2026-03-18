@@ -1,4 +1,4 @@
-import type { Component, JSX } from 'solid-js';
+import { createEffect, type Component, type JSX } from 'solid-js';
 import { AnnotatorProvider } from '../state/annotator-context.js';
 import type { AnnotatorProviderProps } from '../state/annotator-context.js';
 import { useAnnotator } from '../state/annotator-context.js';
@@ -9,13 +9,15 @@ import Filmstrip from './Filmstrip.js';
 import GridControls from './GridControls.js';
 import ContextSwitcher from './ContextSwitcher.js';
 import { ViewControls } from './ViewControls.js';
-import type { ImageSource, AnnotationContext } from '../core/types.js';
+import type { ImageSource, AnnotationContext, AnnotationContextId } from '../core/types.js';
 
 export interface AnnotatorProps extends Omit<AnnotatorProviderProps, 'children'> {
   /** Available images for annotation */
   readonly images: readonly ImageSource[];
   /** Annotation contexts defining tool constraints */
   readonly contexts: readonly AnnotationContext[];
+  /** Context IDs whose annotations should be displayed (active context is always displayed) */
+  readonly displayedContextIds?: readonly AnnotationContextId[] | undefined;
   /** Whether to show the filmstrip sidebar (default: true) */
   readonly showFilmstrip?: boolean | undefined;
   /** Whether to show the grid controls (default: false) */
@@ -121,7 +123,7 @@ const Annotator: Component<AnnotatorProps> = (props) => {
       keyboardShortcuts={props.keyboardShortcuts}
       shouldSkipKeyboardShortcutPredicate={props.shouldSkipKeyboardShortcutPredicate}
     >
-      <AnnotatorSetup contexts={props.contexts} />
+      <AnnotatorSetup contexts={props.contexts} displayedContextIds={props.displayedContextIds} />
       <AnnotatorInner
         images={props.images}
         contexts={props.contexts}
@@ -139,12 +141,22 @@ const Annotator: Component<AnnotatorProps> = (props) => {
 };
 
 /** Initializes contexts inside the provider (runs once) */
-const AnnotatorSetup: Component<{ readonly contexts: readonly AnnotationContext[] }> = (props) => {
+const AnnotatorSetup: Component<{
+  readonly contexts: readonly AnnotationContext[];
+  readonly displayedContextIds?: readonly AnnotationContextId[] | undefined;
+}> = (props) => {
   const { actions } = useAnnotator();
   actions.setContexts([...props.contexts]);
   if (props.contexts.length > 0) {
     actions.setActiveContext(props.contexts[0]!.id);
   }
+
+  createEffect(() => {
+    actions.setDisplayedContexts(
+      props.displayedContextIds ? [...props.displayedContextIds] : [],
+    );
+  });
+
   return null;
 };
 

@@ -195,6 +195,7 @@ export interface UIState {
 export interface ContextState {
   contexts: AnnotationContext[];
   activeContextId: AnnotationContextId | null;
+  displayedContextIds: AnnotationContextId[];
 }
 
 // ── Constraint Status ────────────────────────────────────────────────────
