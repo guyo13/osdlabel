@@ -16,7 +16,6 @@ import {
   ImageSource,
   AnnotationId,
   ImageId,
-  ViewTransform,
 } from '../../../src/core/types';
 import {
   MAX_COORDINATE,
@@ -70,10 +69,7 @@ describe('Serialization', () => {
     { id: imageId, dziUrl: 'https://example.com/image.dzi', label: 'Test Image' },
   ];
 
-  function createTestState(
-    annotations: Annotation[],
-    viewTransforms: Record<ImageId, ViewTransform> = {},
-  ): AnnotationState {
+  function createTestState(annotations: Annotation[]): AnnotationState {
     const byImage: Record<ImageId, Record<AnnotationId, Annotation>> = {};
     for (const ann of annotations) {
       if (!byImage[ann.imageId]) {
@@ -81,7 +77,7 @@ describe('Serialization', () => {
       }
       byImage[ann.imageId][ann.id] = ann;
     }
-    return { byImage, viewTransforms, changeCounter: 0 };
+    return { byImage, changeCounter: 0 };
   }
 
   describe('serialize', () => {
@@ -95,33 +91,10 @@ describe('Serialization', () => {
       expect(doc.images[0].imageId).toBe(imageId);
       expect(doc.images[0].sourceUrl).toBe('https://example.com/image.dzi');
       expect(doc.images[0].annotations).toHaveLength(2);
-      expect(doc.images[0].viewTransform).toBeUndefined();
-    });
-
-    it('should include viewTransform when non-default', () => {
-      const state = createTestState([annotation1], {
-        [imageId]: { rotation: 90, flippedH: true, flippedV: false },
-      });
-      const doc = serialize(state, imageSources);
-
-      expect(doc.images[0].viewTransform).toEqual({
-        rotation: 90,
-        flippedH: true,
-        flippedV: false,
-      });
-    });
-
-    it('should omit viewTransform when it matches default', () => {
-      const state = createTestState([annotation1], {
-        [imageId]: { rotation: 0, flippedH: false, flippedV: false },
-      });
-      const doc = serialize(state, imageSources);
-
-      expect(doc.images[0].viewTransform).toBeUndefined();
     });
 
     it('should handle empty state', () => {
-      const state: AnnotationState = { byImage: {}, viewTransforms: {}, changeCounter: 0 };
+      const state: AnnotationState = { byImage: {}, changeCounter: 0 };
       const doc = serialize(state, imageSources);
 
       expect(doc.version).toBe('1.0.0');
@@ -150,13 +123,11 @@ describe('Serialization', () => {
 
   describe('deserialize', () => {
     it('should round-trip serialize → deserialize preserving all data', () => {
-      const state = createTestState([annotation1, annotation2], {
-        [imageId]: { rotation: 180, flippedH: false, flippedV: true },
-      });
+      const state = createTestState([annotation1, annotation2]);
       const doc = serialize(state, imageSources);
       const json = JSON.stringify(doc);
       const parsed: unknown = JSON.parse(json);
-      const { byImage: result, viewTransforms } = deserialize(parsed);
+      const { byImage: result } = deserialize(parsed);
 
       expect(result[imageId]).toBeDefined();
       const restoredAnn1 = result[imageId][annId1];
@@ -168,11 +139,9 @@ describe('Serialization', () => {
 
       const restoredAnn2 = result[imageId][annId2];
       expect(restoredAnn2.geometry).toEqual(annotation2.geometry);
-
-      expect(viewTransforms[imageId]).toEqual({ rotation: 180, flippedH: false, flippedV: true });
     });
 
-    it('should default missing viewTransform to DEFAULT_VIEW_TRANSFORM', () => {
+    it('should silently ignore viewTransform in old documents', () => {
       const doc = {
         version: '1.0.0',
         exportedAt: '2024-01-01T00:00:00.000Z',
@@ -181,67 +150,13 @@ describe('Serialization', () => {
             imageId: 'img1',
             sourceUrl: 'https://example.com',
             annotations: [],
+            viewTransform: { rotation: 90, flippedH: true, flippedV: false },
           },
         ],
       };
 
-      const { viewTransforms } = deserialize(doc);
-      expect(viewTransforms[createImageId('img1')]).toEqual({
-        rotation: 0,
-        flippedH: false,
-        flippedV: false,
-      });
-    });
-
-    it('should reject invalid viewTransform (not an object)', () => {
-      expect(() =>
-        deserialize({
-          version: '1.0.0',
-          exportedAt: '2024-01-01T00:00:00.000Z',
-          images: [
-            {
-              imageId: 'img1',
-              sourceUrl: 'https://example.com',
-              annotations: [],
-              viewTransform: 'not an object',
-            },
-          ],
-        }),
-      ).toThrow(/Invalid viewTransform/);
-    });
-
-    it('should reject viewTransform with wrong field types', () => {
-      expect(() =>
-        deserialize({
-          version: '1.0.0',
-          exportedAt: '2024-01-01T00:00:00.000Z',
-          images: [
-            {
-              imageId: 'img1',
-              sourceUrl: 'https://example.com',
-              annotations: [],
-              viewTransform: { rotation: '90', flippedH: false, flippedV: false },
-            },
-          ],
-        }),
-      ).toThrow(/Invalid viewTransform shape/);
-    });
-
-    it('should reject viewTransform with missing fields', () => {
-      expect(() =>
-        deserialize({
-          version: '1.0.0',
-          exportedAt: '2024-01-01T00:00:00.000Z',
-          images: [
-            {
-              imageId: 'img1',
-              sourceUrl: 'https://example.com',
-              annotations: [],
-              viewTransform: { rotation: 90 },
-            },
-          ],
-        }),
-      ).toThrow(/Invalid viewTransform shape/);
+      const { byImage } = deserialize(doc);
+      expect(byImage[createImageId('img1')]).toEqual({});
     });
 
     it('should reject non-object input', () => {
@@ -547,7 +462,7 @@ describe('Serialization', () => {
     });
 
     it('should return empty array for empty state', () => {
-      const state: AnnotationState = { byImage: {}, viewTransforms: {}, changeCounter: 0 };
+      const state: AnnotationState = { byImage: {}, changeCounter: 0 };
       expect(getAllAnnotationsFlat(state)).toEqual([]);
     });
   });

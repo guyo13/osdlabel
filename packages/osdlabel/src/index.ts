@@ -19,7 +19,7 @@ export type {
   ConstraintStatus,
   KeyboardShortcutMap,
   RawAnnotationData,
-  ViewTransform,
+  CellTransform,
 } from './core/types.js';
 
 // ID factory functions
@@ -27,7 +27,7 @@ export {
   createAnnotationId,
   createImageId,
   createAnnotationContextId,
-  DEFAULT_VIEW_TRANSFORM,
+  DEFAULT_CELL_TRANSFORM,
 } from './core/types.js';
 
 // Context scoping

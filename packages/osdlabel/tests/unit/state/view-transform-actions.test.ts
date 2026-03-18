@@ -5,7 +5,7 @@ import { createUIStore } from '../../../src/state/ui-store';
 import { createContextStore } from '../../../src/state/context-store';
 import { createActions } from '../../../src/state/actions';
 import { createImageId } from '../../../src/core/types';
-import { DEFAULT_VIEW_TRANSFORM } from '../../../src/core/types';
+import { DEFAULT_CELL_TRANSFORM } from '../../../src/core/types';
 
 describe('View Transform Actions', () => {
   function createTestStore() {
@@ -29,30 +29,30 @@ describe('View Transform Actions', () => {
   const dummyImageId = createImageId('img1');
 
   it('rotateActiveImageCW rotates by 90 degrees', () => {
-    const { annotationState, setUIState, actions, dispose } = createTestStore();
+    const { uiState, setUIState, actions, dispose } = createTestStore();
     setUIState('gridAssignments', 0, dummyImageId);
 
     actions.rotateActiveImageCW();
-    expect(annotationState.viewTransforms[dummyImageId]).toEqual({
-      ...DEFAULT_VIEW_TRANSFORM,
+    expect(uiState.cellTransforms[0]).toEqual({
+      ...DEFAULT_CELL_TRANSFORM,
       rotation: 90,
     });
 
     actions.rotateActiveImageCW();
-    expect(annotationState.viewTransforms[dummyImageId]).toEqual({
-      ...DEFAULT_VIEW_TRANSFORM,
+    expect(uiState.cellTransforms[0]).toEqual({
+      ...DEFAULT_CELL_TRANSFORM,
       rotation: 180,
     });
 
     actions.rotateActiveImageCW();
-    expect(annotationState.viewTransforms[dummyImageId]).toEqual({
-      ...DEFAULT_VIEW_TRANSFORM,
+    expect(uiState.cellTransforms[0]).toEqual({
+      ...DEFAULT_CELL_TRANSFORM,
       rotation: 270,
     });
 
     actions.rotateActiveImageCW();
-    expect(annotationState.viewTransforms[dummyImageId]).toEqual({
-      ...DEFAULT_VIEW_TRANSFORM,
+    expect(uiState.cellTransforms[0]).toEqual({
+      ...DEFAULT_CELL_TRANSFORM,
       rotation: 0,
     });
 
@@ -60,30 +60,30 @@ describe('View Transform Actions', () => {
   });
 
   it('rotateActiveImageCCW rotates by -90 degrees (270)', () => {
-    const { annotationState, setUIState, actions, dispose } = createTestStore();
+    const { uiState, setUIState, actions, dispose } = createTestStore();
     setUIState('gridAssignments', 0, dummyImageId);
 
     actions.rotateActiveImageCCW();
-    expect(annotationState.viewTransforms[dummyImageId]).toEqual({
-      ...DEFAULT_VIEW_TRANSFORM,
+    expect(uiState.cellTransforms[0]).toEqual({
+      ...DEFAULT_CELL_TRANSFORM,
       rotation: 270,
     });
 
     actions.rotateActiveImageCCW();
-    expect(annotationState.viewTransforms[dummyImageId]).toEqual({
-      ...DEFAULT_VIEW_TRANSFORM,
+    expect(uiState.cellTransforms[0]).toEqual({
+      ...DEFAULT_CELL_TRANSFORM,
       rotation: 180,
     });
 
     actions.rotateActiveImageCCW();
-    expect(annotationState.viewTransforms[dummyImageId]).toEqual({
-      ...DEFAULT_VIEW_TRANSFORM,
+    expect(uiState.cellTransforms[0]).toEqual({
+      ...DEFAULT_CELL_TRANSFORM,
       rotation: 90,
     });
 
     actions.rotateActiveImageCCW();
-    expect(annotationState.viewTransforms[dummyImageId]).toEqual({
-      ...DEFAULT_VIEW_TRANSFORM,
+    expect(uiState.cellTransforms[0]).toEqual({
+      ...DEFAULT_CELL_TRANSFORM,
       rotation: 0,
     });
 
@@ -91,18 +91,18 @@ describe('View Transform Actions', () => {
   });
 
   it('flipActiveImageH toggles horizontal flip', () => {
-    const { annotationState, setUIState, actions, dispose } = createTestStore();
+    const { uiState, setUIState, actions, dispose } = createTestStore();
     setUIState('gridAssignments', 0, dummyImageId);
 
     actions.flipActiveImageH();
-    expect(annotationState.viewTransforms[dummyImageId]).toEqual({
-      ...DEFAULT_VIEW_TRANSFORM,
+    expect(uiState.cellTransforms[0]).toEqual({
+      ...DEFAULT_CELL_TRANSFORM,
       flippedH: true,
     });
 
     actions.flipActiveImageH();
-    expect(annotationState.viewTransforms[dummyImageId]).toEqual({
-      ...DEFAULT_VIEW_TRANSFORM,
+    expect(uiState.cellTransforms[0]).toEqual({
+      ...DEFAULT_CELL_TRANSFORM,
       flippedH: false,
     });
 
@@ -110,18 +110,18 @@ describe('View Transform Actions', () => {
   });
 
   it('flipActiveImageV toggles vertical flip', () => {
-    const { annotationState, setUIState, actions, dispose } = createTestStore();
+    const { uiState, setUIState, actions, dispose } = createTestStore();
     setUIState('gridAssignments', 0, dummyImageId);
 
     actions.flipActiveImageV();
-    expect(annotationState.viewTransforms[dummyImageId]).toEqual({
-      ...DEFAULT_VIEW_TRANSFORM,
+    expect(uiState.cellTransforms[0]).toEqual({
+      ...DEFAULT_CELL_TRANSFORM,
       flippedV: true,
     });
 
     actions.flipActiveImageV();
-    expect(annotationState.viewTransforms[dummyImageId]).toEqual({
-      ...DEFAULT_VIEW_TRANSFORM,
+    expect(uiState.cellTransforms[0]).toEqual({
+      ...DEFAULT_CELL_TRANSFORM,
       flippedV: false,
     });
 
@@ -129,45 +129,36 @@ describe('View Transform Actions', () => {
   });
 
   it('resetActiveImageView resets to default transform', () => {
-    const { annotationState, setUIState, actions, dispose } = createTestStore();
+    const { uiState, setUIState, actions, dispose } = createTestStore();
     setUIState('gridAssignments', 0, dummyImageId);
 
     actions.rotateActiveImageCW();
     actions.flipActiveImageH();
 
     actions.resetActiveImageView();
-    expect(annotationState.viewTransforms[dummyImageId]).toEqual(DEFAULT_VIEW_TRANSFORM);
+    expect(uiState.cellTransforms[0]).toEqual(DEFAULT_CELL_TRANSFORM);
 
     dispose();
   });
 
-  it('actions are no-op when no active image', () => {
-    const { annotationState, actions, dispose } = createTestStore();
-
-    actions.rotateActiveImageCW();
-    actions.flipActiveImageH();
-
-    expect(annotationState.viewTransforms).toEqual({});
-
-    dispose();
-  });
-
-  it('only affects the active image', () => {
-    const { annotationState, setUIState, actions, dispose } = createTestStore();
-    const otherImageId = createImageId('img2');
-
+  it('only affects the active cell', () => {
+    const { uiState, setUIState, actions, dispose } = createTestStore();
     setUIState('gridAssignments', 0, dummyImageId);
+    setUIState('gridAssignments', 1, dummyImageId);
+
+    // Flip on cell 0
     actions.flipActiveImageH();
 
-    setUIState('gridAssignments', 0, otherImageId);
+    // Switch to cell 1 and rotate
+    setUIState('activeCellIndex', 1);
     actions.rotateActiveImageCW();
 
-    expect(annotationState.viewTransforms[dummyImageId]).toEqual({
-      ...DEFAULT_VIEW_TRANSFORM,
+    expect(uiState.cellTransforms[0]).toEqual({
+      ...DEFAULT_CELL_TRANSFORM,
       flippedH: true,
     });
-    expect(annotationState.viewTransforms[otherImageId]).toEqual({
-      ...DEFAULT_VIEW_TRANSFORM,
+    expect(uiState.cellTransforms[1]).toEqual({
+      ...DEFAULT_CELL_TRANSFORM,
       rotation: 90,
     });
 

@@ -9,11 +9,9 @@ import type {
   AnnotationContext,
   AnnotationContextId,
   ContextState,
-  ViewTransform,
 } from '../core/types.js';
 import { DEFAULT_CELL_TRANSFORM } from '../core/types.js';
 import { isContextScopedToImage } from '../core/context-scoping.js';
-import { DEFAULT_VIEW_TRANSFORM } from '../core/types.js';
 
 export function createActions(
   setAnnotationState: SetStoreFunction<AnnotationState>,
@@ -130,56 +128,53 @@ export function createActions(
 
   function loadAnnotations(
     byImage: Record<ImageId, Record<AnnotationId, Annotation>>,
-    viewTransforms: Record<ImageId, ViewTransform> = {},
   ): void {
     setAnnotationState(
       produce((state) => {
         state.byImage = byImage;
-        state.viewTransforms = viewTransforms;
-        state.changeCounter += 1;
-      }),
-    );
-  }
-
-  function getActiveImageId(): ImageId | undefined {
-    return uiState.gridAssignments[uiState.activeCellIndex];
-  }
-
-  function modifyViewTransform(
-    imageId: ImageId,
-    modifier: (vt: ViewTransform) => ViewTransform,
-  ): void {
-    setAnnotationState(
-      produce((state) => {
-        const current = state.viewTransforms[imageId] ?? { ...DEFAULT_VIEW_TRANSFORM };
-        state.viewTransforms[imageId] = modifier(current);
         state.changeCounter += 1;
       }),
     );
   }
 
   function rotateActiveImageCW(): void {
-    const imageId = getActiveImageId();
-    if (!imageId) return;
-    modifyViewTransform(imageId, (vt) => ({ ...vt, rotation: (vt.rotation + 90) % 360 }));
+    const cellIndex = uiState.activeCellIndex;
+    setUIState(
+      produce((state) => {
+        const current = state.cellTransforms[cellIndex] ?? { ...DEFAULT_CELL_TRANSFORM };
+        state.cellTransforms[cellIndex] = { ...current, rotation: (current.rotation + 90) % 360 };
+      }),
+    );
   }
 
   function rotateActiveImageCCW(): void {
-    const imageId = getActiveImageId();
-    if (!imageId) return;
-    modifyViewTransform(imageId, (vt) => ({ ...vt, rotation: (vt.rotation + 270) % 360 }));
+    const cellIndex = uiState.activeCellIndex;
+    setUIState(
+      produce((state) => {
+        const current = state.cellTransforms[cellIndex] ?? { ...DEFAULT_CELL_TRANSFORM };
+        state.cellTransforms[cellIndex] = { ...current, rotation: (current.rotation + 270) % 360 };
+      }),
+    );
   }
 
   function flipActiveImageH(): void {
-    const imageId = getActiveImageId();
-    if (!imageId) return;
-    modifyViewTransform(imageId, (vt) => ({ ...vt, flippedH: !vt.flippedH }));
+    const cellIndex = uiState.activeCellIndex;
+    setUIState(
+      produce((state) => {
+        const current = state.cellTransforms[cellIndex] ?? { ...DEFAULT_CELL_TRANSFORM };
+        state.cellTransforms[cellIndex] = { ...current, flippedH: !current.flippedH };
+      }),
+    );
   }
 
   function flipActiveImageV(): void {
-    const imageId = getActiveImageId();
-    if (!imageId) return;
-    modifyViewTransform(imageId, (vt) => ({ ...vt, flippedV: !vt.flippedV }));
+    const cellIndex = uiState.activeCellIndex;
+    setUIState(
+      produce((state) => {
+        const current = state.cellTransforms[cellIndex] ?? { ...DEFAULT_CELL_TRANSFORM };
+        state.cellTransforms[cellIndex] = { ...current, flippedV: !current.flippedV };
+      }),
+    );
   }
 
   function toggleActiveImageNegative(): void {
@@ -227,12 +222,6 @@ export function createActions(
   }
 
   function resetActiveImageView(): void {
-    const imageId = getActiveImageId();
-    if (imageId) {
-      modifyViewTransform(imageId, () => ({ ...DEFAULT_VIEW_TRANSFORM }));
-    }
-
-    // Reset only the active cell's adjustments; other cells' transforms remain untouched in state
     const cellIndex = uiState.activeCellIndex;
     setUIState(
       produce((state) => {

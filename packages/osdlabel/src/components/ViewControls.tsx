@@ -1,15 +1,9 @@
 import { type Component, Show } from 'solid-js';
 import { useAnnotator } from '../state/annotator-context.js';
-import { DEFAULT_VIEW_TRANSFORM, DEFAULT_CELL_TRANSFORM } from '../core/types.js';
+import { DEFAULT_CELL_TRANSFORM } from '../core/types.js';
 
 export const ViewControls: Component = () => {
-  const { uiState, annotationState, actions, activeImageId } = useAnnotator();
-
-  const viewTransform = () => {
-    const id = activeImageId();
-    if (!id) return DEFAULT_VIEW_TRANSFORM;
-    return annotationState.viewTransforms[id] ?? DEFAULT_VIEW_TRANSFORM;
-  };
+  const { uiState, actions, activeImageId } = useAnnotator();
 
   const cellTransform = () => {
     return uiState.cellTransforms[uiState.activeCellIndex] ?? DEFAULT_CELL_TRANSFORM;
@@ -110,7 +104,7 @@ export const ViewControls: Component = () => {
         style={{
           width: '32px',
           height: '32px',
-          'background-color': viewTransform().flippedH ? '#2196F3' : '#333',
+          'background-color': cellTransform().flippedH ? '#2196F3' : '#333',
           border: 'none',
           'border-radius': '4px',
           color: 'white',
@@ -146,7 +140,7 @@ export const ViewControls: Component = () => {
         style={{
           width: '32px',
           height: '32px',
-          'background-color': viewTransform().flippedV ? '#2196F3' : '#333',
+          'background-color': cellTransform().flippedV ? '#2196F3' : '#333',
           border: 'none',
           'border-radius': '4px',
           color: 'white',
@@ -315,9 +309,9 @@ export const ViewControls: Component = () => {
 
       <Show
         when={
-          viewTransform().rotation !== 0 ||
-          viewTransform().flippedH ||
-          viewTransform().flippedV ||
+          cellTransform().rotation !== 0 ||
+          cellTransform().flippedH ||
+          cellTransform().flippedV ||
           cellTransform().exposure !== 0 ||
           cellTransform().inverted
         }

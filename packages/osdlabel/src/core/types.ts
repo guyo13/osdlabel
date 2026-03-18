@@ -103,7 +103,7 @@ export interface ImageAnnotations {
   readonly imageId: ImageId;
   readonly sourceUrl: string;
   readonly annotations: readonly Annotation[];
-  readonly viewTransform?: ViewTransform | undefined;
+
 }
 
 // ── Constraint System ────────────────────────────────────────────────────
@@ -138,30 +138,21 @@ export interface ImageSource {
   readonly label?: string | undefined;
 }
 
-// ── View Transform ───────────────────────────────────────────────────────
-
-/** Per-image view transform (rotation/flip state) */
-export interface ViewTransform {
-  readonly rotation: number; // degrees (0, 90, 180, 270)
-  readonly flippedH: boolean;
-  readonly flippedV: boolean;
-}
-
-export const DEFAULT_VIEW_TRANSFORM: ViewTransform = {
-  rotation: 0,
-  flippedH: false,
-  flippedV: false,
-};
-
 // ── Cell Transform ───────────────────────────────────────────────────────
 
 /** Per-cell visual adjustments (not serialized) */
 export interface CellTransform {
+  readonly rotation: number; // degrees (0, 90, 180, 270)
+  readonly flippedH: boolean;
+  readonly flippedV: boolean;
   readonly exposure: number; // -1 to 1 (0 = default, maps to CSS brightness 0.0–2.0)
   readonly inverted: boolean; // false = normal, true = CSS invert(1)
 }
 
 export const DEFAULT_CELL_TRANSFORM: CellTransform = {
+  rotation: 0,
+  flippedH: false,
+  flippedV: false,
   exposure: 0,
   inverted: false,
 };
@@ -175,7 +166,6 @@ export const DEFAULT_CELL_TRANSFORM: CellTransform = {
 /** Root state for the annotation system */
 export interface AnnotationState {
   byImage: Record<ImageId, Record<AnnotationId, Annotation>>;
-  viewTransforms: Record<ImageId, ViewTransform>;
   /** Monotonically increasing counter; incremented on every mutation for O(1) change detection */
   changeCounter: number;
 }
