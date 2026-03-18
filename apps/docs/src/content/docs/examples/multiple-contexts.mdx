@@ -73,6 +73,10 @@ function App() {
         showContextSwitcher={true}
         filmstripPosition="left"
         maxGridSize={{ columns: 2, rows: 1 }}
+        displayedContextIds={[
+          createAnnotationContextId('buildings'),
+          createAnnotationContextId('roads'),
+        ]}
         onAnnotationsChange={(annotations) => {
           console.log(`Total annotations: ${annotations.length}`);
         }}
@@ -87,6 +91,7 @@ render(() => <App />, document.getElementById('app')!);
 ## Key features demonstrated
 
 - **Context Switching** — use `showContextSwitcher={true}` to enable the built-in UI for switching tasks
+- **Displayed contexts** — `displayedContextIds` shows annotations from Buildings and Roads contexts as a read-only overlay, even when another context is active
 - **Multiple contexts** with different tool constraints (Buildings, Roads, Landmarks)
 - **Image scoping** — contexts can be restricted to specific images in the dataset
 - **Per-image counting** — constraints can limit annotations per individual image

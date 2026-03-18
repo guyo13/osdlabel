@@ -29,7 +29,7 @@ import { useAnnotator } from 'osdlabel/state';
 | ------------------ | ----------------------------------------------------------- |
 | `annotationState`  | All annotations organized by image ID with a change counter |
 | `uiState`          | Active tool, cell, grid dimensions, assignments, selection  |
-| `contextState`     | Available contexts and active context ID                    |
+| `contextState`     | Available contexts, active context ID, and displayed context IDs |
 | `constraintStatus` | Reactive accessor returning tool enable/disable status      |
 | `actions`          | Object containing all state mutation functions              |
 | `shortcuts`        | Merged keyboard shortcut map (defaults + overrides)         |
@@ -137,6 +137,14 @@ setActiveContext(contextId: AnnotationContextId | null): void
 ```
 
 Set the active context.
+
+#### setDisplayedContexts
+
+```ts
+setDisplayedContexts(contextIds: AnnotationContextId[]): void
+```
+
+Set which contexts have their annotations displayed on the canvas. Annotations from displayed contexts are visible but read-only (not selectable or movable). The active context is always displayed regardless of this list.
 
 ---
 

@@ -1,4 +1,4 @@
-import { createSignal } from 'solid-js';
+import { createSignal, createEffect } from 'solid-js';
 import { render } from 'solid-js/web';
 import {
   Toolbar,
@@ -76,6 +76,11 @@ function AppContent() {
   const [exportedJson, setExportedJson] = createSignal('');
   const [showImportPanel, setShowImportPanel] = createSignal(false);
   const [importJsonText, setImportJsonText] = createSignal('');
+  const [displayedCtxIds, setDisplayedCtxIds] = createSignal<AnnotationContextId[]>([]);
+
+  createEffect(() => {
+    actions.setDisplayedContexts(displayedCtxIds());
+  });
 
   // Initialize contexts
   actions.setContexts(CONTEXTS);
@@ -174,6 +179,26 @@ function AppContent() {
             <option value={i}>{ctx.label}</option>
           ))}
         </select>
+
+        <div data-testid="displayed-contexts-panel" style={{ display: 'flex', gap: '8px', 'align-items': 'center' }}>
+          <span style={{ 'font-size': '12px', color: '#aaa' }}>Show:</span>
+          {CONTEXTS.map((ctx) => (
+            <label style={{ display: 'flex', gap: '4px', 'align-items': 'center', 'font-size': '12px', cursor: 'pointer' }}>
+              <input
+                type="checkbox"
+                data-testid={`display-ctx-${ctx.id}`}
+                checked={displayedCtxIds().includes(ctx.id)}
+                onChange={(e) => {
+                  const checked = e.currentTarget.checked;
+                  setDisplayedCtxIds((prev) =>
+                    checked ? [...prev, ctx.id] : prev.filter((id) => id !== ctx.id),
+                  );
+                }}
+              />
+              {ctx.label}
+            </label>
+          ))}
+        </div>
 
         <Toolbar />
         <ViewControls />

@@ -349,4 +349,85 @@ describe('State Management', () => {
       dispose();
     });
   });
+
+  describe('Displayed Contexts Actions', () => {
+    const ctxId2 = createAnnotationContextId('ctx2');
+    const ctxId3 = createAnnotationContextId('ctx3');
+
+    it('initial state has empty displayedContextIds', () => {
+      const { contextState, dispose } = createTestStore();
+      expect(contextState.displayedContextIds).toEqual([]);
+      dispose();
+    });
+
+    it('setDisplayedContexts sets displayed context IDs', () => {
+      const { contextState, actions, dispose } = createTestStore();
+      actions.setDisplayedContexts([dummyContextId, ctxId2]);
+      expect(contextState.displayedContextIds).toEqual([dummyContextId, ctxId2]);
+      dispose();
+    });
+
+    it('setDisplayedContexts replaces previous IDs', () => {
+      const { contextState, actions, dispose } = createTestStore();
+      actions.setDisplayedContexts([dummyContextId]);
+      actions.setDisplayedContexts([ctxId2, ctxId3]);
+      expect(contextState.displayedContextIds).toEqual([ctxId2, ctxId3]);
+      dispose();
+    });
+
+    it('setDisplayedContexts clears with empty array', () => {
+      const { contextState, actions, dispose } = createTestStore();
+      actions.setDisplayedContexts([dummyContextId]);
+      actions.setDisplayedContexts([]);
+      expect(contextState.displayedContextIds).toEqual([]);
+      dispose();
+    });
+
+    it('displayed contexts are independent of active context', () => {
+      const { contextState, actions, dispose } = createTestStore();
+
+      const ctx1: AnnotationContext = { id: dummyContextId, label: 'Ctx 1', tools: [] };
+      const ctx2: AnnotationContext = { id: ctxId2, label: 'Ctx 2', tools: [] };
+      actions.setContexts([ctx1, ctx2]);
+
+      actions.setActiveContext(dummyContextId);
+      actions.setDisplayedContexts([ctxId2]);
+
+      // Changing active context should not affect displayedContextIds
+      actions.setActiveContext(ctxId2);
+      expect(contextState.displayedContextIds).toEqual([ctxId2]);
+      expect(contextState.activeContextId).toBe(ctxId2);
+
+      dispose();
+    });
+
+    it('constraint status unaffected by displayed contexts', () => {
+      const { actions, constraintStatus, dispose } = createTestStore();
+
+      const ctx1: AnnotationContext = {
+        id: dummyContextId,
+        label: 'Ctx 1',
+        tools: [{ type: 'rectangle', maxCount: 1 }],
+      };
+      const ctx2: AnnotationContext = {
+        id: ctxId2,
+        label: 'Ctx 2',
+        tools: [{ type: 'circle' }],
+      };
+      actions.setContexts([ctx1, ctx2]);
+      actions.setActiveContext(dummyContextId);
+
+      // Display ctx2 as well
+      actions.setDisplayedContexts([ctxId2]);
+
+      // Constraint status should still only reflect active context (ctx1)
+      const status = constraintStatus();
+      expect(status.rectangle.enabled).toBe(true);
+      expect(status.rectangle.currentCount).toBe(0);
+      // Circle is not in the active context's tools, so it should be disabled
+      expect(status.circle.enabled).toBe(false);
+
+      dispose();
+    });
+  });
 });

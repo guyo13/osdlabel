@@ -14,6 +14,7 @@ export function createContextStore() {
   const [state, setState] = createStore<ContextState>({
     contexts: [],
     activeContextId: null,
+    displayedContextIds: [],
   });
   return { state, setState };
 }

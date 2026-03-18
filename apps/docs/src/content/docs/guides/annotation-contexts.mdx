@@ -119,6 +119,35 @@ Or enable the built-in UI in the `Annotator` component:
 
 The `ContextSwitcher` component can also be used independently in custom layouts. See [Components](/osdlabel/api/components/#contextswitcher).
 
+## Displaying multiple contexts
+
+By default, only the active context's annotations are visible on the canvas. You can display annotations from additional contexts as a read-only overlay — visible but not selectable or editable.
+
+### Via the Annotator component
+
+```tsx
+<Annotator
+  images={images}
+  contexts={contexts}
+  displayedContextIds={[
+    createAnnotationContextId('fracture'),
+    createAnnotationContextId('general'),
+  ]}
+/>
+```
+
+### Via actions (when using AnnotatorProvider)
+
+```tsx
+const { actions } = useAnnotator();
+actions.setDisplayedContexts([
+  createAnnotationContextId('fracture'),
+  createAnnotationContextId('general'),
+]);
+```
+
+The active context is always displayed regardless of `displayedContextIds`. Annotations from non-active displayed contexts are rendered on the canvas but cannot be selected, moved, or modified.
+
 ## Reading constraint status
 
 Use the `constraintStatus` accessor to check which tools are enabled:
