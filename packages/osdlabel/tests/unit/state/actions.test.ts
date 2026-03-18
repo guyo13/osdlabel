@@ -22,15 +22,17 @@ describe('State Management', () => {
       const { state: uiState, setState: setUIState } = createUIStore();
       const { state: contextState, setState: setContextState } = createContextStore();
 
-      const actions = createActions(setAnnotationState, setUIState, setContextState, contextState, uiState);
+      const actions = createActions(
+        setAnnotationState,
+        setUIState,
+        setContextState,
+        contextState,
+        uiState,
+      );
       // Assign image to cell 0 so constraint status has a currentImageId
       setUIState('gridAssignments', 0, dummyImageId);
       const activeImageId = () => uiState.gridAssignments[uiState.activeCellIndex];
-      const constraintStatus = createConstraintStatus(
-        contextState,
-        annotationState,
-        activeImageId,
-      );
+      const constraintStatus = createConstraintStatus(contextState, annotationState, activeImageId);
 
       return { annotationState, uiState, contextState, actions, constraintStatus, dispose };
     });
@@ -211,5 +213,140 @@ describe('State Management', () => {
     expect(status.rectangle.enabled).toBe(false);
     expect(status.circle.enabled).toBe(false);
     dispose();
+  });
+
+  describe('View Controls Actions', () => {
+    it('toggleActiveImageNegative toggles the inverted state for the active cell', () => {
+      const { uiState, actions, dispose } = createTestStore();
+      actions.setActiveCell(0);
+      actions.toggleActiveImageNegative();
+
+      expect(uiState.cellTransforms[0]?.inverted).toBe(true);
+
+      actions.toggleActiveImageNegative();
+      expect(uiState.cellTransforms[0]?.inverted).toBe(false);
+      dispose();
+    });
+
+    it('increaseActiveImageExposure increments by 0.1 and clamps to 1 for the active cell', () => {
+      const { uiState, actions, dispose } = createTestStore();
+      actions.setActiveCell(1);
+
+      // Set to 0.9 first to test clamp at next step
+      actions.setActiveImageExposure(0.9);
+      actions.increaseActiveImageExposure();
+      expect(uiState.cellTransforms[1]?.exposure).toBe(1.0);
+
+      // Clamps to 1
+      actions.increaseActiveImageExposure();
+      expect(uiState.cellTransforms[1]?.exposure).toBe(1.0);
+
+      dispose();
+    });
+
+    it('decreaseActiveImageExposure decrements by 0.1 and clamps to -1 for the active cell', () => {
+      const { uiState, actions, dispose } = createTestStore();
+      actions.setActiveCell(2);
+
+      // Set to -0.9 first to test clamp at next step
+      actions.setActiveImageExposure(-0.9);
+      actions.decreaseActiveImageExposure();
+      expect(uiState.cellTransforms[2]?.exposure).toBe(-1.0);
+
+      // Clamps to -1
+      actions.decreaseActiveImageExposure();
+      expect(uiState.cellTransforms[2]?.exposure).toBe(-1.0);
+
+      dispose();
+    });
+
+    it('setActiveImageExposure sets specific value and clamps for the active cell', () => {
+      const { uiState, actions, dispose } = createTestStore();
+      actions.setActiveCell(0);
+
+      actions.setActiveImageExposure(0.5);
+      expect(uiState.cellTransforms[0]?.exposure).toBe(0.5);
+
+      actions.setActiveImageExposure(1.5);
+      expect(uiState.cellTransforms[0]?.exposure).toBe(1.0);
+
+      actions.setActiveImageExposure(-2.0);
+      expect(uiState.cellTransforms[0]?.exposure).toBe(-1.0);
+
+      dispose();
+    });
+
+    it('resetActiveImageView resets active cell transforms but leaves other cells alone', () => {
+      const { uiState, actions, dispose } = createTestStore();
+
+      // Set transforms for cell 0
+      actions.setActiveCell(0);
+      actions.toggleActiveImageNegative();
+      actions.setActiveImageExposure(0.5);
+
+      // Set transforms for cell 1
+      actions.setActiveCell(1);
+      actions.toggleActiveImageNegative();
+      actions.setActiveImageExposure(-0.3);
+
+      // Reset cell 1
+      actions.resetActiveImageView();
+
+      expect(uiState.cellTransforms[1]?.exposure).toBe(0);
+      expect(uiState.cellTransforms[1]?.inverted).toBe(false);
+
+      // Cell 0 should be untouched
+      expect(uiState.cellTransforms[0]?.exposure).toBe(0.5);
+      expect(uiState.cellTransforms[0]?.inverted).toBe(true);
+
+      dispose();
+    });
+
+    it('setGridDimensions prunes stale cell transforms', () => {
+      const { uiState, actions, dispose } = createTestStore();
+
+      // Setup transforms for indices 0, 1, 2 (2x2 grid has indices 0-3)
+      actions.setGridDimensions(2, 2);
+      actions.setActiveCell(0);
+      actions.toggleActiveImageNegative();
+      actions.setActiveCell(1);
+      actions.toggleActiveImageNegative();
+      actions.setActiveCell(2);
+      actions.toggleActiveImageNegative();
+
+      expect(Object.keys(uiState.cellTransforms)).toHaveLength(3);
+
+      // Shrink to 1x1 (index 0 only)
+      actions.setGridDimensions(1, 1);
+
+      expect(Object.keys(uiState.cellTransforms)).toHaveLength(1);
+      expect(uiState.cellTransforms[0]).toBeDefined();
+      expect(uiState.cellTransforms[1]).toBeUndefined();
+      expect(uiState.cellTransforms[2]).toBeUndefined();
+
+      dispose();
+    });
+
+    it('assignImageToCell resets transforms for that cell', () => {
+      const { uiState, actions, dispose } = createTestStore();
+      const img1 = createImageId('img1');
+      const img2 = createImageId('img2');
+
+      actions.setActiveCell(0);
+      actions.assignImageToCell(0, img1);
+      actions.toggleActiveImageNegative();
+      actions.setActiveImageExposure(0.8);
+
+      expect(uiState.cellTransforms[0]?.inverted).toBe(true);
+      expect(uiState.cellTransforms[0]?.exposure).toBe(0.8);
+
+      // Reassign cell 0 to img2
+      actions.assignImageToCell(0, img2);
+
+      expect(uiState.cellTransforms[0]?.inverted).toBe(false);
+      expect(uiState.cellTransforms[0]?.exposure).toBe(0);
+
+      dispose();
+    });
   });
 });

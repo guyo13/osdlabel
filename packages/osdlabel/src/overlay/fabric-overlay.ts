@@ -239,6 +239,18 @@ export class FabricOverlay {
     return this._viewer.viewport.getFlip();
   }
 
+  applyImageFilters(exposure: number, inverted: boolean): void {
+    const drawerCanvas = this._viewer.drawer.canvas as HTMLElement;
+    const parts: string[] = [];
+    if (exposure !== 0) {
+      parts.push(`brightness(${1 + exposure})`);
+    }
+    if (inverted) {
+      parts.push('invert(1)');
+    }
+    drawerCanvas.style.filter = parts.length > 0 ? parts.join(' ') : '';
+  }
+
   resetView(): void {
     this.applyViewTransform(DEFAULT_VIEW_TRANSFORM);
   }

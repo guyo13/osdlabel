@@ -117,13 +117,19 @@ describe('computeViewportTransform', () => {
     // For flip with scale=1, offset=0, containerWidth=800:
     //   unflipped: [1, 0, 0, 1, 0, 0]
     //   flipped: [-1, 0, 0, 1, 800, 0]
-    const viewer = createMockViewer({ scale: 1, offsetX: 0, offsetY: 0, flip: true, containerWidth: 800 });
+    const viewer = createMockViewer({
+      scale: 1,
+      offsetX: 0,
+      offsetY: 0,
+      flip: true,
+      containerWidth: 800,
+    });
     const vpt = computeViewportTransform(viewer);
 
     expect(vpt[0]).toBeCloseTo(-1); // -a
     expect(vpt[1]).toBeCloseTo(0);
-    expect(vpt[2]).toBeCloseTo(0);  // -c (c was 0)
-    expect(vpt[3]).toBeCloseTo(1);  // d unchanged
+    expect(vpt[2]).toBeCloseTo(0); // -c (c was 0)
+    expect(vpt[3]).toBeCloseTo(1); // d unchanged
     expect(vpt[4]).toBeCloseTo(800); // containerWidth - tx
     expect(vpt[5]).toBeCloseTo(0);
   });
@@ -131,13 +137,20 @@ describe('computeViewportTransform', () => {
   it('returns correct matrix with combined 90° rotation and horizontal flip', () => {
     // Unflipped 90°: [0, 1, -1, 0, 0, 0]
     // Flipped: [-0, 1, 1, 0, 800, 0] = [0, 1, 1, 0, 800, 0]
-    const viewer = createMockViewer({ scale: 1, offsetX: 0, offsetY: 0, rotationDeg: 90, flip: true, containerWidth: 800 });
+    const viewer = createMockViewer({
+      scale: 1,
+      offsetX: 0,
+      offsetY: 0,
+      rotationDeg: 90,
+      flip: true,
+      containerWidth: 800,
+    });
     const vpt = computeViewportTransform(viewer);
 
-    expect(vpt[0]).toBeCloseTo(0);   // -a (a≈0)
-    expect(vpt[1]).toBeCloseTo(1);   // b (sin(90)*scale)
-    expect(vpt[2]).toBeCloseTo(1);   // -c (c was -1)
-    expect(vpt[3]).toBeCloseTo(0);   // d (cos(90)*scale ≈ 0)
+    expect(vpt[0]).toBeCloseTo(0); // -a (a≈0)
+    expect(vpt[1]).toBeCloseTo(1); // b (sin(90)*scale)
+    expect(vpt[2]).toBeCloseTo(1); // -c (c was -1)
+    expect(vpt[3]).toBeCloseTo(0); // d (cos(90)*scale ≈ 0)
     expect(vpt[4]).toBeCloseTo(800); // containerWidth - 0
     expect(vpt[5]).toBeCloseTo(0);
   });
@@ -145,13 +158,20 @@ describe('computeViewportTransform', () => {
   it('returns correct matrix with 180° rotation and horizontal flip (simulates vertical flip)', () => {
     // Unflipped 180°: [-1, 0, 0, -1, 0, 0]
     // Flipped: [1, 0, 0, -1, 800, 0]
-    const viewer = createMockViewer({ scale: 1, offsetX: 0, offsetY: 0, rotationDeg: 180, flip: true, containerWidth: 800 });
+    const viewer = createMockViewer({
+      scale: 1,
+      offsetX: 0,
+      offsetY: 0,
+      rotationDeg: 180,
+      flip: true,
+      containerWidth: 800,
+    });
     const vpt = computeViewportTransform(viewer);
 
-    expect(vpt[0]).toBeCloseTo(1);   // -(-1) = 1
+    expect(vpt[0]).toBeCloseTo(1); // -(-1) = 1
     expect(vpt[1]).toBeCloseTo(0);
-    expect(vpt[2]).toBeCloseTo(0);   // -(0) = 0
-    expect(vpt[3]).toBeCloseTo(-1);  // d unchanged
+    expect(vpt[2]).toBeCloseTo(0); // -(0) = 0
+    expect(vpt[3]).toBeCloseTo(-1); // d unchanged
     expect(vpt[4]).toBeCloseTo(800); // containerWidth - 0
     expect(vpt[5]).toBeCloseTo(0);
   });
@@ -177,7 +197,13 @@ describe('computeViewportTransform', () => {
 
   it('produces a flipped matrix that mirrors screen X around container center', () => {
     const containerWidth = 800;
-    const viewer = createMockViewer({ scale: 2, offsetX: 50, offsetY: 30, flip: true, containerWidth });
+    const viewer = createMockViewer({
+      scale: 2,
+      offsetX: 50,
+      offsetY: 30,
+      flip: true,
+      containerWidth,
+    });
     const vpt = computeViewportTransform(viewer);
 
     const imgX = 40;

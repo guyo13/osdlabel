@@ -11,6 +11,7 @@ import type {
   ContextState,
   ViewTransform,
 } from '../core/types.js';
+import { DEFAULT_CELL_TRANSFORM } from '../core/types.js';
 import { isContextScopedToImage } from '../core/context-scoping.js';
 import { DEFAULT_VIEW_TRANSFORM } from '../core/types.js';
 
@@ -88,7 +89,13 @@ export function createActions(
   }
 
   function assignImageToCell(cellIndex: number, imageId: ImageId): void {
-    setUIState('gridAssignments', cellIndex, imageId);
+    setUIState(
+      produce((state) => {
+        state.gridAssignments[cellIndex] = imageId;
+        // Reset visual adjustments when a new image is assigned to the cell
+        state.cellTransforms[cellIndex] = { ...DEFAULT_CELL_TRANSFORM };
+      }),
+    );
   }
 
   function setGridDimensions(columns: number, rows: number): void {
@@ -96,6 +103,15 @@ export function createActions(
       produce((state) => {
         state.gridColumns = columns;
         state.gridRows = rows;
+
+        // Prune cell transforms for cells that no longer exist in the new grid
+        const maxIndex = columns * rows - 1;
+        for (const indexStr of Object.keys(state.cellTransforms)) {
+          const index = parseInt(indexStr, 10);
+          if (index > maxIndex) {
+            delete state.cellTransforms[index];
+          }
+        }
       }),
     );
   }
@@ -125,7 +141,10 @@ export function createActions(
     return uiState.gridAssignments[uiState.activeCellIndex];
   }
 
-  function modifyViewTransform(imageId: ImageId, modifier: (vt: ViewTransform) => ViewTransform): void {
+  function modifyViewTransform(
+    imageId: ImageId,
+    modifier: (vt: ViewTransform) => ViewTransform,
+  ): void {
     setAnnotationState(
       produce((state) => {
         const current = state.viewTransforms[imageId] ?? { ...DEFAULT_VIEW_TRANSFORM };
@@ -159,10 +178,63 @@ export function createActions(
     modifyViewTransform(imageId, (vt) => ({ ...vt, flippedV: !vt.flippedV }));
   }
 
+  function toggleActiveImageNegative(): void {
+    const cellIndex = uiState.activeCellIndex;
+    setUIState(
+      produce((state) => {
+        const current = state.cellTransforms[cellIndex] ?? { ...DEFAULT_CELL_TRANSFORM };
+        state.cellTransforms[cellIndex] = { ...current, inverted: !current.inverted };
+      }),
+    );
+  }
+
+  function increaseActiveImageExposure(): void {
+    const cellIndex = uiState.activeCellIndex;
+    setUIState(
+      produce((state) => {
+        const current = state.cellTransforms[cellIndex] ?? { ...DEFAULT_CELL_TRANSFORM };
+        const exposure = Math.min(current.exposure + 0.1, 1);
+        state.cellTransforms[cellIndex] = { ...current, exposure: Math.round(exposure * 10) / 10 };
+      }),
+    );
+  }
+
+  function decreaseActiveImageExposure(): void {
+    const cellIndex = uiState.activeCellIndex;
+    setUIState(
+      produce((state) => {
+        const current = state.cellTransforms[cellIndex] ?? { ...DEFAULT_CELL_TRANSFORM };
+        const exposure = Math.max(current.exposure - 0.1, -1);
+        state.cellTransforms[cellIndex] = { ...current, exposure: Math.round(exposure * 10) / 10 };
+      }),
+    );
+  }
+
+  function setActiveImageExposure(value: number): void {
+    const cellIndex = uiState.activeCellIndex;
+    setUIState(
+      produce((state) => {
+        const current = state.cellTransforms[cellIndex] ?? { ...DEFAULT_CELL_TRANSFORM };
+        const exposure = Math.max(Math.min(value, 1), -1);
+        // Ensure consistent 1-decimal rounding
+        state.cellTransforms[cellIndex] = { ...current, exposure: Math.round(exposure * 10) / 10 };
+      }),
+    );
+  }
+
   function resetActiveImageView(): void {
     const imageId = getActiveImageId();
-    if (!imageId) return;
-    modifyViewTransform(imageId, () => ({ ...DEFAULT_VIEW_TRANSFORM }));
+    if (imageId) {
+      modifyViewTransform(imageId, () => ({ ...DEFAULT_VIEW_TRANSFORM }));
+    }
+
+    // Reset only the active cell's adjustments; other cells' transforms remain untouched in state
+    const cellIndex = uiState.activeCellIndex;
+    setUIState(
+      produce((state) => {
+        state.cellTransforms[cellIndex] = { ...DEFAULT_CELL_TRANSFORM };
+      }),
+    );
   }
 
   return {
@@ -181,6 +253,10 @@ export function createActions(
     rotateActiveImageCCW,
     flipActiveImageH,
     flipActiveImageV,
+    toggleActiveImageNegative,
+    increaseActiveImageExposure,
+    decreaseActiveImageExposure,
+    setActiveImageExposure,
     resetActiveImageView,
   };
 }

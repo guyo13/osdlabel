@@ -206,7 +206,7 @@ describe('useKeyboard', () => {
       dispatchKeyDown(DEFAULT_KEYBOARD_SHORTCUTS.resetView);
       expect(mockActions.resetActiveImageView).toHaveBeenCalled();
     });
-    
+
     it('should reset view on Shift+0', () => {
       dispatchKeyDown(')', undefined, true);
       expect(mockActions.resetActiveImageView).toHaveBeenCalled();
