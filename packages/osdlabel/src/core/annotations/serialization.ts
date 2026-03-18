@@ -41,13 +41,13 @@ export function serialize(
   const imageAnnotations: ImageAnnotations[] = images.map((image) => {
     const annMap = state.byImage[image.id];
     const annotations: Annotation[] = annMap ? Object.values(annMap) : [];
-    
+
     const transform = state.viewTransforms[image.id];
-    const isDefaultTransform = !transform || (
-      transform.rotation === DEFAULT_VIEW_TRANSFORM.rotation &&
-      transform.flippedH === DEFAULT_VIEW_TRANSFORM.flippedH &&
-      transform.flippedV === DEFAULT_VIEW_TRANSFORM.flippedV
-    );
+    const isDefaultTransform =
+      !transform ||
+      (transform.rotation === DEFAULT_VIEW_TRANSFORM.rotation &&
+        transform.flippedH === DEFAULT_VIEW_TRANSFORM.flippedH &&
+        transform.flippedV === DEFAULT_VIEW_TRANSFORM.flippedV);
 
     return {
       imageId: image.id,
@@ -131,7 +131,11 @@ export function deserialize(doc: unknown): DeserializeResult {
         throw new SerializationError(`Invalid viewTransform in image ${entry.imageId}`);
       }
       const vt = entry.viewTransform as Record<string, unknown>;
-      if (typeof vt.rotation !== 'number' || typeof vt.flippedH !== 'boolean' || typeof vt.flippedV !== 'boolean') {
+      if (
+        typeof vt.rotation !== 'number' ||
+        typeof vt.flippedH !== 'boolean' ||
+        typeof vt.flippedV !== 'boolean'
+      ) {
         throw new SerializationError(`Invalid viewTransform shape in image ${entry.imageId}`);
       }
       viewTransform = {

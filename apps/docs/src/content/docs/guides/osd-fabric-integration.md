@@ -33,12 +33,12 @@ The Fabric canvas element has `pointer-events: none` in CSS. All pointer event r
 
 When the user pans or zooms in OSD, the annotation canvas must move in lockstep. The `FabricOverlay` subscribes to four OSD events:
 
-| OSD Event            | When it fires                                  |
-|----------------------|-------------------------------------------------|
-| `animation`          | Every frame during a pan/zoom animation         |
-| `animation-finish`   | When an animation completes                     |
-| `resize`             | When the viewer container resizes               |
-| `open`               | When a new image is loaded                      |
+| OSD Event          | When it fires                           |
+| ------------------ | --------------------------------------- |
+| `animation`        | Every frame during a pan/zoom animation |
+| `animation-finish` | When an animation completes             |
+| `resize`           | When the viewer container resizes       |
+| `open`             | When a new image is loaded              |
 
 Additionally, `flip` and `rotate` events trigger a sync when the view transform changes.
 
@@ -79,24 +79,24 @@ Where `(ix, iy)` is a point in image-space (pixels) and `(screenX, screenY)` is 
 Rather than manually computing scale, rotation, and translation from OSD's internal state, `computeViewportTransform` uses **3-point sampling**. It maps three known image-space points through OSD's coordinate API and derives the full matrix from the results:
 
 ```ts
-const origin = new OpenSeadragon.Point(0, 0);   // image origin
-const unitX  = new OpenSeadragon.Point(1, 0);   // 1 pixel right
-const unitY  = new OpenSeadragon.Point(0, 1);   // 1 pixel down
+const origin = new OpenSeadragon.Point(0, 0); // image origin
+const unitX = new OpenSeadragon.Point(1, 0); // 1 pixel right
+const unitY = new OpenSeadragon.Point(0, 1); // 1 pixel down
 
 const screenOrigin = viewer.viewport.imageToViewerElementCoordinates(origin);
-const screenUnitX  = viewer.viewport.imageToViewerElementCoordinates(unitX);
-const screenUnitY  = viewer.viewport.imageToViewerElementCoordinates(unitY);
+const screenUnitX = viewer.viewport.imageToViewerElementCoordinates(unitX);
+const screenUnitY = viewer.viewport.imageToViewerElementCoordinates(unitY);
 ```
 
 The matrix elements are the vectors from the origin to each unit point:
 
 ```ts
-a  = screenUnitX.x - screenOrigin.x   // how much screenX changes per image pixel right
-b  = screenUnitX.y - screenOrigin.y   // how much screenY changes per image pixel right
-c  = screenUnitY.x - screenOrigin.x   // how much screenX changes per image pixel down
-d  = screenUnitY.y - screenOrigin.y   // how much screenY changes per image pixel down
-tx = screenOrigin.x                   // screen X of image origin
-ty = screenOrigin.y                   // screen Y of image origin
+a = screenUnitX.x - screenOrigin.x; // how much screenX changes per image pixel right
+b = screenUnitX.y - screenOrigin.y; // how much screenY changes per image pixel right
+c = screenUnitY.x - screenOrigin.x; // how much screenX changes per image pixel down
+d = screenUnitY.y - screenOrigin.y; // how much screenY changes per image pixel down
+tx = screenOrigin.x; // screen X of image origin
+ty = screenOrigin.y; // screen Y of image origin
 ```
 
 **Why 3 points instead of 2?** With only 2 points (origin + unitX), you can derive `a`, `b`, and `tx`/`ty`, but `c` and `d` must be inferred by assuming a 90° rotation relationship (`c = -b`, `d = a`). This assumption holds for pure rotation+scale but would break if OSD ever introduced skew or non-uniform scaling. The 3-point approach is robust against any affine transform OSD might produce.
@@ -104,18 +104,23 @@ ty = screenOrigin.y                   // screen Y of image origin
 ### What the matrix looks like in practice
 
 **Zoom only (scale=2, no rotation):**
+
 ```
 [2, 0, 0, 2, tx, ty]
 ```
+
 Moving 1 image pixel right → 2 screen pixels right. No skew.
 
 **90° rotation at scale=1:**
+
 ```
 [0, 1, -1, 0, tx, ty]
 ```
+
 Moving 1 image pixel right → 1 screen pixel down. Moving 1 image pixel down → 1 screen pixel left.
 
 **45° rotation at scale=2:**
+
 ```
 [√2·2, √2·2, -√2·2, √2·2, tx, ty] ≈ [1.41, 1.41, -1.41, 1.41, tx, ty]
 ```
@@ -179,7 +184,7 @@ OSD only has horizontal flip (`setFlip`). Vertical flip is achieved by combining
 
 ```ts
 // In applyViewTransform:
-const isFlipped = transform.flippedH !== transform.flippedV;  // XOR
+const isFlipped = transform.flippedH !== transform.flippedV; // XOR
 if (transform.flippedV) {
   rotation = (rotation + 180) % 360;
 }
@@ -206,19 +211,19 @@ This is correct when the viewportTransform is a simple scale+translate matrix (`
 a = cos(θ) × scale
 ```
 
-| Rotation | a              | Problem |
-|----------|----------------|---------|
-| 0°       | 1 × scale      | Correct |
-| 45°      | 0.707 × scale  | Too small — objects render undersized |
-| 90°      | 0 × scale = 0  | Cache dimensions = 0 — objects invisible |
-| 180°     | -1 × scale     | Negative cache dimensions — clipping artifacts |
+| Rotation | a             | Problem                                        |
+| -------- | ------------- | ---------------------------------------------- |
+| 0°       | 1 × scale     | Correct                                        |
+| 45°      | 0.707 × scale | Too small — objects render undersized          |
+| 90°      | 0 × scale = 0 | Cache dimensions = 0 — objects invisible       |
+| 180°     | -1 × scale    | Negative cache dimensions — clipping artifacts |
 
 The fix overrides `getZoom()` to compute the actual scale as the magnitude of the first column vector of the matrix:
 
 ```ts
 this._fabricCanvas.getZoom = () => {
   const vpt = this._fabricCanvas.viewportTransform;
-  return Math.sqrt(vpt[0] * vpt[0] + vpt[1] * vpt[1]);  // √(a² + b²)
+  return Math.sqrt(vpt[0] * vpt[0] + vpt[1] * vpt[1]); // √(a² + b²)
 };
 ```
 

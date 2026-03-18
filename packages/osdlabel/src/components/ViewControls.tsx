@@ -49,7 +49,16 @@ export const ViewControls: Component = () => {
           'justify-content': 'center',
         }}
       >
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <svg
+          width="18"
+          height="18"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
           <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
           <path d="M3 3v5h5" />
         </svg>
@@ -75,7 +84,16 @@ export const ViewControls: Component = () => {
           'justify-content': 'center',
         }}
       >
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <svg
+          width="18"
+          height="18"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
           <path d="M21 12a9 9 0 1 1-9-9 9.75 9.75 0 0 1 6.74 2.74L21 8" />
           <path d="M21 3v5h-5" />
         </svg>
@@ -103,7 +121,16 @@ export const ViewControls: Component = () => {
           'justify-content': 'center',
         }}
       >
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <svg
+          width="18"
+          height="18"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
           <path d="M12 2v20" />
           <path d="m3 7 5 5-5 5V7z" />
           <path d="m21 7-5 5 5 5V7z" />
@@ -130,7 +157,16 @@ export const ViewControls: Component = () => {
           'justify-content': 'center',
         }}
       >
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <svg
+          width="18"
+          height="18"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
           <path d="M2 12h20" />
           <path d="m7 3 5 5 5-5H7z" />
           <path d="m7 21 5-5 5 5H7z" />
@@ -161,7 +197,16 @@ export const ViewControls: Component = () => {
           'justify-content': 'center',
         }}
       >
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <svg
+          width="18"
+          height="18"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
           <circle cx="12" cy="12" r="10" />
           <path d="M12 2a10 10 0 0 0 0 20z" fill="currentColor" />
         </svg>
@@ -188,7 +233,16 @@ export const ViewControls: Component = () => {
           'justify-content': 'center',
         }}
       >
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <svg
+          width="18"
+          height="18"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
           <circle cx="12" cy="12" r="4" />
           <path d="M12 2v2" />
           <path d="M12 20v2" />
@@ -211,7 +265,9 @@ export const ViewControls: Component = () => {
           opacity: isActive() ? '1' : '0.5',
         }}
       >
-        {cellTransform().exposure > 0 ? `+${cellTransform().exposure.toFixed(1)}` : cellTransform().exposure.toFixed(1)}
+        {cellTransform().exposure > 0
+          ? `+${cellTransform().exposure.toFixed(1)}`
+          : cellTransform().exposure.toFixed(1)}
       </div>
 
       <button
@@ -235,7 +291,16 @@ export const ViewControls: Component = () => {
           'justify-content': 'center',
         }}
       >
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <svg
+          width="18"
+          height="18"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
           <circle cx="12" cy="12" r="4" />
           <path d="M12 2v2" />
           <path d="M12 20v2" />
@@ -248,14 +313,18 @@ export const ViewControls: Component = () => {
         </svg>
       </button>
 
-      <Show when={
-        viewTransform().rotation !== 0 ||
-        viewTransform().flippedH ||
-        viewTransform().flippedV ||
-        cellTransform().exposure !== 0 ||
-        cellTransform().inverted
-      }>
-        <div style={{ width: '1px', height: '24px', 'background-color': '#555', margin: '0 4px' }} />
+      <Show
+        when={
+          viewTransform().rotation !== 0 ||
+          viewTransform().flippedH ||
+          viewTransform().flippedV ||
+          cellTransform().exposure !== 0 ||
+          cellTransform().inverted
+        }
+      >
+        <div
+          style={{ width: '1px', height: '24px', 'background-color': '#555', margin: '0 4px' }}
+        />
         <button
           type="button"
           title="Reset View (Shift+0)"

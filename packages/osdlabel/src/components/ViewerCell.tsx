@@ -81,7 +81,7 @@ const ViewerCell: Component<ViewerCellProps> = (props) => {
     const ov = overlay();
     const imageId = props.imageSource?.id;
     if (!ov || !imageId) return;
-    
+
     // Explicitly track the viewTransform state
     const imgTransform = annotationState.viewTransforms[imageId] ?? DEFAULT_VIEW_TRANSFORM;
     const cellTransform = uiState.cellTransforms[props.cellIndex] ?? DEFAULT_CELL_TRANSFORM;

@@ -106,11 +106,11 @@ Contexts let you define separate annotation tasks with their own tool sets and c
 const context: AnnotationContext = {
   id: createAnnotationContextId('tumor-detection'),
   label: 'Tumor Detection',
-  imageIds: [createImageId('slide-1')],  // optional: scope to specific images
+  imageIds: [createImageId('slide-1')], // optional: scope to specific images
   tools: [
-    { type: 'path', maxCount: 3 },                        // max 3 paths globally
+    { type: 'path', maxCount: 3 }, // max 3 paths globally
     { type: 'rectangle', maxCount: 2, countScope: 'per-image' }, // max 2 per image
-    { type: 'point' },                                     // unlimited
+    { type: 'point' }, // unlimited
   ],
 };
 ```
@@ -119,24 +119,24 @@ const context: AnnotationContext = {
 
 Default shortcuts (configurable via `keyboardShortcuts` prop):
 
-| Action                | Key              |
-| --------------------- | ---------------- |
-| Select tool           | `v`              |
-| Rectangle tool        | `r`              |
-| Circle tool           | `c`              |
-| Line tool             | `l`              |
-| Point tool            | `p`              |
-| Path tool             | `d`              |
+| Action                | Key                    |
+| --------------------- | ---------------------- |
+| Select tool           | `v`                    |
+| Rectangle tool        | `r`                    |
+| Circle tool           | `c`                    |
+| Line tool             | `l`                    |
+| Point tool            | `p`                    |
+| Path tool             | `d`                    |
 | Delete annotation     | `Delete` / `Backspace` |
-| Cancel / Deselect     | `Escape`         |
-| Grid cell 1-9         | `1`-`9`          |
-| Increase grid columns | `=` / `+`        |
-| Decrease grid columns | `-`              |
-| Increase grid rows    | `]`              |
-| Decrease grid rows    | `[`              |
-| Finish path           | `Enter`          |
-| Close path            | `c`              |
-| Cancel path           | `Escape`         |
+| Cancel / Deselect     | `Escape`               |
+| Grid cell 1-9         | `1`-`9`                |
+| Increase grid columns | `=` / `+`              |
+| Decrease grid columns | `-`                    |
+| Increase grid rows    | `]`                    |
+| Decrease grid rows    | `[`                    |
+| Finish path           | `Enter`                |
+| Close path            | `c`                    |
+| Cancel path           | `Escape`               |
 
 ## Serialization
 
@@ -183,15 +183,15 @@ pnpm format           # format with Prettier
 
 ## Tech Stack
 
-| Layer           | Technology       |
-| --------------- | ---------------- |
-| UI Framework    | SolidJS 1.9      |
-| Canvas          | Fabric.js 7      |
-| Tile Viewer     | OpenSeaDragon 5  |
-| Language        | TypeScript 5     |
-| Bundler         | Vite 6           |
-| Tests           | Vitest + Playwright |
-| Monorepo        | pnpm + Turborepo |
+| Layer        | Technology          |
+| ------------ | ------------------- |
+| UI Framework | SolidJS 1.9         |
+| Canvas       | Fabric.js 7         |
+| Tile Viewer  | OpenSeaDragon 5     |
+| Language     | TypeScript 5        |
+| Bundler      | Vite 6              |
+| Tests        | Vitest + Playwright |
+| Monorepo     | pnpm + Turborepo    |
 
 ## License
 

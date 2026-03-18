@@ -22,7 +22,6 @@ export function createActions(
   contextState: ContextState,
   uiState: UIState,
 ) {
-
   function addAnnotation(annotation: Omit<Annotation, 'createdAt' | 'updatedAt'>): void {
     const ctx = contextState.contexts.find((c) => c.id === annotation.contextId);
     if (ctx && !isContextScopedToImage(ctx, annotation.imageId)) {
@@ -142,7 +141,10 @@ export function createActions(
     return uiState.gridAssignments[uiState.activeCellIndex];
   }
 
-  function modifyViewTransform(imageId: ImageId, modifier: (vt: ViewTransform) => ViewTransform): void {
+  function modifyViewTransform(
+    imageId: ImageId,
+    modifier: (vt: ViewTransform) => ViewTransform,
+  ): void {
     setAnnotationState(
       produce((state) => {
         const current = state.viewTransforms[imageId] ?? { ...DEFAULT_VIEW_TRANSFORM };
@@ -225,7 +227,7 @@ export function createActions(
     if (imageId) {
       modifyViewTransform(imageId, () => ({ ...DEFAULT_VIEW_TRANSFORM }));
     }
-    
+
     // Reset only the active cell's adjustments; other cells' transforms remain untouched in state
     const cellIndex = uiState.activeCellIndex;
     setUIState(

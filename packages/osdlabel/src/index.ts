@@ -23,7 +23,12 @@ export type {
 } from './core/types.js';
 
 // ID factory functions
-export { createAnnotationId, createImageId, createAnnotationContextId, DEFAULT_VIEW_TRANSFORM } from './core/types.js';
+export {
+  createAnnotationId,
+  createImageId,
+  createAnnotationContextId,
+  DEFAULT_VIEW_TRANSFORM,
+} from './core/types.js';
 
 // Context scoping
 export { isContextScopedToImage } from './core/context-scoping.js';

@@ -124,7 +124,7 @@ import { StatusBar } from 'osdlabel/components';
 | Prop      | Type                   | Description                     |
 | --------- | ---------------------- | ------------------------------- |
 | `imageId` | `ImageId \| undefined` | The image ID of the active cell |
-| `showFps` | `boolean`               | Show the FPS counter            |
+| `showFps` | `boolean`              | Show the FPS counter            |
 
 ---
 

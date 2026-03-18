@@ -61,7 +61,13 @@ export function AnnotatorProvider(props: AnnotatorProviderProps) {
   const { state: uiState, setState: setUIState } = createUIStore();
   const { state: contextState, setState: setContextState } = createContextStore();
 
-  const actions = createActions(setAnnotationState, setUIState, setContextState, contextState, uiState);
+  const actions = createActions(
+    setAnnotationState,
+    setUIState,
+    setContextState,
+    contextState,
+    uiState,
+  );
   const activeImageId = () => uiState.gridAssignments[uiState.activeCellIndex];
   const constraintStatus = createConstraintStatus(contextState, annotationState, activeImageId);
 
