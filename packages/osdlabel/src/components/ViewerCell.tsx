@@ -144,6 +144,9 @@ const ViewerCell: Component<ViewerCellProps> = (props) => {
       if (validObjects.length > 0) {
         ov.canvas.add(...validObjects);
       }
+      if (containerRef) {
+        containerRef.dataset.annotationCount = String(validObjects.length);
+      }
       ov.canvas.requestRenderAll();
     })();
   });
