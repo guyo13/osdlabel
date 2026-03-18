@@ -291,6 +291,7 @@ interface UIState {
 interface ContextState {
   contexts: AnnotationContext[];
   activeContextId: AnnotationContextId | null;
+  displayedContextIds: AnnotationContextId[];
 }
 ```
 

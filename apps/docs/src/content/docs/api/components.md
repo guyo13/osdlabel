@@ -23,6 +23,7 @@ import { Annotator } from 'osdlabel/components';
 | `showGridControls`                    | `boolean`                                           | `false`                   | Show the grid size controls      |
 | `showContextSwitcher`                 | `boolean`                                           | `false`                   | Show the context selector        |
 | `showFps`                             | `boolean`                                           | `false`                   | Show the FPS counter             |
+| `displayedContextIds`                 | `readonly AnnotationContextId[]`                    | —                         | Context IDs whose annotations are displayed read-only (active context is always displayed) |
 | `filmstripPosition`                   | `'left' \| 'right' \| 'bottom'`                     | `'left'`                  | Filmstrip placement              |
 | `maxGridSize`                         | `{ columns: number; rows: number }`                 | `{ columns: 4, rows: 4 }` | Maximum grid dimensions          |
 | `style`                               | `JSX.CSSProperties`                                 | —                         | Custom style for root container  |
