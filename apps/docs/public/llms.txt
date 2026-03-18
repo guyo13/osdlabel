@@ -373,6 +373,20 @@ interface ImageSource {
 
 The `dziUrl` can point to a `.dzi` file for tiled deep zoom images, or a standard image URL (`.jpg`, `.png`) for simple images.
 
+### CellTransform
+
+Per-cell visual adjustments (rotation, flip, exposure, inversion). These are transient view state — not serialized with annotations.
+
+```ts
+interface CellTransform {
+  readonly rotation: number;  // degrees (0, 90, 180, 270)
+  readonly flippedH: boolean;
+  readonly flippedV: boolean;
+  readonly exposure: number;  // -1 to 1 (0 = default)
+  readonly inverted: boolean; // false = normal, true = CSS invert
+}
+```
+
 ---
 
 ## State types
@@ -396,6 +410,7 @@ interface UIState {
   gridRows: number;
   gridAssignments: Record<number, ImageId>;
   selectedAnnotationId: AnnotationId | null;
+  cellTransforms: Record<number, CellTransform>;
 }
 ```
 
