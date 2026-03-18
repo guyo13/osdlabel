@@ -1,8 +1,8 @@
 import OpenSeadragon from 'openseadragon';
 import { Canvas as FabricCanvas } from 'fabric';
 import type { TMat2D } from 'fabric';
-import type { Point, ViewTransform } from '../core/types.js';
-import { DEFAULT_VIEW_TRANSFORM } from '../core/types.js';
+import type { Point, CellTransform } from '../core/types.js';
+import { DEFAULT_CELL_TRANSFORM } from '../core/types.js';
 
 import {
   POINTER_DOWN,
@@ -214,7 +214,7 @@ export class FabricOverlay {
   }
 
   /** Apply a view transform (rotation/flip) to the OpenSeadragon viewer */
-  applyViewTransform(transform: ViewTransform): void {
+  applyViewTransform(transform: CellTransform): void {
     let rotation = transform.rotation;
     // OSD horizontal flip doesn't natively do vertical flip.
     // Vertical flip = horizontal flip + 180 degree rotation.
@@ -252,7 +252,7 @@ export class FabricOverlay {
   }
 
   resetView(): void {
-    this.applyViewTransform(DEFAULT_VIEW_TRANSFORM);
+    this.applyViewTransform(DEFAULT_CELL_TRANSFORM);
   }
 
   /**

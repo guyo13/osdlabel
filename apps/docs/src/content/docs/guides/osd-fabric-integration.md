@@ -183,7 +183,7 @@ So the flipped matrix is `[-a, b, -c, d, W-tx, ty]` — negate `a` and `c`, and 
 OSD only has horizontal flip (`setFlip`). Vertical flip is achieved by combining horizontal flip with a 180° rotation:
 
 ```ts
-// In applyViewTransform:
+// In applyViewTransform (receives CellTransform):
 const isFlipped = transform.flippedH !== transform.flippedV; // XOR
 if (transform.flippedV) {
   rotation = (rotation + 180) % 360;
@@ -323,7 +323,7 @@ No annotation data is ever modified by rotation or flip. The view transform is p
            └── fabricCanvas.renderAll()          → synchronous
 
 3. User applies rotation/flip
-   └── applyViewTransform(transform)
+   └── applyViewTransform(cellTransform)
        ├── Compute effective rotation (add 180° for vertical flip)
        ├── viewport.setFlip(isFlipped)           → immediately
        ├── viewport.setRotation(rotation, true)  → immediately (no spring)
