@@ -10,13 +10,6 @@ import {
   version as FABRIC_VERSION,
 } from 'fabric';
 import './fabric-module.js';
-
-// Register 'id' as a custom property so toObject() includes it in serialization.
-// This MUST live in a module with exports (not a side-effect-only module) to
-// survive tree-shaking in bundled consumers (e.g. the docs site). Rollup/Vite
-// drop side-effect-only modules when the package declares "sideEffects": false.
-FabricObject.customProperties = ['id'];
-
 import type {
   Annotation,
   AnnotationStyle,

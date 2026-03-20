@@ -1,5 +1,4 @@
-// This import is required for module augmentation to work (makes this file a module).
-import type {} from 'fabric';
+import { FabricObject } from 'fabric';
 
 declare module 'fabric' {
   interface FabricObject {
@@ -12,6 +11,6 @@ declare module 'fabric' {
   }
 }
 
-// Runtime registration of 'id' as a custom property has been moved to
-// fabric-utils.ts so it survives tree-shaking (this file has no exports
-// and is dropped by bundlers when "sideEffects": false is set).
+// Register 'id' so toObject() includes it automatically.
+// _readOnly is intentionally NOT registered — it is transient display state, not persisted.
+FabricObject.customProperties = ['id'];
