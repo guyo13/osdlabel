@@ -25,9 +25,9 @@ Preferred for better build performance and tree-shaking in production apps.
 
 ```ts
 import { Annotator } from 'osdlabel/components';
-import { serialize } from 'osdlabel/core';
+import { serialize } from '@osdlabel/annotation';
 import { useAnnotator } from 'osdlabel/state';
-import type { Annotation, ImageSource, AnnotationContext } from 'osdlabel/core';
+import type { Annotation, ImageSource, AnnotationContext } from '@osdlabel/annotation';
 ```
 
 ### 3. Granular imports
@@ -47,8 +47,8 @@ import { Annotator } from 'osdlabel/components/Annotator';
 Core TypeScript types and branded ID factories. See [Types](/osdlabel/api/types/).
 
 ```ts
-import type { AnnotationId, ImageId, Geometry, Annotation } from 'osdlabel/core';
-import { createImageId, createAnnotationId } from 'osdlabel/core';
+import type { AnnotationId, ImageId, Geometry, Annotation } from '@osdlabel/annotation';
+import { createImageId, createAnnotationId } from '@osdlabel/annotation';
 ```
 
 ### Components
@@ -80,7 +80,7 @@ import { AnnotatorProvider, useAnnotator, createActions } from 'osdlabel/state';
 Low-level OSD-Fabric integration. See [Overlay](/osdlabel/api/overlay/).
 
 ```ts
-import { FabricOverlay, computeViewportTransform } from 'osdlabel/overlay';
+import { FabricOverlay, computeViewportTransform } from '@osdlabel/fabric-osd';
 ```
 
 ### Serialization
@@ -88,7 +88,7 @@ import { FabricOverlay, computeViewportTransform } from 'osdlabel/overlay';
 JSON export/import functions. See [Serialization](/osdlabel/api/serialization/).
 
 ```ts
-import { serialize, deserialize, validateAnnotation, getAllAnnotationsFlat } from 'osdlabel/core';
+import { serialize, deserialize, validateAnnotation, getAllAnnotationsFlat } from '@osdlabel/annotation';
 ```
 
 ### Hooks
@@ -104,7 +104,7 @@ import { useConstraints, useKeyboard } from 'osdlabel/hooks';
 Default configuration values. See [Constants](/osdlabel/api/constants/).
 
 ```ts
-import { DEFAULT_ANNOTATION_STYLE, DEFAULT_GRID_CONFIG, MAX_GRID_SIZE } from 'osdlabel/core';
+import { DEFAULT_ANNOTATION_STYLE, DEFAULT_GRID_CONFIG, MAX_GRID_SIZE } from '@osdlabel/annotation';
 ```
 
 ---
@@ -870,7 +870,7 @@ Creates a reactive accessor that derives tool enable/disable status from the cur
 A Fabric.js canvas overlay synchronized with an OpenSeaDragon viewer. Handles event routing, coordinate transforms, and mode switching.
 
 ```ts
-import { FabricOverlay } from 'osdlabel/overlay';
+import { FabricOverlay } from '@osdlabel/fabric-osd';
 ```
 
 ### Constructor
@@ -1002,7 +1002,7 @@ Serialize the current annotation state into a portable JSON document. Creates on
 **Example:**
 
 ```ts
-import { serialize } from 'osdlabel/core';
+import { serialize } from '@osdlabel/annotation';
 
 const doc = serialize(annotationState, images);
 const json = JSON.stringify(doc, null, 2);
@@ -1027,7 +1027,7 @@ Parse and validate a serialized document, returning the `byImage` store structur
 **Example:**
 
 ```ts
-import { deserialize } from 'osdlabel/core';
+import { deserialize } from '@osdlabel/annotation';
 
 try {
   const byImage = deserialize(JSON.parse(jsonString));
@@ -1070,7 +1070,7 @@ Flatten all annotations from the nested `byImage` store into a single array.
 **Example:**
 
 ```ts
-import { getAllAnnotationsFlat } from 'osdlabel/core';
+import { getAllAnnotationsFlat } from '@osdlabel/annotation';
 
 const all = getAllAnnotationsFlat(annotationState);
 console.log(`Total annotations: ${all.length}`);
@@ -1194,7 +1194,7 @@ Returns `true` if:
 Default visual style applied to new annotations.
 
 ```ts
-import { DEFAULT_ANNOTATION_STYLE } from 'osdlabel/core';
+import { DEFAULT_ANNOTATION_STYLE } from '@osdlabel/annotation';
 ```
 
 ```ts
@@ -1216,7 +1216,7 @@ Override per-tool via `defaultStyle` in [`ToolConstraint`](/osdlabel/api/types/#
 Default grid dimensions on initialization.
 
 ```ts
-import { DEFAULT_GRID_CONFIG } from 'osdlabel/core';
+import { DEFAULT_GRID_CONFIG } from '@osdlabel/annotation';
 ```
 
 ```ts
@@ -1233,7 +1233,7 @@ const DEFAULT_GRID_CONFIG = {
 Maximum allowed grid dimensions.
 
 ```ts
-import { MAX_GRID_SIZE } from 'osdlabel/core';
+import { MAX_GRID_SIZE } from '@osdlabel/annotation';
 ```
 
 ```ts
@@ -1250,7 +1250,7 @@ const MAX_GRID_SIZE = {
 Default keyboard shortcut bindings. See [Keyboard Shortcuts](/osdlabel/guides/keyboard-shortcuts/) for the full table.
 
 ```ts
-import { DEFAULT_KEYBOARD_SHORTCUTS } from 'osdlabel/core';
+import { DEFAULT_KEYBOARD_SHORTCUTS } from '@osdlabel/annotation';
 ```
 
 ```ts

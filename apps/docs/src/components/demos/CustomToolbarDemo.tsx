@@ -1,8 +1,8 @@
 import { GridView, StatusBar } from 'osdlabel/components';
-import { createImageId, createAnnotationContextId } from 'osdlabel/core';
+import { createImageId, createAnnotationContextId } from '@osdlabel/annotation';
 import { useConstraints } from 'osdlabel/hooks';
 import { AnnotatorProvider, useAnnotator } from 'osdlabel/state';
-import type { ImageSource, AnnotationContext, AnnotationType } from 'osdlabel/core';
+import type { ImageSource, AnnotationContext, AnnotationType } from '@osdlabel/annotation';
 import { onMount } from 'solid-js';
 
 const images: ImageSource[] = [

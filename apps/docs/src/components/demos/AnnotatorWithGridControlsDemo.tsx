@@ -1,6 +1,6 @@
 import { Annotator } from 'osdlabel/components';
-import { createImageId, createAnnotationContextId } from 'osdlabel/core';
-import type { ImageSource, AnnotationContext } from 'osdlabel/core';
+import { createImageId, createAnnotationContextId } from '@osdlabel/annotation';
+import type { ImageSource, AnnotationContext } from '@osdlabel/annotation';
 
 const images: ImageSource[] = [
   {

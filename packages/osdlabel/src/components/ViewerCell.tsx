@@ -1,14 +1,13 @@
 import { onMount, onCleanup, createEffect, on, createSignal } from 'solid-js';
 import type { Component } from 'solid-js';
 import OpenSeadragon from 'openseadragon';
-import { FabricOverlay } from '../overlay/fabric-overlay.js';
-import type { OverlayMode } from '../overlay/fabric-overlay.js';
-import type { ImageSource, AnnotationContextId } from '../core/types.js';
-import { DEFAULT_CELL_TRANSFORM } from '../core/types.js';
+import { FabricOverlay, createFabricObjectFromRawData } from '@osdlabel/fabric-osd';
+import type { OverlayMode } from '@osdlabel/fabric-osd';
+import type { ImageSource, AnnotationContextId } from '@osdlabel/annotation';
+import { DEFAULT_CELL_TRANSFORM } from '@osdlabel/annotation';
 import { useAnnotationTool } from '../hooks/useAnnotationTool.js';
 import { useAnnotator } from '../state/annotator-context.js';
-import { createFabricObjectFromRawData } from '../core/fabric-utils.js';
-import '../core/fabric-module.js';
+import '@osdlabel/fabric-osd/fabric-module';
 
 export interface ViewerCellProps {
   readonly imageSource: ImageSource | undefined;

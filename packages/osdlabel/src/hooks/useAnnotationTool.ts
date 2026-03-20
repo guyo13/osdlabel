@@ -1,22 +1,25 @@
 import { createEffect, onCleanup } from 'solid-js';
 import type { FabricObject } from 'fabric';
-import type { FabricOverlay } from '../overlay/fabric-overlay.js';
+import type { FabricOverlay } from '@osdlabel/fabric-osd';
 import type {
   AnnotationTool,
   ToolCallbacks,
   AddAnnotationParams,
-} from '../core/tools/base-tool.js';
-import { RectangleTool } from '../core/tools/rectangle-tool.js';
-import { CircleTool } from '../core/tools/circle-tool.js';
-import { LineTool } from '../core/tools/line-tool.js';
-import { PointTool } from '../core/tools/point-tool.js';
-import { PathTool } from '../core/tools/path-tool.js';
-import { FreeHandPathTool } from '../core/tools/free-hand-path-tool.js';
-import { SelectTool } from '../core/tools/select-tool.js';
+} from '@osdlabel/fabric-osd';
+import {
+  RectangleTool,
+  CircleTool,
+  LineTool,
+  PointTool,
+  PathTool,
+  FreeHandPathTool,
+  SelectTool,
+  getGeometryFromFabricObject,
+  serializeFabricObject,
+} from '@osdlabel/fabric-osd';
 import { useAnnotator } from '../state/annotator-context.js';
-import type { AnnotationId, ImageId, Point, AnnotationType } from '../core/types.js';
-import { getGeometryFromFabricObject, serializeFabricObject } from '../core/fabric-utils.js';
-import '../core/fabric-module.js';
+import type { AnnotationId, ImageId, Point, AnnotationType } from '@osdlabel/annotation';
+import '@osdlabel/fabric-osd/fabric-module';
 
 interface FabricPointerEvent {
   readonly e: MouseEvent | PointerEvent | TouchEvent;

@@ -52,7 +52,7 @@ osdlabel uses a JSON document format for persisting annotations:
 Use `serialize()` to create an `AnnotationDocument` from the current state:
 
 ```tsx
-import { serialize } from 'osdlabel/core';
+import { serialize } from '@osdlabel/annotation';
 
 const { annotationState } = useAnnotator();
 
@@ -67,7 +67,7 @@ const json = JSON.stringify(doc, null, 2);
 Use `deserialize()` to parse a document and load it into the store:
 
 ```tsx
-import { deserialize } from 'osdlabel/core';
+import { deserialize } from '@osdlabel/annotation';
 
 const { actions } = useAnnotator();
 
@@ -83,7 +83,7 @@ actions.loadAnnotations(byImage);
 The `validateAnnotation()` function is a type guard that checks if a value is a valid `Annotation`:
 
 ```tsx
-import { validateAnnotation } from 'osdlabel/core';
+import { validateAnnotation } from '@osdlabel/annotation';
 
 if (validateAnnotation(unknownData)) {
   // unknownData is Annotation
@@ -117,7 +117,7 @@ The `onAnnotationsChange` callback fires whenever annotations are added, updated
 Use `getAllAnnotationsFlat()` to extract a flat array from the state at any time:
 
 ```tsx
-import { getAllAnnotationsFlat } from 'osdlabel/core';
+import { getAllAnnotationsFlat } from '@osdlabel/annotation';
 
 const { annotationState } = useAnnotator();
 const allAnnotations = getAllAnnotationsFlat(annotationState);

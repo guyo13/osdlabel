@@ -7,8 +7,8 @@ import type {
   ConstraintStatus,
   AnnotationType,
   ImageId,
-} from '../core/types.js';
-import { isContextScopedToImage, getCountableImageIds } from '../core/context-scoping.js';
+} from '@osdlabel/annotation';
+import { isContextScopedToImage, getCountableImageIds } from '@osdlabel/annotation';
 
 export function createContextStore() {
   const [state, setState] = createStore<ContextState>({

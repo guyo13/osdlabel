@@ -9,9 +9,8 @@ import type {
   AnnotationContext,
   AnnotationContextId,
   ContextState,
-} from '../core/types.js';
-import { DEFAULT_CELL_TRANSFORM } from '../core/types.js';
-import { isContextScopedToImage } from '../core/context-scoping.js';
+} from '@osdlabel/annotation';
+import { DEFAULT_CELL_TRANSFORM, isContextScopedToImage } from '@osdlabel/annotation';
 
 export function createActions(
   setAnnotationState: SetStoreFunction<AnnotationState>,

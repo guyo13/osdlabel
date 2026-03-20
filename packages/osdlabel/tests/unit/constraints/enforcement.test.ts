@@ -9,9 +9,8 @@ import {
   createAnnotationId,
   createImageId,
   createAnnotationContextId,
-  AnnotationContext,
-  ImageId,
-} from '../../../src/core/types';
+} from '@osdlabel/annotation';
+import type { AnnotationContext, ImageId } from '@osdlabel/annotation';
 
 describe('Constraint Enforcement', () => {
   function createTestStore(initialImageId: ImageId = imageId) {

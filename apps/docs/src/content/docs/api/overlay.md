@@ -8,7 +8,7 @@ description: OSD-Fabric integration layer
 A Fabric.js canvas overlay synchronized with an OpenSeaDragon viewer. Handles event routing, coordinate transforms, and mode switching.
 
 ```ts
-import { FabricOverlay } from 'osdlabel/overlay';
+import { FabricOverlay } from '@osdlabel/fabric-osd';
 ```
 
 ### Constructor

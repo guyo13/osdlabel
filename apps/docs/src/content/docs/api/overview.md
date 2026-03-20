@@ -21,9 +21,9 @@ Preferred for better build performance and tree-shaking in production apps.
 
 ```ts
 import { Annotator } from 'osdlabel/components';
-import { serialize } from 'osdlabel/core';
+import { serialize } from '@osdlabel/annotation';
 import { useAnnotator } from 'osdlabel/state';
-import type { Annotation, ImageSource, AnnotationContext } from 'osdlabel/core';
+import type { Annotation, ImageSource, AnnotationContext } from '@osdlabel/annotation';
 ```
 
 ### 3. Granular imports
@@ -43,8 +43,8 @@ import { Annotator } from 'osdlabel/components/Annotator';
 Core TypeScript types and branded ID factories. See [Types](/osdlabel/api/types/).
 
 ```ts
-import type { AnnotationId, ImageId, Geometry, Annotation } from 'osdlabel/core';
-import { createImageId, createAnnotationId } from 'osdlabel/core';
+import type { AnnotationId, ImageId, Geometry, Annotation } from '@osdlabel/annotation';
+import { createImageId, createAnnotationId } from '@osdlabel/annotation';
 ```
 
 ### Components
@@ -76,7 +76,7 @@ import { AnnotatorProvider, useAnnotator, createActions } from 'osdlabel/state';
 Low-level OSD-Fabric integration. See [Overlay](/osdlabel/api/overlay/).
 
 ```ts
-import { FabricOverlay, computeViewportTransform } from 'osdlabel/overlay';
+import { FabricOverlay, computeViewportTransform } from '@osdlabel/fabric-osd';
 ```
 
 ### Serialization
@@ -84,7 +84,7 @@ import { FabricOverlay, computeViewportTransform } from 'osdlabel/overlay';
 JSON export/import functions. See [Serialization](/osdlabel/api/serialization/).
 
 ```ts
-import { serialize, deserialize, validateAnnotation, getAllAnnotationsFlat } from 'osdlabel/core';
+import { serialize, deserialize, validateAnnotation, getAllAnnotationsFlat } from '@osdlabel/annotation';
 ```
 
 ### Hooks
@@ -100,5 +100,5 @@ import { useConstraints, useKeyboard } from 'osdlabel/hooks';
 Default configuration values. See [Constants](/osdlabel/api/constants/).
 
 ```ts
-import { DEFAULT_ANNOTATION_STYLE, DEFAULT_GRID_CONFIG, MAX_GRID_SIZE } from 'osdlabel/core';
+import { DEFAULT_ANNOTATION_STYLE, DEFAULT_GRID_CONFIG, MAX_GRID_SIZE } from '@osdlabel/annotation';
 ```

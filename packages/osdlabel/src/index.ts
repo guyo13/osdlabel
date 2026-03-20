@@ -1,4 +1,4 @@
-// Core types
+// Annotation model (re-exported from @osdlabel/annotation)
 export type {
   AnnotationId,
   ImageId,
@@ -20,26 +20,29 @@ export type {
   KeyboardShortcutMap,
   RawAnnotationData,
   CellTransform,
-} from './core/types.js';
+  CountScope,
+} from '@osdlabel/annotation';
 
-// ID factory functions
 export {
   createAnnotationId,
   createImageId,
   createAnnotationContextId,
   DEFAULT_CELL_TRANSFORM,
-} from './core/types.js';
+  isContextScopedToImage,
+  DEFAULT_ANNOTATION_STYLE,
+  DEFAULT_GRID_CONFIG,
+  MAX_GRID_SIZE,
+  serialize,
+  deserialize,
+  validateAnnotation,
+  getAllAnnotationsFlat,
+  SerializationError,
+} from '@osdlabel/annotation';
+export type { DeserializeResult } from '@osdlabel/annotation';
 
-// Context scoping
-export { isContextScopedToImage } from './core/context-scoping.js';
-export type { CountScope } from './core/types.js';
-
-// Constants
-export { DEFAULT_ANNOTATION_STYLE, DEFAULT_GRID_CONFIG, MAX_GRID_SIZE } from './core/constants.js';
-
-// Overlay
-export { FabricOverlay, computeViewportTransform } from './overlay/index.js';
-export type { OverlayOptions, OverlayMode } from './overlay/index.js';
+// Fabric-OSD integration (re-exported from @osdlabel/fabric-osd)
+export { FabricOverlay, computeViewportTransform } from '@osdlabel/fabric-osd';
+export type { OverlayOptions, OverlayMode, ToolCallbacks, AddAnnotationParams } from '@osdlabel/fabric-osd';
 
 // State
 export {
@@ -52,19 +55,6 @@ export {
   createConstraintStatus,
 } from './state/index.js';
 export type { AnnotatorProviderProps } from './state/annotator-context.js';
-
-// Tools
-export type { ToolCallbacks, AddAnnotationParams } from './core/tools/base-tool.js';
-
-// Serialization
-export {
-  serialize,
-  deserialize,
-  validateAnnotation,
-  getAllAnnotationsFlat,
-  SerializationError,
-} from './core/annotations/serialization.js';
-export type { DeserializeResult } from './core/annotations/serialization.js';
 
 // Components
 export { default as ViewerCell } from './components/ViewerCell.js';

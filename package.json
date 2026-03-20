@@ -16,7 +16,8 @@
     "format": "prettier --write .",
     "docs:dev": "turbo --filter @osdlabel/docs dev",
     "docs:build": "turbo --filter @osdlabel/docs build",
-    "docs:preview": "turbo --filter @osdlabel/docs preview"
+    "docs:preview": "turbo --filter @osdlabel/docs preview",
+    "check-versions": "node scripts/check-versions.js"
   },
   "devDependencies": {
     "playwright": "^1.58.2",

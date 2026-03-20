@@ -45,14 +45,23 @@ This is `osdlabel`, a DZI image annotation library built with SolidJS, Fabric.js
 
 ### Architecture
 
-- **Core logic is framework-agnostic.** Everything in `packages/osdlabel/src/core/` must have zero imports from `solid-js` or any UI framework. This includes the annotation model, serialization, constraints, coordinate transforms, and tool implementations.
+The project is split into three packages with clear dependency boundaries:
+
+- **`@osdlabel/annotation`** (`packages/annotation/`) — Pure annotation data model with zero external dependencies. Contains: branded ID types, geometry discriminated unions, annotation/context types, constants, serialization, data sanitization, context scoping, and ID utilities.
+- **`@osdlabel/fabric-osd`** (`packages/fabric-osd/`) — Fabric.js + OpenSeaDragon integration layer, SolidJS-agnostic. Contains: FabricOverlay (canvas overlay + viewport transform), all annotation tools (rectangle, circle, line, point, path, free-hand-path, select), and Fabric object serialization utilities. Depends on `@osdlabel/annotation`, `fabric`, and `openseadragon`.
+- **`osdlabel`** (`packages/osdlabel/`) — SolidJS annotator UI. Contains: reactive state stores, hooks, and components. Depends on `@osdlabel/annotation`, `@osdlabel/fabric-osd`, and `solid-js`.
+
+Key architectural rules:
+- **`@osdlabel/annotation` has zero framework dependencies.** No imports from `solid-js`, `fabric`, or `openseadragon`.
+- **`@osdlabel/fabric-osd` is SolidJS-agnostic.** No imports from `solid-js`. Import annotation types from `@osdlabel/annotation`.
 - **State mutations go through named action functions.** Never modify the store directly from components. All mutations are in `packages/osdlabel/src/state/actions.ts`.
 - **One active cell at a time.** Only one grid cell can be in annotation mode at a time. All other cells display existing annotations in read-only mode.
 - **Constraint enforcement is reactive.** Use Solid's `createMemo` to derive whether each tool is enabled/disabled from the current annotation counts and the active context's limits. The toolbar reads this derived state. Do not imperatively enable/disable tools.
+- **All packages use lockstep versioning.** Run `pnpm run check-versions` to validate. CI enforces this.
 
 ### Testing
 
-- Run `pnpm test` (Vitest) after implementing any core logic.
+- Run `pnpm test` (Vitest) after implementing any core logic. Tests run across all 3 packages.
 - Run `pnpm test:e2e` (Playwright) after implementing any UI interaction. For parallel worktree runs, use `PORT=5174 pnpm test:e2e` to avoid port conflicts (default: 5173).
 - Write tests for the module you just built before moving to the next task.
 - **For canvas E2E tests:** Use Playwright's `page.mouse.move()`, `page.mouse.down()`, `page.mouse.up()` for precise drawing simulation. Use `page.screenshot()` with `expect(screenshot).toMatchSnapshot()` for visual regression.
@@ -61,48 +70,65 @@ This is `osdlabel`, a DZI image annotation library built with SolidJS, Fabric.js
 
 - One exported entity per file where practical. Exceptions: closely related types can share a file.
 - File names use kebab-case: `rectangle-tool.ts`, `annotation-store.ts`.
-- Test files mirror source structure: `packages/osdlabel/src/core/annotations/model.ts` → `packages/osdlabel/tests/unit/annotations/model.test.ts`.
+- Test files mirror source structure: `packages/annotation/src/types.ts` → `packages/annotation/tests/unit/types.test.ts`.
 - All imports use explicit file extensions: `import { Foo } from './foo.js'` (required for ESM).
+- Cross-package imports use the package name: `import type { Annotation } from '@osdlabel/annotation'`.
 
 ### Monorepo Structure
 
 This is a pnpm workspace monorepo with Turborepo for task orchestration:
 
-- `packages/osdlabel/` — the publishable `osdlabel` library (source: `src/`, unit tests: `tests/unit/`)
+- `packages/annotation/` — `@osdlabel/annotation` (annotation data model, zero deps)
+- `packages/fabric-osd/` — `@osdlabel/fabric-osd` (Fabric.js + OSD integration)
+- `packages/osdlabel/` — `osdlabel` (SolidJS annotator UI)
 - `apps/dev/` — the development app (`@osdlabel/dev`); source in `src/`, E2E tests in `tests/e2e/`
 - `apps/docs/` — the documentation site (`@osdlabel/docs`); Astro + Starlight, deployed to GitHub Pages
 
 ### Library Entrypoints & Granularity
 
-`osdlabel` provides ESM-friendly sub-path exports for efficient tree-shaking. Imports are supported at three levels:
+The library is split across multiple npm packages:
 
-1. **Main Barrel**: `import { ... } from 'osdlabel'` — Re-exports all public APIs.
-2. **Sub-path Barrels**: `import { ... } from 'osdlabel/components'`, `osdlabel/state`, `osdlabel/hooks`, `osdlabel/core`, `osdlabel/overlay`, `osdlabel/utils`.
-3. **Granular Imports**: `import { Annotator } from 'osdlabel/components/Annotator'` — Supported via glob exports (`"./*"`).
+1. **`@osdlabel/annotation`** — Pure data model. `import { Annotation, createImageId, serialize } from '@osdlabel/annotation'`
+2. **`@osdlabel/fabric-osd`** — Canvas integration. `import { FabricOverlay, computeViewportTransform } from '@osdlabel/fabric-osd'`
+3. **`osdlabel`** — SolidJS UI. Re-exports everything from the above packages plus its own state/hooks/components.
+   - Main barrel: `import { Annotator, serialize, FabricOverlay } from 'osdlabel'`
+   - Sub-path barrels: `osdlabel/components`, `osdlabel/state`, `osdlabel/hooks`
+   - Granular imports: `import { Annotator } from 'osdlabel/components/Annotator'`
 
-The library is built using **Vite in library mode** with `vite-plugin-solid` to ensure JSX is pre-compiled for SolidJS consumers.
+The `osdlabel` package is built using **Vite in library mode** with `vite-plugin-solid`. The `@osdlabel/annotation` and `@osdlabel/fabric-osd` packages are built with plain `tsc`.
 
 ### Build Commands
 
 Run from the workspace root — Turbo fans out to the correct packages:
 
 ```bash
-pnpm dev          # Start Vite dev server (apps/dev) with HMR into library source
-pnpm build        # Build osdlabel with tsc → packages/osdlabel/dist/
-pnpm typecheck    # Type-check all packages (builds osdlabel first for d.ts)
-pnpm test         # Run Vitest unit tests in packages/osdlabel/
-pnpm test:e2e     # Run Playwright E2E tests in apps/dev/
-pnpm lint         # Run ESLint across all packages
-pnpm format       # Run Prettier across the workspace
-pnpm docs:dev     # Start docs dev server (apps/docs)
-pnpm docs:build   # Build docs site (generates LLM page first, then Astro build)
+pnpm dev            # Start Vite dev server (apps/dev) with HMR into library source
+pnpm build          # Build all packages (annotation → fabric-osd → osdlabel)
+pnpm typecheck      # Type-check all packages
+pnpm test           # Run Vitest unit tests across all packages
+pnpm test:e2e       # Run Playwright E2E tests in apps/dev/
+pnpm lint           # Run ESLint across all packages
+pnpm format         # Run Prettier across the workspace
+pnpm check-versions # Validate lockstep package versions
+pnpm docs:dev       # Start docs dev server (apps/docs)
+pnpm docs:build     # Build docs site (generates LLM page first, then Astro build)
 ```
 
 Per-package commands (run from within the package directory):
 
 ```bash
-# packages/osdlabel/
+# packages/annotation/
 pnpm build        # tsc -p tsconfig.build.json
+pnpm typecheck    # tsc --noEmit
+pnpm test         # vitest run
+
+# packages/fabric-osd/
+pnpm build        # tsc -p tsconfig.build.json
+pnpm typecheck    # tsc --noEmit
+pnpm test         # vitest run
+
+# packages/osdlabel/
+pnpm build        # vite build + tsc --emitDeclarationOnly
 pnpm typecheck    # tsc --noEmit
 pnpm test         # vitest run
 pnpm test:watch   # vitest (watch mode)

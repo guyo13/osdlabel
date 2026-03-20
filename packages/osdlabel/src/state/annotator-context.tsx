@@ -9,12 +9,12 @@ import type {
   AnnotationId,
   ImageId,
   KeyboardShortcutMap,
-} from '../core/types.js';
+} from '@osdlabel/annotation';
+import { getAllAnnotationsFlat } from '@osdlabel/annotation';
 import { createAnnotationStore } from './annotation-store.js';
 import { createUIStore } from './ui-store.js';
 import { createContextStore, createConstraintStatus } from './context-store.js';
 import { createActions } from './actions.js';
-import { getAllAnnotationsFlat } from '../core/annotations/serialization.js';
 import { DEFAULT_KEYBOARD_SHORTCUTS, useKeyboard } from '../hooks/useKeyboard.js';
 
 export interface ActiveToolKeyHandlerRef {

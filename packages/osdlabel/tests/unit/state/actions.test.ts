@@ -9,11 +9,13 @@ import {
   createAnnotationId,
   createImageId,
   createAnnotationContextId,
+} from '@osdlabel/annotation';
+import type {
   Annotation,
   AnnotationContext,
   AnnotationContextId,
   ImageId,
-} from '../../../src/core/types';
+} from '@osdlabel/annotation';
 
 describe('State Management', () => {
   function createTestStore() {

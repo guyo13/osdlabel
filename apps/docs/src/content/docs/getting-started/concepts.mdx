@@ -39,7 +39,7 @@ type AnnotationContextId = string & { readonly __brand: unique symbol };
 You cannot pass a plain `string` where a branded ID is expected. Use the factory functions:
 
 ```ts
-import { createImageId, createAnnotationId, createAnnotationContextId } from 'osdlabel/core';
+import { createImageId, createAnnotationId, createAnnotationContextId } from '@osdlabel/annotation';
 
 const imageId = createImageId('my-image');
 const annotationId = createAnnotationId('ann-1');

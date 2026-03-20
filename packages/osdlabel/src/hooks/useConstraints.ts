@@ -1,5 +1,5 @@
 import { useAnnotator } from '../state/annotator-context.js';
-import type { AnnotationType } from '../core/types.js';
+import type { AnnotationType } from '@osdlabel/annotation';
 
 export function useConstraints() {
   const { constraintStatus } = useAnnotator();

@@ -9,8 +9,8 @@ import {
   createAnnotationId,
   createImageId,
   createAnnotationContextId,
-  Annotation,
-} from '../../src/core/types';
+} from '@osdlabel/annotation';
+import type { Annotation } from '@osdlabel/annotation';
 
 describe('version counter', () => {
   const dummyContextId = createAnnotationContextId('ctx1');
