@@ -3,9 +3,9 @@ import { createFabricObjectFromRawData } from '@osdlabel/fabric-osd';
 import {
   createAnnotationId,
   createImageId,
-  createAnnotationContextId,
 } from '@osdlabel/annotation';
 import type { Annotation, RawAnnotationData, Geometry } from '@osdlabel/annotation';
+import { createAnnotationContextId } from '@osdlabel/annotation-context';
 
 describe('Performance: Annotation Loading', () => {
   const COUNT = 1000;

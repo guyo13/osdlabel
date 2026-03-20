@@ -4,10 +4,10 @@ import type {
   AnnotationType,
   Point,
   ImageId,
-  AnnotationContextId,
   AnnotationId,
   KeyboardShortcutMap,
 } from '@osdlabel/annotation';
+import type { AnnotationContextId } from '@osdlabel/annotation-context';
 import type { ToolConstraint } from '@osdlabel/annotation-context';
 import '../fabric-module.js';
 

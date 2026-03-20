@@ -4,11 +4,11 @@ import {
   type AnnotationType,
   type Point,
   type AnnotationStyle,
-  type AnnotationContextId,
   createAnnotationId,
   DEFAULT_ANNOTATION_STYLE,
   generateId,
 } from '@osdlabel/annotation';
+import type { AnnotationContextId } from '@osdlabel/annotation-context';
 import { type FabricShapeOptions, getFabricOptions } from '../fabric-utils.js';
 
 /**

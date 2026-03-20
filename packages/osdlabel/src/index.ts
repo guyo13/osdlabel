@@ -2,7 +2,6 @@
 export type {
   AnnotationId,
   ImageId,
-  AnnotationContextId,
   AnnotationType,
   Point,
   Geometry,
@@ -24,7 +23,6 @@ export type {
 export {
   createAnnotationId,
   createImageId,
-  createAnnotationContextId,
   DEFAULT_CELL_TRANSFORM,
   DEFAULT_ANNOTATION_STYLE,
   DEFAULT_GRID_CONFIG,
@@ -40,6 +38,7 @@ export {
 // Annotation context (re-exported from @osdlabel/annotation-context)
 export type {
   AnnotationContext,
+  AnnotationContextId,
   ToolConstraint,
   ConstraintStatus,
   ContextState,
@@ -48,6 +47,7 @@ export type {
 } from '@osdlabel/annotation-context';
 
 export {
+  createAnnotationContextId,
   isContextScopedToImage,
   getCountableImageIds,
   validateContextFields,

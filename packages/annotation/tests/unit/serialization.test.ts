@@ -13,7 +13,6 @@ import type { ExtensionValidator } from '../../src/serialization.js';
 import {
   createAnnotationId,
   createImageId,
-  createAnnotationContextId,
 } from '../../src/types.js';
 import type {
   BaseAnnotation,
@@ -52,7 +51,7 @@ const validateTestAnnotation = createAnnotationValidator(validateTestExtFields);
 
 describe('Serialization', () => {
   const imageId = createImageId('img1');
-  const contextId = createAnnotationContextId('ctx1');
+  const contextId = 'ctx1';
   const annId1 = createAnnotationId('ann1');
   const annId2 = createAnnotationId('ann2');
 

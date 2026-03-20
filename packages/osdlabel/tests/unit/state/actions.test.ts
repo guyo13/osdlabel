@@ -8,14 +8,13 @@ import { createActions } from '../../../src/state/actions';
 import {
   createAnnotationId,
   createImageId,
-  createAnnotationContextId,
 } from '@osdlabel/annotation';
 import type {
   Annotation,
-  AnnotationContext,
-  AnnotationContextId,
   ImageId,
 } from '@osdlabel/annotation';
+import { createAnnotationContextId } from '@osdlabel/annotation-context';
+import type { AnnotationContext, AnnotationContextId } from '@osdlabel/annotation-context';
 
 describe('State Management', () => {
   function createTestStore() {

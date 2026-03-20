@@ -1,4 +1,5 @@
-import { serialize, createImageId, createAnnotationContextId } from '@osdlabel/annotation';
+import { serialize, createImageId } from '@osdlabel/annotation';
+import { createAnnotationContextId } from '@osdlabel/annotation-context';
 import { AnnotatorProvider, useAnnotator } from 'osdlabel/state';
 import type { ImageSource } from '@osdlabel/annotation';
 import type { AnnotationContext } from '@osdlabel/annotation-context';

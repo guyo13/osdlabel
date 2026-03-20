@@ -1,12 +1,12 @@
 import { createStore } from 'solid-js/store';
 import { createMemo } from 'solid-js';
 import type {
-  AnnotationContextId,
   AnnotationState,
   AnnotationType,
   ImageId,
 } from '@osdlabel/annotation';
 import type {
+  AnnotationContextId,
   ContextState,
   ConstraintStatus,
 } from '@osdlabel/annotation-context';

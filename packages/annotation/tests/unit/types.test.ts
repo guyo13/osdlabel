@@ -2,12 +2,10 @@ import { describe, it, expect } from 'vitest';
 import {
   createAnnotationId,
   createImageId,
-  createAnnotationContextId,
 } from '../../src/types.js';
 import type {
   AnnotationId,
   ImageId,
-  AnnotationContextId,
   Geometry,
 } from '../../src/types.js';
 
@@ -27,13 +25,6 @@ describe('Branded ID types', () => {
     expect(asString).toBe('img-1');
   });
 
-  it('createAnnotationContextId produces a branded value', () => {
-    const id = createAnnotationContextId('ctx-1');
-    expect(id).toBe('ctx-1');
-    const asString: string = id;
-    expect(asString).toBe('ctx-1');
-  });
-
   it('branded types are not assignable from raw strings', () => {
     // @ts-expect-error - raw string cannot be assigned to AnnotationId
     const _annId: AnnotationId = 'raw-string';
@@ -41,13 +32,9 @@ describe('Branded ID types', () => {
     // @ts-expect-error - raw string cannot be assigned to ImageId
     const _imgId: ImageId = 'raw-string';
 
-    // @ts-expect-error - raw string cannot be assigned to AnnotationContextId
-    const _ctxId: AnnotationContextId = 'raw-string';
-
     // Suppress unused variable warnings
     void _annId;
     void _imgId;
-    void _ctxId;
   });
 
   it('branded types are not interchangeable', () => {
@@ -173,9 +160,4 @@ describe('Helper functions', () => {
     expect(acceptsImageId(id)).toBe('test-id');
   });
 
-  it('createAnnotationContextId returns a value that satisfies AnnotationContextId', () => {
-    const id = createAnnotationContextId('test-id');
-    const acceptsContextId = (cid: AnnotationContextId) => cid;
-    expect(acceptsContextId(id)).toBe('test-id');
-  });
 });

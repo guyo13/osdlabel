@@ -4,10 +4,10 @@ import type { FabricOverlay } from '../../../src/overlay/fabric-overlay.js';
 import type { ToolCallbacks } from '../../../src/tools/base-tool.js';
 import {
   createImageId,
-  createAnnotationContextId,
   createAnnotationId,
 } from '@osdlabel/annotation';
 import type { KeyboardShortcutMap } from '@osdlabel/annotation';
+import { createAnnotationContextId } from '@osdlabel/annotation-context';
 import { FabricObject } from 'fabric';
 import { createTestKeyboardShortcuts } from '../test-helpers.js';
 

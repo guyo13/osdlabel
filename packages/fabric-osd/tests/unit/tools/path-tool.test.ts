@@ -3,10 +3,10 @@ import { PathTool } from '../../../src/tools/path-tool.js';
 import type { FabricOverlay } from '../../../src/overlay/fabric-overlay.js';
 import type { ToolCallbacks, AddAnnotationParams } from '../../../src/tools/base-tool.js';
 import {
-  createAnnotationContextId,
   createImageId,
 } from '@osdlabel/annotation';
 import type { KeyboardShortcutMap } from '@osdlabel/annotation';
+import { createAnnotationContextId } from '@osdlabel/annotation-context';
 import { Polyline, Polygon } from 'fabric';
 import { createTestKeyboardShortcuts } from '../test-helpers.js';
 

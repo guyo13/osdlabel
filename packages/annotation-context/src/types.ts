@@ -1,9 +1,19 @@
 import type {
-  AnnotationContextId,
   AnnotationType,
   AnnotationStyle,
   ImageId,
 } from '@osdlabel/annotation';
+
+// ── Branded ID Type ─────────────────────────────────────────────────────
+
+declare const annotationContextIdBrand: unique symbol;
+
+/** Unique annotation context identifier */
+export type AnnotationContextId = string & { readonly __brand: typeof annotationContextIdBrand };
+
+export function createAnnotationContextId(value: string): AnnotationContextId {
+  return value as AnnotationContextId;
+}
 
 // ── Context Extension Fields ────────────────────────────────────────────
 

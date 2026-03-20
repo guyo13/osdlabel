@@ -2,16 +2,11 @@
 
 declare const annotationIdBrand: unique symbol;
 declare const imageIdBrand: unique symbol;
-declare const annotationContextIdBrand: unique symbol;
-
 /** Unique annotation identifier */
 export type AnnotationId = string & { readonly __brand: typeof annotationIdBrand };
 
 /** Unique image identifier */
 export type ImageId = string & { readonly __brand: typeof imageIdBrand };
-
-/** Unique annotation context identifier */
-export type AnnotationContextId = string & { readonly __brand: typeof annotationContextIdBrand };
 
 // ── ID Factory Functions ─────────────────────────────────────────────────
 
@@ -21,10 +16,6 @@ export function createAnnotationId(value: string): AnnotationId {
 
 export function createImageId(value: string): ImageId {
   return value as ImageId;
-}
-
-export function createAnnotationContextId(value: string): AnnotationContextId {
-  return value as AnnotationContextId;
 }
 
 // ── Core Geometry Types ──────────────────────────────────────────────────

@@ -4,11 +4,11 @@ import type {
   ImageId,
   AnnotationType,
   AnnotationState,
-  AnnotationContextId,
 } from '@osdlabel/annotation';
 import { DEFAULT_CELL_TRANSFORM } from '@osdlabel/annotation';
 import type {
   AnnotationContext,
+  AnnotationContextId,
   ContextState,
 } from '@osdlabel/annotation-context';
 import { isContextScopedToImage } from '@osdlabel/annotation-context';
