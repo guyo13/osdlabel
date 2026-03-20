@@ -76,7 +76,7 @@ import { AnnotatorProvider, useAnnotator, createActions } from 'osdlabel/state';
 Low-level OSD-Fabric integration. See [Overlay](/osdlabel/api/overlay/).
 
 ```ts
-import { FabricOverlay, computeViewportTransform, createOverlayManager } from 'osdlabel/overlay';
+import { FabricOverlay, computeViewportTransform } from 'osdlabel/overlay';
 ```
 
 ### Serialization
