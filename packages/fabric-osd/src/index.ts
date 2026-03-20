@@ -1,5 +1,7 @@
 export * from './fabric-module.js';
 export * from './fabric-utils.js';
+export type { FabricFields } from './types.js';
+export { validateFabricFields } from './validator.js';
 export { FabricOverlay, computeViewportTransform } from './overlay/fabric-overlay.js';
 export type { OverlayOptions, OverlayMode } from './overlay/fabric-overlay.js';
 export type { AnnotationTool, ToolCallbacks, AddAnnotationParams } from './tools/base-tool.js';

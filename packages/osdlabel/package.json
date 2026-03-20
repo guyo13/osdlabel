@@ -53,6 +53,7 @@
   },
   "dependencies": {
     "@osdlabel/annotation": "workspace:*",
+    "@osdlabel/annotation-context": "workspace:*",
     "@osdlabel/fabric-osd": "workspace:*"
   },
   "devDependencies": {

@@ -3,7 +3,7 @@ import { isContextScopedToImage, getCountableImageIds } from '../../src/context-
 import {
   createAnnotationContextId,
   createImageId,
-} from '../../src/types.js';
+} from '@osdlabel/annotation';
 import type { AnnotationContext } from '../../src/types.js';
 
 describe('isContextScopedToImage', () => {

@@ -9,7 +9,8 @@ import Filmstrip from './Filmstrip.js';
 import GridControls from './GridControls.js';
 import ContextSwitcher from './ContextSwitcher.js';
 import { ViewControls } from './ViewControls.js';
-import type { ImageSource, AnnotationContext, AnnotationContextId } from '@osdlabel/annotation';
+import type { ImageSource, AnnotationContextId } from '@osdlabel/annotation';
+import type { AnnotationContext } from '@osdlabel/annotation-context';
 
 export interface AnnotatorProps extends Omit<AnnotatorProviderProps, 'children'> {
   /** Available images for annotation */

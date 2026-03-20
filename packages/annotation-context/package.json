@@ -1,7 +1,7 @@
 {
-  "name": "@osdlabel/fabric-osd",
+  "name": "@osdlabel/annotation-context",
   "version": "0.0.1",
-  "description": "Fabric.js and OpenSeaDragon integration layer for osdlabel — canvas overlay, viewport transform, and annotation tools.",
+  "description": "Annotation context, constraints, and scoping for osdlabel.",
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -20,7 +20,7 @@
   "files": [
     "dist"
   ],
-  "sideEffects": ["./dist/fabric-module.js", "./src/fabric-module.ts"],
+  "sideEffects": false,
   "author": "Guy Or <guydude1@gmail.com>",
   "license": "BSD-3-Clause",
   "scripts": {
@@ -29,13 +29,9 @@
     "test": "vitest run"
   },
   "dependencies": {
-    "@osdlabel/annotation": "workspace:*",
-    "@osdlabel/annotation-context": "workspace:*",
-    "fabric": "catalog:",
-    "openseadragon": "catalog:"
+    "@osdlabel/annotation": "workspace:*"
   },
   "devDependencies": {
-    "@types/openseadragon": "catalog:",
     "typescript": "catalog:",
     "vitest": "catalog:"
   }

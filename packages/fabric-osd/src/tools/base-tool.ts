@@ -6,9 +6,9 @@ import type {
   ImageId,
   AnnotationContextId,
   AnnotationId,
-  ToolConstraint,
   KeyboardShortcutMap,
 } from '@osdlabel/annotation';
+import type { ToolConstraint } from '@osdlabel/annotation-context';
 import '../fabric-module.js';
 
 /** Parameters for adding an annotation via a tool */
@@ -37,7 +37,7 @@ export interface ToolCallbacks {
   readonly getAnnotation: (
     id: AnnotationId,
     imageId: ImageId,
-  ) => import('@osdlabel/annotation').Annotation | undefined;
+  ) => import('@osdlabel/annotation').BaseAnnotation | undefined;
 }
 
 export interface AnnotationTool {

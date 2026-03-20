@@ -45,15 +45,19 @@ This is `osdlabel`, a DZI image annotation library built with SolidJS, Fabric.js
 
 ### Architecture
 
-The project is split into three packages with clear dependency boundaries:
+The project is split into four packages with clear dependency boundaries:
 
-- **`@osdlabel/annotation`** (`packages/annotation/`) — Pure annotation data model with zero external dependencies. Contains: branded ID types, geometry discriminated unions, annotation/context types, constants, serialization, data sanitization, context scoping, and ID utilities.
-- **`@osdlabel/fabric-osd`** (`packages/fabric-osd/`) — Fabric.js + OpenSeaDragon integration layer, SolidJS-agnostic. Contains: FabricOverlay (canvas overlay + viewport transform), all annotation tools (rectangle, circle, line, point, path, free-hand-path, select), and Fabric object serialization utilities. Depends on `@osdlabel/annotation`, `fabric`, and `openseadragon`.
-- **`osdlabel`** (`packages/osdlabel/`) — SolidJS annotator UI. Contains: reactive state stores, hooks, and components. Depends on `@osdlabel/annotation`, `@osdlabel/fabric-osd`, and `solid-js`.
+- **`@osdlabel/annotation`** (`packages/annotation/`) — Pure annotation data model with zero external dependencies. Contains: branded ID types (`AnnotationId`, `ImageId`, `AnnotationContextId`), geometry discriminated unions, generic `Annotation<E>` type (with `BaseAnnotation` base), `RawAnnotationData` type, constants, pluggable serialization (`createAnnotationValidator`, `ExtensionValidator<E>`), data sanitization, and ID utilities.
+- **`@osdlabel/annotation-context`** (`packages/annotation-context/`) — Annotation context, constraints, and scoping. Contains: `AnnotationContext`, `ToolConstraint`, `ConstraintStatus`, `ContextState`, `ContextFields` extension interface, `validateContextFields`, context scoping functions (`isContextScopedToImage`, `getCountableImageIds`). Depends on `@osdlabel/annotation`.
+- **`@osdlabel/fabric-osd`** (`packages/fabric-osd/`) — Fabric.js + OpenSeaDragon integration layer, SolidJS-agnostic. Contains: FabricOverlay (canvas overlay + viewport transform), all annotation tools, Fabric object serialization utilities, `FabricFields` extension interface, `validateFabricFields`. Depends on `@osdlabel/annotation`, `@osdlabel/annotation-context`, `fabric`, and `openseadragon`.
+- **`osdlabel`** (`packages/osdlabel/`) — SolidJS annotator UI. Contains: `OsdAnnotation` composed type alias (`Annotation<ContextFields & FabricFields>`), pre-configured serialization, reactive state stores, hooks, and components. Depends on all above + `solid-js`.
+
+The `Annotation` type is generic: `type Annotation<E extends object = Record<string, never>> = BaseAnnotation & E`. Extension interfaces (`ContextFields`, `FabricFields`) add fields via intersection. The composed type `OsdAnnotation = Annotation<OsdFields>` is used throughout `osdlabel`.
 
 Key architectural rules:
 - **`@osdlabel/annotation` has zero framework dependencies.** No imports from `solid-js`, `fabric`, or `openseadragon`.
-- **`@osdlabel/fabric-osd` is SolidJS-agnostic.** No imports from `solid-js`. Import annotation types from `@osdlabel/annotation`.
+- **`@osdlabel/annotation-context` only depends on `@osdlabel/annotation`.** No framework deps.
+- **`@osdlabel/fabric-osd` is SolidJS-agnostic.** No imports from `solid-js`. Import annotation types from `@osdlabel/annotation`, context types from `@osdlabel/annotation-context`.
 - **State mutations go through named action functions.** Never modify the store directly from components. All mutations are in `packages/osdlabel/src/state/actions.ts`.
 - **One active cell at a time.** Only one grid cell can be in annotation mode at a time. All other cells display existing annotations in read-only mode.
 - **Constraint enforcement is reactive.** Use Solid's `createMemo` to derive whether each tool is enabled/disabled from the current annotation counts and the active context's limits. The toolbar reads this derived state. Do not imperatively enable/disable tools.
@@ -61,7 +65,7 @@ Key architectural rules:
 
 ### Testing
 
-- Run `pnpm test` (Vitest) after implementing any core logic. Tests run across all 3 packages.
+- Run `pnpm test` (Vitest) after implementing any core logic. Tests run across all 4 packages.
 - Run `pnpm test:e2e` (Playwright) after implementing any UI interaction. For parallel worktree runs, use `PORT=5174 pnpm test:e2e` to avoid port conflicts (default: 5173).
 - Write tests for the module you just built before moving to the next task.
 - **For canvas E2E tests:** Use Playwright's `page.mouse.move()`, `page.mouse.down()`, `page.mouse.up()` for precise drawing simulation. Use `page.screenshot()` with `expect(screenshot).toMatchSnapshot()` for visual regression.
@@ -79,6 +83,7 @@ Key architectural rules:
 This is a pnpm workspace monorepo with Turborepo for task orchestration:
 
 - `packages/annotation/` — `@osdlabel/annotation` (annotation data model, zero deps)
+- `packages/annotation-context/` — `@osdlabel/annotation-context` (context, constraints, scoping)
 - `packages/fabric-osd/` — `@osdlabel/fabric-osd` (Fabric.js + OSD integration)
 - `packages/osdlabel/` — `osdlabel` (SolidJS annotator UI)
 - `apps/dev/` — the development app (`@osdlabel/dev`); source in `src/`, E2E tests in `tests/e2e/`
@@ -88,14 +93,15 @@ This is a pnpm workspace monorepo with Turborepo for task orchestration:
 
 The library is split across multiple npm packages:
 
-1. **`@osdlabel/annotation`** — Pure data model. `import { Annotation, createImageId, serialize } from '@osdlabel/annotation'`
-2. **`@osdlabel/fabric-osd`** — Canvas integration. `import { FabricOverlay, computeViewportTransform } from '@osdlabel/fabric-osd'`
-3. **`osdlabel`** — SolidJS UI. Re-exports everything from the above packages plus its own state/hooks/components.
-   - Main barrel: `import { Annotator, serialize, FabricOverlay } from 'osdlabel'`
+1. **`@osdlabel/annotation`** — Pure data model. `import { type Annotation, type BaseAnnotation, createImageId, serialize, createAnnotationValidator } from '@osdlabel/annotation'`
+2. **`@osdlabel/annotation-context`** — Context & constraints. `import { type AnnotationContext, isContextScopedToImage, validateContextFields } from '@osdlabel/annotation-context'`
+3. **`@osdlabel/fabric-osd`** — Canvas integration. `import { FabricOverlay, computeViewportTransform, type FabricFields } from '@osdlabel/fabric-osd'`
+4. **`osdlabel`** — SolidJS UI. Re-exports everything from the above packages plus its own state/hooks/components.
+   - Main barrel: `import { Annotator, serialize, FabricOverlay, type OsdAnnotation } from 'osdlabel'`
    - Sub-path barrels: `osdlabel/components`, `osdlabel/state`, `osdlabel/hooks`
    - Granular imports: `import { Annotator } from 'osdlabel/components/Annotator'`
 
-The `osdlabel` package is built using **Vite in library mode** with `vite-plugin-solid`. The `@osdlabel/annotation` and `@osdlabel/fabric-osd` packages are built with plain `tsc`.
+The `osdlabel` package is built using **Vite in library mode** with `vite-plugin-solid`. The `@osdlabel/annotation`, `@osdlabel/annotation-context`, and `@osdlabel/fabric-osd` packages are built with plain `tsc`.
 
 ### Build Commands
 

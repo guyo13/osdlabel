@@ -18,6 +18,7 @@ import type {
   RawAnnotationData,
 } from '@osdlabel/annotation';
 import { sanitizeFabricData } from '@osdlabel/annotation';
+import type { FabricFields } from './types.js';
 
 export function getFabricOptions(style: AnnotationStyle, id: string) {
   const fill = new Color(style.fillColor);
@@ -75,7 +76,7 @@ export async function deserializeFabricObject(
  * Sets selectable/evented to true for committed annotations.
  */
 export async function createFabricObjectFromRawData(
-  annotation: Annotation,
+  annotation: Annotation<FabricFields>,
 ): Promise<FabricObject | null> {
   const obj = await deserializeFabricObject(annotation.rawAnnotationData);
   if (!obj) return null;

@@ -77,56 +77,38 @@ export type RawAnnotationData = {
 
 // ── Annotation Entity ────────────────────────────────────────────────────
 
-/** A single annotation entity */
-export interface Annotation {
+/** Base annotation without extension fields */
+export interface BaseAnnotation {
   readonly id: AnnotationId;
   readonly imageId: ImageId;
-  readonly contextId: AnnotationContextId;
   readonly geometry: Geometry;
-  readonly rawAnnotationData: RawAnnotationData;
   readonly label?: string | undefined;
   readonly metadata?: Readonly<Record<string, unknown>> | undefined;
   readonly createdAt: string;
   readonly updatedAt: string;
 }
 
+/**
+ * Generic annotation type. Extensions add fields via intersection.
+ * Default: `Record<string, never>` (no extensions — bare BaseAnnotation).
+ */
+export type Annotation<E extends object = Record<string, never>> =
+  BaseAnnotation & E;
+
 // ── Serialization Types ──────────────────────────────────────────────────
 
 /** Top-level serialization envelope */
-export interface AnnotationDocument {
+export interface AnnotationDocument<E extends object = Record<string, never>> {
   readonly version: '1.0.0';
   readonly exportedAt: string;
-  readonly images: readonly ImageAnnotations[];
+  readonly images: readonly ImageAnnotations<E>[];
 }
 
 /** Annotations for a single image */
-export interface ImageAnnotations {
+export interface ImageAnnotations<E extends object = Record<string, never>> {
   readonly imageId: ImageId;
   readonly sourceUrl: string;
-  readonly annotations: readonly Annotation[];
-
-}
-
-// ── Constraint System ────────────────────────────────────────────────────
-
-/** Count scope for tool constraints */
-export type CountScope = 'per-image' | 'global';
-
-/** Tool constraint within an annotation context */
-export interface ToolConstraint {
-  readonly type: AnnotationType;
-  readonly maxCount?: number | undefined;
-  readonly countScope?: CountScope | undefined;
-  readonly defaultStyle?: Partial<AnnotationStyle> | undefined;
-}
-
-/** An annotation context defining tool constraints for a particular annotation task */
-export interface AnnotationContext {
-  readonly id: AnnotationContextId;
-  readonly label: string;
-  readonly tools: readonly ToolConstraint[];
-  readonly imageIds?: readonly ImageId[] | undefined;
-  readonly metadata?: Readonly<Record<string, unknown>> | undefined;
+  readonly annotations: readonly Annotation<E>[];
 }
 
 // ── Image Source ──────────────────────────────────────────────────────────
@@ -165,8 +147,8 @@ export const DEFAULT_CELL_TRANSFORM: CellTransform = {
 // (Annotation, Geometry, etc.) remain fully `readonly`.
 
 /** Root state for the annotation system */
-export interface AnnotationState {
-  byImage: Record<ImageId, Record<AnnotationId, Annotation>>;
+export interface AnnotationState<E extends object = Record<string, never>> {
+  byImage: Record<ImageId, Record<AnnotationId, Annotation<E>>>;
   /** Monotonically increasing counter; incremented on every mutation for O(1) change detection */
   changeCounter: number;
 }
@@ -181,25 +163,6 @@ export interface UIState {
   selectedAnnotationId: AnnotationId | null;
   cellTransforms: Record<number, CellTransform>;
 }
-
-/** Context state */
-export interface ContextState {
-  contexts: AnnotationContext[];
-  activeContextId: AnnotationContextId | null;
-  displayedContextIds: AnnotationContextId[];
-}
-
-// ── Constraint Status ────────────────────────────────────────────────────
-
-/** Derived state showing which tools are enabled/disabled for the active context */
-export type ConstraintStatus = Record<
-  AnnotationType,
-  {
-    readonly enabled: boolean;
-    readonly currentCount: number;
-    readonly maxCount: number | null;
-  }
->;
 
 // ── Keyboard Shortcuts ───────────────────────────────────────────────────
 

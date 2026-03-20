@@ -1,4 +1,5 @@
-import type { AnnotationContext, ImageId } from './types.js';
+import type { ImageId } from '@osdlabel/annotation';
+import type { AnnotationContext } from './types.js';
 
 /**
  * Returns `true` if the context applies to the given image.

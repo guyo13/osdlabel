@@ -7,20 +7,18 @@ export type {
   Point,
   Geometry,
   AnnotationStyle,
+  BaseAnnotation,
   Annotation,
   AnnotationDocument,
   ImageAnnotations,
-  ToolConstraint,
-  AnnotationContext,
   ImageSource,
   AnnotationState,
   UIState,
-  ContextState,
-  ConstraintStatus,
   KeyboardShortcutMap,
   RawAnnotationData,
   CellTransform,
-  CountScope,
+  ExtensionValidator,
+  DeserializeResult,
 } from '@osdlabel/annotation';
 
 export {
@@ -28,21 +26,44 @@ export {
   createImageId,
   createAnnotationContextId,
   DEFAULT_CELL_TRANSFORM,
-  isContextScopedToImage,
   DEFAULT_ANNOTATION_STYLE,
   DEFAULT_GRID_CONFIG,
   MAX_GRID_SIZE,
-  serialize,
-  deserialize,
+  validateBaseAnnotation,
   validateAnnotation,
+  validateRawAnnotationData,
+  createAnnotationValidator,
   getAllAnnotationsFlat,
   SerializationError,
 } from '@osdlabel/annotation';
-export type { DeserializeResult } from '@osdlabel/annotation';
+
+// Annotation context (re-exported from @osdlabel/annotation-context)
+export type {
+  AnnotationContext,
+  ToolConstraint,
+  ConstraintStatus,
+  ContextState,
+  CountScope,
+  ContextFields,
+} from '@osdlabel/annotation-context';
+
+export {
+  isContextScopedToImage,
+  getCountableImageIds,
+  validateContextFields,
+} from '@osdlabel/annotation-context';
 
 // Fabric-OSD integration (re-exported from @osdlabel/fabric-osd)
 export { FabricOverlay, computeViewportTransform } from '@osdlabel/fabric-osd';
-export type { OverlayOptions, OverlayMode, ToolCallbacks, AddAnnotationParams } from '@osdlabel/fabric-osd';
+export type { OverlayOptions, OverlayMode, ToolCallbacks, AddAnnotationParams, FabricFields } from '@osdlabel/fabric-osd';
+export { validateFabricFields } from '@osdlabel/fabric-osd';
+
+// Own types
+export type { OsdAnnotation, OsdFields } from './types.js';
+export { validateOsdAnnotation, validateOsdFields } from './validator.js';
+
+// Pre-configured serialization (uses OSD validators)
+export { serialize, deserialize } from './serialization-configured.js';
 
 // State
 export {

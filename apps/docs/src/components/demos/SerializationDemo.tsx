@@ -1,6 +1,7 @@
 import { serialize, createImageId, createAnnotationContextId } from '@osdlabel/annotation';
 import { AnnotatorProvider, useAnnotator } from 'osdlabel/state';
-import type { ImageSource, AnnotationContext } from '@osdlabel/annotation';
+import type { ImageSource } from '@osdlabel/annotation';
+import type { AnnotationContext } from '@osdlabel/annotation-context';
 import { createMemo, onMount } from 'solid-js';
 
 const images: ImageSource[] = [

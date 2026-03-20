@@ -27,7 +27,8 @@ Preferred for better build performance and tree-shaking in production apps.
 import { Annotator } from 'osdlabel/components';
 import { serialize } from '@osdlabel/annotation';
 import { useAnnotator } from 'osdlabel/state';
-import type { Annotation, ImageSource, AnnotationContext } from '@osdlabel/annotation';
+import type { Annotation, ImageSource } from '@osdlabel/annotation';
+import type { AnnotationContext } from '@osdlabel/annotation-context';
 ```
 
 ### 3. Granular imports

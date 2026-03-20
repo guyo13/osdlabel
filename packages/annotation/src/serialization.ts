@@ -4,6 +4,7 @@ import type {
   AnnotationId,
   AnnotationState,
   AnnotationType,
+  BaseAnnotation,
   ImageAnnotations,
   ImageId,
   ImageSource,
@@ -30,16 +31,20 @@ export class SerializationError extends Error {
 const SUPPORTED_VERSION = '1.0.0';
 const ANNOTATION_TYPES: readonly string[] = ['rectangle', 'circle', 'line', 'point', 'path', 'freeHandPath'];
 
+/** Validator for extension fields on top of BaseAnnotation */
+export type ExtensionValidator<E> =
+  (value: unknown) => value is E;
+
 /**
  * Serialize annotation state into a portable JSON document.
  */
-export function serialize(
-  state: AnnotationState,
+export function serialize<E extends object = Record<string, never>>(
+  state: AnnotationState<E>,
   images: readonly ImageSource[],
-): AnnotationDocument {
-  const imageAnnotations: ImageAnnotations[] = images.map((image) => {
+): AnnotationDocument<E> {
+  const imageAnnotations: ImageAnnotations<E>[] = images.map((image) => {
     const annMap = state.byImage[image.id];
-    const annotations: Annotation[] = annMap ? Object.values(annMap) : [];
+    const annotations: Annotation<E>[] = annMap ? Object.values(annMap) : [];
 
     return {
       imageId: image.id,
@@ -56,15 +61,19 @@ export function serialize(
 }
 
 /** Result of deserializing an annotation document */
-export interface DeserializeResult {
-  readonly byImage: Record<ImageId, Record<AnnotationId, Annotation>>;
+export interface DeserializeResult<E extends object = Record<string, never>> {
+  readonly byImage: Record<ImageId, Record<AnnotationId, Annotation<E>>>;
 }
 
 /**
  * Deserialize a document back into the byImage store structure.
  * Validates the document and throws SerializationError on invalid input.
+ * Pass an extensionValidator to also validate extension fields (e.g. contextId, rawAnnotationData).
  */
-export function deserialize(doc: unknown): DeserializeResult {
+export function deserialize<E extends object = Record<string, never>>(
+  doc: unknown,
+  extensionValidator?: ExtensionValidator<E>,
+): DeserializeResult<E> {
   if (!isObject(doc)) {
     throw new SerializationError('Document must be an object');
   }
@@ -85,7 +94,11 @@ export function deserialize(doc: unknown): DeserializeResult {
     throw new SerializationError('Missing or invalid images array');
   }
 
-  const byImage: Record<ImageId, Record<AnnotationId, Annotation>> = {};
+  const validator = extensionValidator
+    ? createAnnotationValidator(extensionValidator)
+    : (validateBaseAnnotation as (value: unknown) => value is Annotation<E>);
+
+  const byImage: Record<ImageId, Record<AnnotationId, Annotation<E>>> = {};
 
   for (const imageEntry of d.images) {
     if (!isObject(imageEntry)) {
@@ -103,10 +116,10 @@ export function deserialize(doc: unknown): DeserializeResult {
     }
 
     const imageId = createImageId(entry.imageId);
-    const annMap: Record<AnnotationId, Annotation> = {};
+    const annMap: Record<AnnotationId, Annotation<E>> = {};
 
     for (const rawAnn of entry.annotations) {
-      if (!validateAnnotation(rawAnn)) {
+      if (!validator(rawAnn)) {
         throw new SerializationError(`Invalid annotation in image ${entry.imageId}`);
       }
       annMap[rawAnn.id] = rawAnn;
@@ -119,9 +132,10 @@ export function deserialize(doc: unknown): DeserializeResult {
 }
 
 /**
- * Type guard that validates the shape of an annotation object.
+ * Type guard that validates the base annotation fields (id, imageId, geometry, timestamps).
+ * Does NOT validate extension fields — use createAnnotationValidator for that.
  */
-export function validateAnnotation(value: unknown): value is Annotation {
+export function validateBaseAnnotation(value: unknown): value is BaseAnnotation {
   if (!isObject(value)) return false;
 
   const v = value as Record<string, unknown>;
@@ -129,12 +143,8 @@ export function validateAnnotation(value: unknown): value is Annotation {
   // Required string fields
   if (typeof v.id !== 'string' || v.id === '') return false;
   if (typeof v.imageId !== 'string' || v.imageId === '') return false;
-  if (typeof v.contextId !== 'string' || v.contextId === '') return false;
   if (typeof v.createdAt !== 'string') return false;
   if (typeof v.updatedAt !== 'string') return false;
-
-  // Validate rawAnnotationData
-  if (!validateRawAnnotationData(v.rawAnnotationData)) return false;
 
   // Validate geometry
   if (!validateGeometry(v.geometry)) return false;
@@ -142,7 +152,30 @@ export function validateAnnotation(value: unknown): value is Annotation {
   return true;
 }
 
-function validateRawAnnotationData(value: unknown): boolean {
+/**
+ * Creates a composed validator for Annotation<E> that checks both
+ * base fields and extension fields.
+ */
+export function createAnnotationValidator<E extends object>(
+  extensionValidator: ExtensionValidator<E>,
+): (value: unknown) => value is Annotation<E> {
+  return (value: unknown): value is Annotation<E> => {
+    if (!validateBaseAnnotation(value)) return false;
+    return extensionValidator(value);
+  };
+}
+
+/**
+ * @deprecated Use validateBaseAnnotation or createAnnotationValidator instead.
+ * Validates base annotation fields only (no extension fields).
+ */
+export const validateAnnotation: (value: unknown) => value is BaseAnnotation = validateBaseAnnotation;
+
+/**
+ * Validates the shape of a RawAnnotationData object.
+ * Exported for use by extension validators (e.g. in @osdlabel/fabric-osd).
+ */
+export function validateRawAnnotationData(value: unknown): boolean {
   if (!isObject(value)) return false;
   const r = value as Record<string, unknown>;
   if (r.format !== 'fabric') return false;
@@ -259,8 +292,10 @@ function validateGeometry(value: unknown): boolean {
 /**
  * Flatten all annotations from the store into a single array.
  */
-export function getAllAnnotationsFlat(state: AnnotationState): Annotation[] {
-  const result: Annotation[] = [];
+export function getAllAnnotationsFlat<E extends object = Record<string, never>>(
+  state: AnnotationState<E>,
+): Annotation<E>[] {
+  const result: Annotation<E>[] = [];
   for (const imageId of Object.keys(state.byImage)) {
     const annMap = state.byImage[imageId as ImageId];
     if (annMap) {
