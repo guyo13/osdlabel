@@ -38,8 +38,8 @@ export type { CountScope } from './core/types.js';
 export { DEFAULT_ANNOTATION_STYLE, DEFAULT_GRID_CONFIG, MAX_GRID_SIZE } from './core/constants.js';
 
 // Overlay
-export { FabricOverlay, computeViewportTransform, createOverlayManager } from './overlay/index.js';
-export type { OverlayOptions, OverlayMode, OverlayManager } from './overlay/index.js';
+export { FabricOverlay, computeViewportTransform } from './overlay/index.js';
+export type { OverlayOptions, OverlayMode } from './overlay/index.js';
 
 // State
 export {

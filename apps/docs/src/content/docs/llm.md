@@ -80,7 +80,7 @@ import { AnnotatorProvider, useAnnotator, createActions } from 'osdlabel/state';
 Low-level OSD-Fabric integration. See [Overlay](/osdlabel/api/overlay/).
 
 ```ts
-import { FabricOverlay, computeViewportTransform, createOverlayManager } from 'osdlabel/overlay';
+import { FabricOverlay, computeViewportTransform } from 'osdlabel/overlay';
 ```
 
 ### Serialization
@@ -977,38 +977,6 @@ Computes the 6-element affine matrix `[a, b, c, d, tx, ty]` that maps image-spac
 The matrix is derived by mapping two image-space points `(0,0)` and `(1,0)` through OSD's `imageToViewerElementCoordinates()`, then constructing the affine transform from the resulting screen positions.
 
 ---
-
-## OverlayManager
-
-Registry for managing multiple `FabricOverlay` instances (one per grid cell).
-
-```ts
-import { createOverlayManager } from 'osdlabel/overlay';
-```
-
-### createOverlayManager
-
-```ts
-function createOverlayManager(): OverlayManager;
-```
-
-### OverlayManager interface
-
-```ts
-interface OverlayManager {
-  create(cellIndex: number, viewer: OpenSeadragon.Viewer, options?: OverlayOptions): FabricOverlay;
-  get(cellIndex: number): FabricOverlay | undefined;
-  destroy(cellIndex: number): void;
-  destroyAll(): void;
-}
-```
-
-| Method       | Description                                                                                                   |
-| ------------ | ------------------------------------------------------------------------------------------------------------- |
-| `create`     | Create a new overlay for a viewer at the given cell index. Destroys any existing overlay at that index first. |
-| `get`        | Retrieve the overlay for a cell index, or `undefined` if none exists.                                         |
-| `destroy`    | Destroy the overlay at a cell index and remove it from the registry.                                          |
-| `destroyAll` | Destroy all managed overlays.                                                                                 |
 
 ## Event routing
 
