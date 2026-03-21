@@ -17,6 +17,7 @@ export type {
   RawAnnotationData,
   CellTransform,
   ExtensionValidator,
+  ExtensionValidatorFn,
   DeserializeResult,
 } from '@osdlabel/annotation';
 
@@ -57,6 +58,9 @@ export {
 export { FabricOverlay, computeViewportTransform } from '@osdlabel/fabric-osd';
 export type { OverlayOptions, OverlayMode, ToolCallbacks, AddAnnotationParams, FabricFields } from '@osdlabel/fabric-osd';
 export { validateFabricFields } from '@osdlabel/fabric-osd';
+
+// Validation schemas (re-exported from @osdlabel/validation)
+export { GeometrySchema, PointSchema, BaseAnnotationSchema, RawAnnotationDataSchema } from '@osdlabel/validation';
 
 // Own types
 export type { OsdAnnotation, OsdFields } from './types.js';

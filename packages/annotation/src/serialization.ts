@@ -1,3 +1,4 @@
+import type { StandardSchemaV1 } from '@standard-schema/spec';
 import type {
   Annotation,
   AnnotationDocument,
@@ -31,9 +32,42 @@ export class SerializationError extends Error {
 const SUPPORTED_VERSION = '1.0.0';
 const ANNOTATION_TYPES: readonly string[] = ['rectangle', 'circle', 'line', 'point', 'path', 'freeHandPath'];
 
-/** Validator for extension fields on top of BaseAnnotation */
-export type ExtensionValidator<E> =
+/** Type guard function for extension fields on top of BaseAnnotation */
+export type ExtensionValidatorFn<E> =
   (value: unknown) => value is E;
+
+/**
+ * Validator for extension fields — accepts either a type guard function
+ * or a Standard Schema (e.g. from Valibot, Zod, or any compliant library).
+ */
+export type ExtensionValidator<E> =
+  | ExtensionValidatorFn<E>
+  | StandardSchemaV1<unknown, E>;
+
+/** Check if a validator is a Standard Schema (has ~standard property) */
+function isStandardSchema<E>(
+  validator: ExtensionValidator<E>,
+): validator is StandardSchemaV1<unknown, E> {
+  return (
+    typeof validator === 'object' &&
+    validator !== null &&
+    '~standard' in validator
+  );
+}
+
+/** Convert an ExtensionValidator to a type guard function */
+function toValidatorFn<E>(validator: ExtensionValidator<E>): ExtensionValidatorFn<E> {
+  if (!isStandardSchema(validator)) return validator;
+  const schema = validator;
+  return (value: unknown): value is E => {
+    const result = schema['~standard'].validate(value);
+    // Standard Schema validate may return a promise, but we only support sync
+    if (result instanceof Promise) {
+      throw new SerializationError('Async schema validation is not supported');
+    }
+    return result.issues === undefined;
+  };
+}
 
 /**
  * Serialize annotation state into a portable JSON document.
@@ -155,13 +189,15 @@ export function validateBaseAnnotation(value: unknown): value is BaseAnnotation 
 /**
  * Creates a composed validator for Annotation<E> that checks both
  * base fields and extension fields.
+ * Accepts either a type guard function or a Standard Schema.
  */
 export function createAnnotationValidator<E extends object>(
   extensionValidator: ExtensionValidator<E>,
 ): (value: unknown) => value is Annotation<E> {
+  const extFn = toValidatorFn(extensionValidator);
   return (value: unknown): value is Annotation<E> => {
     if (!validateBaseAnnotation(value)) return false;
-    return extensionValidator(value);
+    return extFn(value);
   };
 }
 
