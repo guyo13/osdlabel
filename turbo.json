@@ -15,7 +15,7 @@
       "inputs": ["src/**", "tests/unit/**", "package.json"]
     },
     "test:e2e": {
-      "dependsOn": [],
+      "dependsOn": ["^build"],
       "cache": false
     },
     "dev": {
