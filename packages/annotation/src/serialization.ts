@@ -201,11 +201,6 @@ export function createAnnotationValidator<E extends object>(
   };
 }
 
-/**
- * @deprecated Use validateBaseAnnotation or createAnnotationValidator instead.
- * Validates base annotation fields only (no extension fields).
- */
-export const validateAnnotation: (value: unknown) => value is BaseAnnotation = validateBaseAnnotation;
 
 /**
  * Validates the shape of a RawAnnotationData object.

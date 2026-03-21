@@ -29,7 +29,6 @@ export {
   DEFAULT_GRID_CONFIG,
   MAX_GRID_SIZE,
   validateBaseAnnotation,
-  validateAnnotation,
   validateRawAnnotationData,
   createAnnotationValidator,
   getAllAnnotationsFlat,

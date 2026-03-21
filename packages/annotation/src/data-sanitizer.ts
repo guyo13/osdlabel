@@ -5,10 +5,9 @@
  * validates and bounds-checks numeric values, and performs type-specific
  * checks before data reaches Fabric's util.enlivenObjects().
  *
- * Design note: All validation logic is intentionally concentrated here to
- * facilitate future migration to a schema-based library (zod/valibot). To
- * migrate, replace the manual validators in `sanitizeFabricData` with a
- * schema library parse call while keeping the same exported function signatures.
+ * Note: Manual validation is kept here to avoid a circular dependency
+ * with `@osdlabel/validation` (which depends on `@osdlabel/annotation`).
+ * Equivalent Valibot schemas exist in `@osdlabel/validation`.
  */
 
 // ---------------------------------------------------------------------------
@@ -91,9 +90,8 @@ export function normalizeFabricType(raw: string): FabricTypeName | null {
  * Validator kinds for property allowlists.
  * Each kind maps to a specific validation strategy in `sanitizeValue`.
  *
- * Design note: These string literals serve as the migration seam.
- * When switching to zod/valibot, replace each kind with the equivalent
- * schema (e.g., 'coordinate' → z.number().finite().min(-MAX_COORDINATE).max(MAX_COORDINATE)).
+ * Each kind maps to a specific validation strategy in `sanitizeValue`.
+ * Equivalent Valibot schemas exist in `@osdlabel/validation`.
  */
 type PropValidator =
   | 'coordinate' // finite number, abs <= MAX_COORDINATE
@@ -382,8 +380,8 @@ function sanitizeValue(value: unknown, validator: PropValidator): ParseResult {
  *
  * Returns a sanitized copy, or `null` if validation fails.
  *
- * Migration note: To switch to zod/valibot, replace the body of this function
- * with a schema `.safeParse(data)` call. Keep the signature unchanged.
+ * Note: Equivalent Valibot schema exists in `@osdlabel/validation` as
+ * `RawAnnotationDataSchema`. This manual version is kept for circular-dep avoidance.
  */
 export function sanitizeFabricData(data: Record<string, unknown>): Record<string, unknown> | null {
   if (typeof data.type !== 'string') return null;
