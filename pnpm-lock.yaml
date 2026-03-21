@@ -215,6 +215,25 @@ importers:
         specifier: 'catalog:'
         version: 3.0.5(@types/debug@4.1.12)(jsdom@26.1.0(canvas@3.2.1))
 
+  packages/validation:
+    dependencies:
+      '@osdlabel/annotation':
+        specifier: workspace:*
+        version: link:../annotation
+      valibot:
+        specifier: ^1.3.1
+        version: 1.3.1(typescript@5.9.3)
+    devDependencies:
+      fabric:
+        specifier: 'catalog:'
+        version: 7.2.0
+      typescript:
+        specifier: 'catalog:'
+        version: 5.9.3
+      vitest:
+        specifier: 'catalog:'
+        version: 3.0.5(@types/debug@4.1.12)(jsdom@26.1.0(canvas@3.2.1))
+
 packages:
 
   '@asamuzakjp/css-color@3.2.0':
@@ -3271,6 +3290,14 @@ packages:
 
   util-deprecate@1.0.2:
     resolution: {integrity: sha512-EPD5q1uXyFxJpCrLnCc1nHnq3gOa6DZBocAIiI2TaSCA7VCJ1UJDMagCzIkXNsUYfD1daK//LTEQ8xiIbrHtcw==}
+
+  valibot@1.3.1:
+    resolution: {integrity: sha512-sfdRir/QFM0JaF22hqTroPc5xy4DimuGQVKFrzF1YfGwaS1nJot3Y8VqMdLO2Lg27fMzat2yD3pY5PbAYO39Gg==}
+    peerDependencies:
+      typescript: '>=5'
+    peerDependenciesMeta:
+      typescript:
+        optional: true
 
   vfile-location@5.0.3:
     resolution: {integrity: sha512-5yXvWDEgqeiYiBe1lbxYF7UMAIm/IcopxMHrMQDq3nvKcjPKIhZklUKL+AE7J7uApI4kwe2snsK+eI6UTj9EHg==}
@@ -7106,6 +7133,10 @@ snapshots:
       punycode: 2.3.1
 
   util-deprecate@1.0.2: {}
+
+  valibot@1.3.1(typescript@5.9.3):
+    optionalDependencies:
+      typescript: 5.9.3
 
   vfile-location@5.0.3:
     dependencies:
