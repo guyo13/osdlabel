@@ -1,8 +1,9 @@
 import { createStore } from 'solid-js/store';
-import type { AnnotationState } from '../core/types.js';
+import type { AnnotationState } from '@osdlabel/annotation';
+import type { OsdFields } from '../types.js';
 
 export function createAnnotationStore() {
-  const [state, setState] = createStore<AnnotationState>({
+  const [state, setState] = createStore<AnnotationState<OsdFields>>({
     byImage: {},
     changeCounter: 0,
   });

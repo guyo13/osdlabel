@@ -14,7 +14,7 @@ Serialize the current annotation state into a portable JSON document. Creates on
 **Example:**
 
 ```ts
-import { serialize } from 'osdlabel/core';
+import { serialize } from '@osdlabel/annotation';
 
 const doc = serialize(annotationState, images);
 const json = JSON.stringify(doc, null, 2);
@@ -25,10 +25,15 @@ const json = JSON.stringify(doc, null, 2);
 ## deserialize
 
 ```ts
-function deserialize(doc: unknown): Record<ImageId, Record<AnnotationId, Annotation>>;
+function deserialize<E extends object = Record<string, never>>(
+  doc: unknown,
+  extensionValidator?: ExtensionValidator<E>,
+): DeserializeResult<E>;
 ```
 
 Parse and validate a serialized document, returning the `byImage` store structure. Throws `SerializationError` on invalid input.
+
+Pass an `extensionValidator` to also validate extension fields (e.g. `contextId`, `rawAnnotationData`). Accepts either a type guard function or a [Standard Schema](https://github.com/standard-schema/standard-schema) (e.g. from Valibot or Zod).
 
 **Validates:**
 
@@ -39,7 +44,7 @@ Parse and validate a serialized document, returning the `byImage` store structur
 **Example:**
 
 ```ts
-import { deserialize } from 'osdlabel/core';
+import { deserialize } from '@osdlabel/annotation';
 
 try {
   const byImage = deserialize(JSON.parse(jsonString));
@@ -53,21 +58,40 @@ try {
 
 ---
 
-## validateAnnotation
+## validateBaseAnnotation
 
 ```ts
-function validateAnnotation(value: unknown): value is Annotation;
+function validateBaseAnnotation(value: unknown): value is BaseAnnotation;
 ```
 
-Type guard that validates the shape of an annotation object. Checks:
+Type guard that validates the base annotation fields (id, imageId, geometry, timestamps). Does **not** validate extension fields — use `createAnnotationValidator` for that.
 
-- Required string fields (`id`, `imageId`, `contextId`, `createdAt`, `updatedAt`)
-- Geometry structure (discriminated by `type`)
-- `rawAnnotationData` structure (format, Fabric version, data type whitelisting)
-- Numeric bounds (coordinates, dimensions)
-- Path point count limits
+---
 
-Returns `true` if the value is a valid `Annotation`.
+## createAnnotationValidator
+
+```ts
+function createAnnotationValidator<E extends object>(
+  extensionValidator: ExtensionValidator<E>,
+): (value: unknown) => value is Annotation<E>;
+```
+
+Creates a composed validator that checks both base annotation fields and extension fields. The `extensionValidator` can be either a type guard function or a Standard Schema (e.g. a Valibot schema from `@osdlabel/validation`).
+
+**Example:**
+
+```ts
+import { createAnnotationValidator } from '@osdlabel/annotation';
+import { RawAnnotationDataSchema } from '@osdlabel/validation';
+
+// Using a Standard Schema (Valibot)
+const validate = createAnnotationValidator(myExtensionSchema);
+
+// Using a type guard function
+const validate = createAnnotationValidator(
+  (value: unknown): value is MyFields => { /* ... */ }
+);
+```
 
 ---
 
@@ -82,7 +106,7 @@ Flatten all annotations from the nested `byImage` store into a single array.
 **Example:**
 
 ```ts
-import { getAllAnnotationsFlat } from 'osdlabel/core';
+import { getAllAnnotationsFlat } from '@osdlabel/annotation';
 
 const all = getAllAnnotationsFlat(annotationState);
 console.log(`Total annotations: ${all.length}`);

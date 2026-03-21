@@ -1,26 +1,28 @@
 import { type SetStoreFunction, produce } from 'solid-js/store';
 import type {
-  Annotation,
   AnnotationId,
   ImageId,
   AnnotationType,
   AnnotationState,
-  UIState,
+} from '@osdlabel/annotation';
+import { DEFAULT_CELL_TRANSFORM } from '@osdlabel/annotation';
+import type {
   AnnotationContext,
   AnnotationContextId,
   ContextState,
-} from '../core/types.js';
-import { DEFAULT_CELL_TRANSFORM } from '../core/types.js';
-import { isContextScopedToImage } from '../core/context-scoping.js';
+} from '@osdlabel/annotation-context';
+import { isContextScopedToImage } from '@osdlabel/annotation-context';
+import type { UIState } from '@osdlabel/annotation';
+import type { OsdAnnotation, OsdFields } from '../types.js';
 
 export function createActions(
-  setAnnotationState: SetStoreFunction<AnnotationState>,
+  setAnnotationState: SetStoreFunction<AnnotationState<OsdFields>>,
   setUIState: SetStoreFunction<UIState>,
   setContextState: SetStoreFunction<ContextState>,
   contextState: ContextState,
   uiState: UIState,
 ) {
-  function addAnnotation(annotation: Omit<Annotation, 'createdAt' | 'updatedAt'>): void {
+  function addAnnotation(annotation: Omit<OsdAnnotation, 'createdAt' | 'updatedAt'>): void {
     const ctx = contextState.contexts.find((c) => c.id === annotation.contextId);
     if (ctx && !isContextScopedToImage(ctx, annotation.imageId)) {
       console.warn(`Context "${ctx.label}" not scoped to image "${annotation.imageId}"`);
@@ -45,7 +47,7 @@ export function createActions(
   function updateAnnotation(
     id: AnnotationId,
     imageId: ImageId,
-    patch: Partial<Omit<Annotation, 'id' | 'imageId' | 'createdAt' | 'updatedAt'>>,
+    patch: Partial<Omit<OsdAnnotation, 'id' | 'imageId' | 'createdAt' | 'updatedAt'>>,
   ): void {
     setAnnotationState(
       produce((state) => {
@@ -127,7 +129,7 @@ export function createActions(
   }
 
   function loadAnnotations(
-    byImage: Record<ImageId, Record<AnnotationId, Annotation>>,
+    byImage: Record<ImageId, Record<AnnotationId, OsdAnnotation>>,
   ): void {
     setAnnotationState(
       produce((state) => {

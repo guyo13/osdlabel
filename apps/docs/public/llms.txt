@@ -31,9 +31,10 @@ Preferred for better build performance and tree-shaking in production apps.
 
 ```ts
 import { Annotator } from 'osdlabel/components';
-import { serialize } from 'osdlabel/core';
+import { serialize } from '@osdlabel/annotation';
 import { useAnnotator } from 'osdlabel/state';
-import type { Annotation, ImageSource, AnnotationContext } from 'osdlabel/core';
+import type { Annotation, ImageSource } from '@osdlabel/annotation';
+import type { AnnotationContext } from '@osdlabel/annotation-context';
 ```
 
 ### 3. Granular imports
@@ -53,8 +54,8 @@ import { Annotator } from 'osdlabel/components/Annotator';
 Core TypeScript types and branded ID factories. See [Types](/osdlabel/api/types/).
 
 ```ts
-import type { AnnotationId, ImageId, Geometry, Annotation } from 'osdlabel/core';
-import { createImageId, createAnnotationId } from 'osdlabel/core';
+import type { AnnotationId, ImageId, Geometry, Annotation } from '@osdlabel/annotation';
+import { createImageId, createAnnotationId } from '@osdlabel/annotation';
 ```
 
 ### Components
@@ -86,7 +87,7 @@ import { AnnotatorProvider, useAnnotator, createActions } from 'osdlabel/state';
 Low-level OSD-Fabric integration. See [Overlay](/osdlabel/api/overlay/).
 
 ```ts
-import { FabricOverlay, computeViewportTransform } from 'osdlabel/overlay';
+import { FabricOverlay, computeViewportTransform } from '@osdlabel/fabric-osd';
 ```
 
 ### Serialization
@@ -94,7 +95,15 @@ import { FabricOverlay, computeViewportTransform } from 'osdlabel/overlay';
 JSON export/import functions. See [Serialization](/osdlabel/api/serialization/).
 
 ```ts
-import { serialize, deserialize, validateAnnotation, getAllAnnotationsFlat } from 'osdlabel/core';
+import { serialize, deserialize, validateBaseAnnotation, getAllAnnotationsFlat } from '@osdlabel/annotation';
+```
+
+### Validation
+
+Schema-based validators using [Standard Schema](https://github.com/standard-schema/standard-schema). See [Serialization](/osdlabel/api/serialization/).
+
+```ts
+import { BaseAnnotationSchema, GeometrySchema, RawAnnotationDataSchema } from '@osdlabel/validation';
 ```
 
 ### Hooks
@@ -110,7 +119,7 @@ import { useConstraints, useKeyboard } from 'osdlabel/hooks';
 Default configuration values. See [Constants](/osdlabel/api/constants/).
 
 ```ts
-import { DEFAULT_ANNOTATION_STYLE, DEFAULT_GRID_CONFIG, MAX_GRID_SIZE } from 'osdlabel/core';
+import { DEFAULT_ANNOTATION_STYLE, DEFAULT_GRID_CONFIG, MAX_GRID_SIZE } from '@osdlabel/annotation';
 ```
 
 ---
@@ -876,7 +885,7 @@ Creates a reactive accessor that derives tool enable/disable status from the cur
 A Fabric.js canvas overlay synchronized with an OpenSeaDragon viewer. Handles event routing, coordinate transforms, and mode switching.
 
 ```ts
-import { FabricOverlay } from 'osdlabel/overlay';
+import { FabricOverlay } from '@osdlabel/fabric-osd';
 ```
 
 ### Constructor
@@ -1008,7 +1017,7 @@ Serialize the current annotation state into a portable JSON document. Creates on
 **Example:**
 
 ```ts
-import { serialize } from 'osdlabel/core';
+import { serialize } from '@osdlabel/annotation';
 
 const doc = serialize(annotationState, images);
 const json = JSON.stringify(doc, null, 2);
@@ -1019,10 +1028,15 @@ const json = JSON.stringify(doc, null, 2);
 ## deserialize
 
 ```ts
-function deserialize(doc: unknown): Record<ImageId, Record<AnnotationId, Annotation>>;
+function deserialize<E extends object = Record<string, never>>(
+  doc: unknown,
+  extensionValidator?: ExtensionValidator<E>,
+): DeserializeResult<E>;
 ```
 
 Parse and validate a serialized document, returning the `byImage` store structure. Throws `SerializationError` on invalid input.
+
+Pass an `extensionValidator` to also validate extension fields (e.g. `contextId`, `rawAnnotationData`). Accepts either a type guard function or a [Standard Schema](https://github.com/standard-schema/standard-schema) (e.g. from Valibot or Zod).
 
 **Validates:**
 
@@ -1033,7 +1047,7 @@ Parse and validate a serialized document, returning the `byImage` store structur
 **Example:**
 
 ```ts
-import { deserialize } from 'osdlabel/core';
+import { deserialize } from '@osdlabel/annotation';
 
 try {
   const byImage = deserialize(JSON.parse(jsonString));
@@ -1047,21 +1061,40 @@ try {
 
 ---
 
-## validateAnnotation
+## validateBaseAnnotation
 
 ```ts
-function validateAnnotation(value: unknown): value is Annotation;
+function validateBaseAnnotation(value: unknown): value is BaseAnnotation;
 ```
 
-Type guard that validates the shape of an annotation object. Checks:
+Type guard that validates the base annotation fields (id, imageId, geometry, timestamps). Does **not** validate extension fields — use `createAnnotationValidator` for that.
 
-- Required string fields (`id`, `imageId`, `contextId`, `createdAt`, `updatedAt`)
-- Geometry structure (discriminated by `type`)
-- `rawAnnotationData` structure (format, Fabric version, data type whitelisting)
-- Numeric bounds (coordinates, dimensions)
-- Path point count limits
+---
 
-Returns `true` if the value is a valid `Annotation`.
+## createAnnotationValidator
+
+```ts
+function createAnnotationValidator<E extends object>(
+  extensionValidator: ExtensionValidator<E>,
+): (value: unknown) => value is Annotation<E>;
+```
+
+Creates a composed validator that checks both base annotation fields and extension fields. The `extensionValidator` can be either a type guard function or a Standard Schema (e.g. a Valibot schema from `@osdlabel/validation`).
+
+**Example:**
+
+```ts
+import { createAnnotationValidator } from '@osdlabel/annotation';
+import { RawAnnotationDataSchema } from '@osdlabel/validation';
+
+// Using a Standard Schema (Valibot)
+const validate = createAnnotationValidator(myExtensionSchema);
+
+// Using a type guard function
+const validate = createAnnotationValidator(
+  (value: unknown): value is MyFields => { /* ... */ }
+);
+```
 
 ---
 
@@ -1076,7 +1109,7 @@ Flatten all annotations from the nested `byImage` store into a single array.
 **Example:**
 
 ```ts
-import { getAllAnnotationsFlat } from 'osdlabel/core';
+import { getAllAnnotationsFlat } from '@osdlabel/annotation';
 
 const all = getAllAnnotationsFlat(annotationState);
 console.log(`Total annotations: ${all.length}`);
@@ -1200,7 +1233,7 @@ Returns `true` if:
 Default visual style applied to new annotations.
 
 ```ts
-import { DEFAULT_ANNOTATION_STYLE } from 'osdlabel/core';
+import { DEFAULT_ANNOTATION_STYLE } from '@osdlabel/annotation';
 ```
 
 ```ts
@@ -1222,7 +1255,7 @@ Override per-tool via `defaultStyle` in [`ToolConstraint`](/osdlabel/api/types/#
 Default grid dimensions on initialization.
 
 ```ts
-import { DEFAULT_GRID_CONFIG } from 'osdlabel/core';
+import { DEFAULT_GRID_CONFIG } from '@osdlabel/annotation';
 ```
 
 ```ts
@@ -1239,7 +1272,7 @@ const DEFAULT_GRID_CONFIG = {
 Maximum allowed grid dimensions.
 
 ```ts
-import { MAX_GRID_SIZE } from 'osdlabel/core';
+import { MAX_GRID_SIZE } from '@osdlabel/annotation';
 ```
 
 ```ts
@@ -1256,7 +1289,7 @@ const MAX_GRID_SIZE = {
 Default keyboard shortcut bindings. See [Keyboard Shortcuts](/osdlabel/guides/keyboard-shortcuts/) for the full table.
 
 ```ts
-import { DEFAULT_KEYBOARD_SHORTCUTS } from 'osdlabel/core';
+import { DEFAULT_KEYBOARD_SHORTCUTS } from '@osdlabel/annotation';
 ```
 
 ```ts

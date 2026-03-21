@@ -8,9 +8,9 @@ import { createContextStore } from '../../src/state/context-store';
 import {
   createAnnotationId,
   createImageId,
-  createAnnotationContextId,
-  Annotation,
-} from '../../src/core/types';
+} from '@osdlabel/annotation';
+import type { Annotation } from '@osdlabel/annotation';
+import { createAnnotationContextId } from '@osdlabel/annotation-context';
 
 describe('version counter', () => {
   const dummyContextId = createAnnotationContextId('ctx1');

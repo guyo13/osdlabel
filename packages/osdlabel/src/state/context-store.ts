@@ -1,14 +1,17 @@
 import { createStore } from 'solid-js/store';
 import { createMemo } from 'solid-js';
 import type {
-  ContextState,
-  AnnotationContextId,
   AnnotationState,
-  ConstraintStatus,
   AnnotationType,
   ImageId,
-} from '../core/types.js';
-import { isContextScopedToImage, getCountableImageIds } from '../core/context-scoping.js';
+} from '@osdlabel/annotation';
+import type {
+  AnnotationContextId,
+  ContextState,
+  ConstraintStatus,
+} from '@osdlabel/annotation-context';
+import { isContextScopedToImage, getCountableImageIds } from '@osdlabel/annotation-context';
+import type { OsdFields } from '../types.js';
 
 export function createContextStore() {
   const [state, setState] = createStore<ContextState>({
@@ -21,7 +24,7 @@ export function createContextStore() {
 
 export function createConstraintStatus(
   contextState: ContextState,
-  annotationState: AnnotationState,
+  annotationState: AnnotationState<OsdFields>,
   currentImageId: () => ImageId | undefined,
 ) {
   return createMemo<ConstraintStatus>(() => {
@@ -65,7 +68,7 @@ export function createConstraintStatus(
 }
 
 function countAnnotationsForContextAndType(
-  annotationState: AnnotationState,
+  annotationState: AnnotationState<OsdFields>,
   contextId: AnnotationContextId,
   type: AnnotationType,
   scopedImageIds?: readonly ImageId[] | undefined,

@@ -4,8 +4,10 @@ import {
   GridControls as Controls,
   StatusBar as Status,
 } from 'osdlabel/components';
-import { createImageId, createAnnotationContextId } from 'osdlabel/core';
-import type { ImageSource, AnnotationContext } from 'osdlabel/core';
+import { createImageId } from '@osdlabel/annotation';
+import type { ImageSource } from '@osdlabel/annotation';
+import { createAnnotationContextId } from '@osdlabel/annotation-context';
+import type { AnnotationContext } from '@osdlabel/annotation-context';
 import { onMount } from 'solid-js';
 
 const images: ImageSource[] = [

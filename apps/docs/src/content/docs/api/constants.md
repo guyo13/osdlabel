@@ -8,7 +8,7 @@ description: Default configuration values
 Default visual style applied to new annotations.
 
 ```ts
-import { DEFAULT_ANNOTATION_STYLE } from 'osdlabel/core';
+import { DEFAULT_ANNOTATION_STYLE } from '@osdlabel/annotation';
 ```
 
 ```ts
@@ -30,7 +30,7 @@ Override per-tool via `defaultStyle` in [`ToolConstraint`](/osdlabel/api/types/#
 Default grid dimensions on initialization.
 
 ```ts
-import { DEFAULT_GRID_CONFIG } from 'osdlabel/core';
+import { DEFAULT_GRID_CONFIG } from '@osdlabel/annotation';
 ```
 
 ```ts
@@ -47,7 +47,7 @@ const DEFAULT_GRID_CONFIG = {
 Maximum allowed grid dimensions.
 
 ```ts
-import { MAX_GRID_SIZE } from 'osdlabel/core';
+import { MAX_GRID_SIZE } from '@osdlabel/annotation';
 ```
 
 ```ts
@@ -64,7 +64,7 @@ const MAX_GRID_SIZE = {
 Default keyboard shortcut bindings. See [Keyboard Shortcuts](/osdlabel/guides/keyboard-shortcuts/) for the full table.
 
 ```ts
-import { DEFAULT_KEYBOARD_SHORTCUTS } from 'osdlabel/core';
+import { DEFAULT_KEYBOARD_SHORTCUTS } from '@osdlabel/annotation';
 ```
 
 ```ts
