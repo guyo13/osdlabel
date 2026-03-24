@@ -1,8 +1,10 @@
-import {
-  serialize as baseSerialize,
-  deserialize as baseDeserialize,
+import { serialize as baseSerialize, deserialize as baseDeserialize } from '@osdlabel/annotation';
+import type {
+  AnnotationState,
+  AnnotationDocument,
+  DeserializeResult,
+  ImageSource,
 } from '@osdlabel/annotation';
-import type { AnnotationState, AnnotationDocument, DeserializeResult, ImageSource } from '@osdlabel/annotation';
 import { validateOsdFields } from './validator.js';
 import type { OsdFields } from './types.js';
 

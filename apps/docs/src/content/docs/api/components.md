@@ -15,23 +15,23 @@ import { Annotator } from 'osdlabel/components';
 
 `AnnotatorProps` extends `AnnotatorProviderProps` (minus `children`):
 
-| Prop                                  | Type                                                | Default                   | Description                      |
-| ------------------------------------- | --------------------------------------------------- | ------------------------- | -------------------------------- |
-| `images`                              | `readonly ImageSource[]`                            | (required)                | Available images                 |
-| `contexts`                            | `readonly AnnotationContext[]`                      | (required)                | Annotation contexts              |
-| `showFilmstrip`                       | `boolean`                                           | `true`                    | Show the filmstrip sidebar       |
-| `showGridControls`                    | `boolean`                                           | `false`                   | Show the grid size controls      |
-| `showContextSwitcher`                 | `boolean`                                           | `false`                   | Show the context selector        |
-| `showFps`                             | `boolean`                                           | `false`                   | Show the FPS counter             |
+| Prop                                  | Type                                                | Default                   | Description                                                                                |
+| ------------------------------------- | --------------------------------------------------- | ------------------------- | ------------------------------------------------------------------------------------------ |
+| `images`                              | `readonly ImageSource[]`                            | (required)                | Available images                                                                           |
+| `contexts`                            | `readonly AnnotationContext[]`                      | (required)                | Annotation contexts                                                                        |
+| `showFilmstrip`                       | `boolean`                                           | `true`                    | Show the filmstrip sidebar                                                                 |
+| `showGridControls`                    | `boolean`                                           | `false`                   | Show the grid size controls                                                                |
+| `showContextSwitcher`                 | `boolean`                                           | `false`                   | Show the context selector                                                                  |
+| `showFps`                             | `boolean`                                           | `false`                   | Show the FPS counter                                                                       |
 | `displayedContextIds`                 | `readonly AnnotationContextId[]`                    | —                         | Context IDs whose annotations are displayed read-only (active context is always displayed) |
-| `filmstripPosition`                   | `'left' \| 'right' \| 'bottom'`                     | `'left'`                  | Filmstrip placement              |
-| `maxGridSize`                         | `{ columns: number; rows: number }`                 | `{ columns: 4, rows: 4 }` | Maximum grid dimensions          |
-| `style`                               | `JSX.CSSProperties`                                 | —                         | Custom style for root container  |
-| `initialAnnotations`                  | `Record<ImageId, Record<AnnotationId, Annotation>>` | —                         | Pre-existing annotations         |
-| `onAnnotationsChange`                 | `(annotations: Annotation[]) => void`               | —                         | Fires on annotation changes      |
-| `onConstraintChange`                  | `(status: ConstraintStatus) => void`                | —                         | Fires on constraint changes      |
-| `keyboardShortcuts`                   | `Partial<KeyboardShortcutMap>`                      | —                         | Override default shortcuts       |
-| `shouldSkipKeyboardShortcutPredicate` | `(target: HTMLElement) => boolean`                  | —                         | Suppress shortcuts conditionally |
+| `filmstripPosition`                   | `'left' \| 'right' \| 'bottom'`                     | `'left'`                  | Filmstrip placement                                                                        |
+| `maxGridSize`                         | `{ columns: number; rows: number }`                 | `{ columns: 4, rows: 4 }` | Maximum grid dimensions                                                                    |
+| `style`                               | `JSX.CSSProperties`                                 | —                         | Custom style for root container                                                            |
+| `initialAnnotations`                  | `Record<ImageId, Record<AnnotationId, Annotation>>` | —                         | Pre-existing annotations                                                                   |
+| `onAnnotationsChange`                 | `(annotations: Annotation[]) => void`               | —                         | Fires on annotation changes                                                                |
+| `onConstraintChange`                  | `(status: ConstraintStatus) => void`                | —                         | Fires on constraint changes                                                                |
+| `keyboardShortcuts`                   | `Partial<KeyboardShortcutMap>`                      | —                         | Override default shortcuts                                                                 |
+| `shouldSkipKeyboardShortcutPredicate` | `(target: HTMLElement) => boolean`                  | —                         | Suppress shortcuts conditionally                                                           |
 
 ### Example
 

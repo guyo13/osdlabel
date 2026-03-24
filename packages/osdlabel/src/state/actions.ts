@@ -1,10 +1,5 @@
 import { type SetStoreFunction, produce } from 'solid-js/store';
-import type {
-  AnnotationId,
-  ImageId,
-  AnnotationType,
-  AnnotationState,
-} from '@osdlabel/annotation';
+import type { AnnotationId, ImageId, AnnotationType, AnnotationState } from '@osdlabel/annotation';
 import { DEFAULT_CELL_TRANSFORM } from '@osdlabel/annotation';
 import type {
   AnnotationContext,
@@ -128,9 +123,7 @@ export function createActions(
     setContextState('displayedContextIds', contextIds);
   }
 
-  function loadAnnotations(
-    byImage: Record<ImageId, Record<AnnotationId, OsdAnnotation>>,
-  ): void {
+  function loadAnnotations(byImage: Record<ImageId, Record<AnnotationId, OsdAnnotation>>): void {
     setAnnotationState(
       produce((state) => {
         state.byImage = byImage;

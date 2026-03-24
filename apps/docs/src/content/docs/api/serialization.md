@@ -88,9 +88,9 @@ import { RawAnnotationDataSchema } from '@osdlabel/validation';
 const validate = createAnnotationValidator(myExtensionSchema);
 
 // Using a type guard function
-const validate = createAnnotationValidator(
-  (value: unknown): value is MyFields => { /* ... */ }
-);
+const validate = createAnnotationValidator((value: unknown): value is MyFields => {
+  /* ... */
+});
 ```
 
 ---

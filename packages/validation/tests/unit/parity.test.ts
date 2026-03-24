@@ -30,8 +30,23 @@ describe('Geometry schema parity', () => {
     { type: 'circle', center: { x: 200, y: 300 }, radius: 75 },
     { type: 'line', start: { x: 0, y: 0 }, end: { x: 10, y: 10 } },
     { type: 'point', position: { x: 5, y: 5 } },
-    { type: 'path', points: [{ x: 0, y: 0 }, { x: 10, y: 10 }, { x: 20, y: 0 }], closed: true },
-    { type: 'freeHandPath', points: [{ x: 0, y: 0 }, { x: 10, y: 10 }], closed: false },
+    {
+      type: 'path',
+      points: [
+        { x: 0, y: 0 },
+        { x: 10, y: 10 },
+        { x: 20, y: 0 },
+      ],
+      closed: true,
+    },
+    {
+      type: 'freeHandPath',
+      points: [
+        { x: 0, y: 0 },
+        { x: 10, y: 10 },
+      ],
+      closed: false,
+    },
   ];
 
   for (const geom of validGeometries) {
@@ -42,10 +57,22 @@ describe('Geometry schema parity', () => {
 
   const invalidGeometries = [
     { name: 'unknown type', value: { type: 'polygon' } },
-    { name: 'NaN coordinate', value: { type: 'rectangle', origin: { x: NaN, y: 20 }, width: 100, height: 50, rotation: 0 } },
-    { name: 'Infinity coordinate', value: { type: 'circle', center: { x: Infinity, y: 0 }, radius: 10 } },
-    { name: 'path with <2 points', value: { type: 'path', points: [{ x: 0, y: 0 }], closed: false } },
-    { name: 'missing required field', value: { type: 'rectangle', origin: { x: 0, y: 0 }, width: 100 } },
+    {
+      name: 'NaN coordinate',
+      value: { type: 'rectangle', origin: { x: NaN, y: 20 }, width: 100, height: 50, rotation: 0 },
+    },
+    {
+      name: 'Infinity coordinate',
+      value: { type: 'circle', center: { x: Infinity, y: 0 }, radius: 10 },
+    },
+    {
+      name: 'path with <2 points',
+      value: { type: 'path', points: [{ x: 0, y: 0 }], closed: false },
+    },
+    {
+      name: 'missing required field',
+      value: { type: 'rectangle', origin: { x: 0, y: 0 }, width: 100 },
+    },
   ];
 
   for (const { name, value } of invalidGeometries) {
@@ -75,7 +102,15 @@ describe('BaseAnnotation schema parity', () => {
   });
 
   it('should accept with extra extension fields', () => {
-    const withExtra = { ...validBase, contextId: 'ctx1', rawAnnotationData: { format: 'fabric', fabricVersion: '7', data: { type: 'Rect', width: 1, height: 1 } } };
+    const withExtra = {
+      ...validBase,
+      contextId: 'ctx1',
+      rawAnnotationData: {
+        format: 'fabric',
+        fabricVersion: '7',
+        data: { type: 'Rect', width: 1, height: 1 },
+      },
+    };
     expect(validateBaseAnnotation(withExtra)).toBe(true);
     expect(schemaAccepts(BaseAnnotationSchema, withExtra)).toBe(true);
   });
@@ -88,7 +123,19 @@ describe('BaseAnnotation schema parity', () => {
     { name: 'missing id', value: { ...validBase, id: '' } },
     { name: 'missing imageId', value: { ...validBase, imageId: '' } },
     { name: 'invalid geometry', value: { ...validBase, geometry: { type: 'polygon' } } },
-    { name: 'NaN in geometry', value: { ...validBase, geometry: { type: 'rectangle', origin: { x: NaN, y: 20 }, width: 100, height: 50, rotation: 0 } } },
+    {
+      name: 'NaN in geometry',
+      value: {
+        ...validBase,
+        geometry: {
+          type: 'rectangle',
+          origin: { x: NaN, y: 20 },
+          width: 100,
+          height: 50,
+          rotation: 0,
+        },
+      },
+    },
   ];
 
   for (const { name, value } of invalidBases) {
@@ -114,7 +161,11 @@ describe('RawAnnotationData schema parity', () => {
   });
 
   it('should accept lowercase type (backward compat)', () => {
-    const raw = { format: 'fabric' as const, fabricVersion: FABRIC_VERSION, data: { type: 'rect', width: 100, height: 50 } };
+    const raw = {
+      format: 'fabric' as const,
+      fabricVersion: FABRIC_VERSION,
+      data: { type: 'rect', width: 100, height: 50 },
+    };
     expect(validateRawAnnotationData(raw)).toBe(true);
     expect(schemaAccepts(RawAnnotationDataSchema, raw)).toBe(true);
   });
@@ -122,15 +173,73 @@ describe('RawAnnotationData schema parity', () => {
   const invalidRaws = [
     { name: 'null', value: null },
     { name: 'string', value: 'string' },
-    { name: 'unsupported fabric type', value: { format: 'fabric', fabricVersion: FABRIC_VERSION, data: { type: 'malicious-type' } } },
-    { name: 'missing fabricVersion', value: { format: 'fabric', data: { type: 'Rect', width: 100, height: 50 } } },
-    { name: 'invalid numeric property', value: { format: 'fabric', fabricVersion: FABRIC_VERSION, data: { type: 'Rect', width: 100, height: 50, left: 'invalid' } } },
-    { name: 'Rect missing width', value: { format: 'fabric', fabricVersion: FABRIC_VERSION, data: { type: 'Rect', height: 50 } } },
-    { name: 'Rect missing height', value: { format: 'fabric', fabricVersion: FABRIC_VERSION, data: { type: 'Rect', width: 100 } } },
-    { name: 'negative Circle radius', value: { format: 'fabric', fabricVersion: FABRIC_VERSION, data: { type: 'Circle', radius: -5 } } },
-    { name: 'coordinate exceeding MAX_COORDINATE', value: { format: 'fabric', fabricVersion: FABRIC_VERSION, data: { type: 'Rect', width: 100, height: 50, left: MAX_COORDINATE + 1 } } },
-    { name: 'oversized string property', value: { format: 'fabric', fabricVersion: FABRIC_VERSION, data: { type: 'Rect', width: 100, height: 50, fill: 'x'.repeat(MAX_STRING_LENGTH + 1) } } },
-    { name: 'Polyline with oversized points', value: { format: 'fabric', fabricVersion: FABRIC_VERSION, data: { type: 'Polyline', points: Array.from({ length: MAX_POINTS_COUNT + 1 }, (_, i) => ({ x: i, y: i })) } } },
+    {
+      name: 'unsupported fabric type',
+      value: { format: 'fabric', fabricVersion: FABRIC_VERSION, data: { type: 'malicious-type' } },
+    },
+    {
+      name: 'missing fabricVersion',
+      value: { format: 'fabric', data: { type: 'Rect', width: 100, height: 50 } },
+    },
+    {
+      name: 'invalid numeric property',
+      value: {
+        format: 'fabric',
+        fabricVersion: FABRIC_VERSION,
+        data: { type: 'Rect', width: 100, height: 50, left: 'invalid' },
+      },
+    },
+    {
+      name: 'Rect missing width',
+      value: {
+        format: 'fabric',
+        fabricVersion: FABRIC_VERSION,
+        data: { type: 'Rect', height: 50 },
+      },
+    },
+    {
+      name: 'Rect missing height',
+      value: {
+        format: 'fabric',
+        fabricVersion: FABRIC_VERSION,
+        data: { type: 'Rect', width: 100 },
+      },
+    },
+    {
+      name: 'negative Circle radius',
+      value: {
+        format: 'fabric',
+        fabricVersion: FABRIC_VERSION,
+        data: { type: 'Circle', radius: -5 },
+      },
+    },
+    {
+      name: 'coordinate exceeding MAX_COORDINATE',
+      value: {
+        format: 'fabric',
+        fabricVersion: FABRIC_VERSION,
+        data: { type: 'Rect', width: 100, height: 50, left: MAX_COORDINATE + 1 },
+      },
+    },
+    {
+      name: 'oversized string property',
+      value: {
+        format: 'fabric',
+        fabricVersion: FABRIC_VERSION,
+        data: { type: 'Rect', width: 100, height: 50, fill: 'x'.repeat(MAX_STRING_LENGTH + 1) },
+      },
+    },
+    {
+      name: 'Polyline with oversized points',
+      value: {
+        format: 'fabric',
+        fabricVersion: FABRIC_VERSION,
+        data: {
+          type: 'Polyline',
+          points: Array.from({ length: MAX_POINTS_COUNT + 1 }, (_, i) => ({ x: i, y: i })),
+        },
+      },
+    },
   ];
 
   for (const { name, value } of invalidRaws) {
@@ -144,19 +253,37 @@ describe('RawAnnotationData schema parity', () => {
 
   // Additional edge cases for full parity
   it('should accept Circle with valid radius', () => {
-    const raw = { format: 'fabric' as const, fabricVersion: FABRIC_VERSION, data: { type: 'Circle', radius: 50 } };
+    const raw = {
+      format: 'fabric' as const,
+      fabricVersion: FABRIC_VERSION,
+      data: { type: 'Circle', radius: 50 },
+    };
     expect(validateRawAnnotationData(raw)).toBe(true);
     expect(schemaAccepts(RawAnnotationDataSchema, raw)).toBe(true);
   });
 
   it('should accept Line with valid coordinates', () => {
-    const raw = { format: 'fabric' as const, fabricVersion: FABRIC_VERSION, data: { type: 'Line', x1: 0, y1: 0, x2: 100, y2: 100 } };
+    const raw = {
+      format: 'fabric' as const,
+      fabricVersion: FABRIC_VERSION,
+      data: { type: 'Line', x1: 0, y1: 0, x2: 100, y2: 100 },
+    };
     expect(validateRawAnnotationData(raw)).toBe(true);
     expect(schemaAccepts(RawAnnotationDataSchema, raw)).toBe(true);
   });
 
   it('should accept Polyline with valid points', () => {
-    const raw = { format: 'fabric' as const, fabricVersion: FABRIC_VERSION, data: { type: 'Polyline', points: [{ x: 0, y: 0 }, { x: 10, y: 10 }] } };
+    const raw = {
+      format: 'fabric' as const,
+      fabricVersion: FABRIC_VERSION,
+      data: {
+        type: 'Polyline',
+        points: [
+          { x: 0, y: 0 },
+          { x: 10, y: 10 },
+        ],
+      },
+    };
     expect(validateRawAnnotationData(raw)).toBe(true);
     expect(schemaAccepts(RawAnnotationDataSchema, raw)).toBe(true);
   });
@@ -165,7 +292,15 @@ describe('RawAnnotationData schema parity', () => {
     const raw = {
       format: 'fabric' as const,
       fabricVersion: FABRIC_VERSION,
-      data: { type: 'Rect', width: 100, height: 50, stroke: 'red', strokeWidth: 2, fill: 'rgba(0,0,255,0.3)', opacity: 1 },
+      data: {
+        type: 'Rect',
+        width: 100,
+        height: 50,
+        stroke: 'red',
+        strokeWidth: 2,
+        fill: 'rgba(0,0,255,0.3)',
+        opacity: 1,
+      },
     };
     expect(validateRawAnnotationData(raw)).toBe(true);
     expect(schemaAccepts(RawAnnotationDataSchema, raw)).toBe(true);

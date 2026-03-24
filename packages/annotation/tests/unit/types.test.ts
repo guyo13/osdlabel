@@ -1,13 +1,6 @@
 import { describe, it, expect } from 'vitest';
-import {
-  createAnnotationId,
-  createImageId,
-} from '../../src/types.js';
-import type {
-  AnnotationId,
-  ImageId,
-  Geometry,
-} from '../../src/types.js';
+import { createAnnotationId, createImageId } from '../../src/types.js';
+import type { AnnotationId, ImageId, Geometry } from '../../src/types.js';
 
 describe('Branded ID types', () => {
   it('createAnnotationId produces a branded value', () => {
@@ -159,5 +152,4 @@ describe('Helper functions', () => {
     const acceptsImageId = (iid: ImageId) => iid;
     expect(acceptsImageId(id)).toBe('test-id');
   });
-
 });

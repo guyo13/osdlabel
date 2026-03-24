@@ -2,10 +2,7 @@ import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { SelectTool } from '../../../src/tools/select-tool.js';
 import type { FabricOverlay } from '../../../src/overlay/fabric-overlay.js';
 import type { ToolCallbacks } from '../../../src/tools/base-tool.js';
-import {
-  createImageId,
-  createAnnotationId,
-} from '@osdlabel/annotation';
+import { createImageId, createAnnotationId } from '@osdlabel/annotation';
 import type { KeyboardShortcutMap } from '@osdlabel/annotation';
 import { createAnnotationContextId } from '@osdlabel/annotation-context';
 import { FabricObject } from 'fabric';

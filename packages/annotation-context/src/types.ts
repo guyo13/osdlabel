@@ -1,8 +1,4 @@
-import type {
-  AnnotationType,
-  AnnotationStyle,
-  ImageId,
-} from '@osdlabel/annotation';
+import type { AnnotationType, AnnotationStyle, ImageId } from '@osdlabel/annotation';
 
 // ── Branded ID Type ─────────────────────────────────────────────────────
 

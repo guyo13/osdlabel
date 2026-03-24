@@ -83,8 +83,7 @@ export interface BaseAnnotation {
  * Generic annotation type. Extensions add fields via intersection.
  * Default: `Record<string, never>` (no extensions — bare BaseAnnotation).
  */
-export type Annotation<E extends object = Record<string, never>> =
-  BaseAnnotation & E;
+export type Annotation<E extends object = Record<string, never>> = BaseAnnotation & E;
 
 // ── Serialization Types ──────────────────────────────────────────────────
 

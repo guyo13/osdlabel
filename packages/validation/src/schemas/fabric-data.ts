@@ -5,11 +5,7 @@
  * and @osdlabel/annotation/serialization.ts validateRawAnnotationData().
  */
 import * as v from 'valibot';
-import {
-  MAX_COORDINATE,
-  MAX_STRING_LENGTH,
-  MAX_POINTS_COUNT,
-} from '@osdlabel/annotation';
+import { MAX_COORDINATE, MAX_STRING_LENGTH, MAX_POINTS_COUNT } from '@osdlabel/annotation';
 
 // ── Supported fabric types ──────────────────────────────────────────────
 
@@ -67,8 +63,9 @@ function validateStringProps(data: LooseData): boolean {
 
 function validateRectRequirements(data: LooseData): boolean {
   if (normalizeType(data.type) === 'rect') {
-    return isFiniteNum(data.width) && data.width >= 0 &&
-           isFiniteNum(data.height) && data.height >= 0;
+    return (
+      isFiniteNum(data.width) && data.width >= 0 && isFiniteNum(data.height) && data.height >= 0
+    );
   }
   return true;
 }

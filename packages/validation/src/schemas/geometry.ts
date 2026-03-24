@@ -34,10 +34,7 @@ export const PointGeometrySchema = v.object({
   position: PointSchema,
 });
 
-const PathPointsSchema = v.pipe(
-  v.array(PointSchema),
-  v.minLength(2),
-);
+const PathPointsSchema = v.pipe(v.array(PointSchema), v.minLength(2));
 
 export const PathGeometrySchema = v.object({
   type: v.literal('path'),

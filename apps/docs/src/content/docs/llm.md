@@ -89,7 +89,12 @@ import { FabricOverlay, computeViewportTransform } from '@osdlabel/fabric-osd';
 JSON export/import functions. See [Serialization](/osdlabel/api/serialization/).
 
 ```ts
-import { serialize, deserialize, validateBaseAnnotation, getAllAnnotationsFlat } from '@osdlabel/annotation';
+import {
+  serialize,
+  deserialize,
+  validateBaseAnnotation,
+  getAllAnnotationsFlat,
+} from '@osdlabel/annotation';
 ```
 
 ### Validation
@@ -97,7 +102,11 @@ import { serialize, deserialize, validateBaseAnnotation, getAllAnnotationsFlat }
 Schema-based validators using [Standard Schema](https://github.com/standard-schema/standard-schema). See [Serialization](/osdlabel/api/serialization/).
 
 ```ts
-import { BaseAnnotationSchema, GeometrySchema, RawAnnotationDataSchema } from '@osdlabel/validation';
+import {
+  BaseAnnotationSchema,
+  GeometrySchema,
+  RawAnnotationDataSchema,
+} from '@osdlabel/validation';
 ```
 
 ### Hooks
@@ -382,10 +391,10 @@ Per-cell visual adjustments (rotation, flip, exposure, inversion). These are tra
 
 ```ts
 interface CellTransform {
-  readonly rotation: number;  // degrees (0, 90, 180, 270)
+  readonly rotation: number; // degrees (0, 90, 180, 270)
   readonly flippedH: boolean;
   readonly flippedV: boolean;
-  readonly exposure: number;  // -1 to 1 (0 = default)
+  readonly exposure: number; // -1 to 1 (0 = default)
   readonly inverted: boolean; // false = normal, true = CSS invert
 }
 ```
@@ -483,23 +492,23 @@ import { Annotator } from 'osdlabel/components';
 
 `AnnotatorProps` extends `AnnotatorProviderProps` (minus `children`):
 
-| Prop                                  | Type                                                | Default                   | Description                      |
-| ------------------------------------- | --------------------------------------------------- | ------------------------- | -------------------------------- |
-| `images`                              | `readonly ImageSource[]`                            | (required)                | Available images                 |
-| `contexts`                            | `readonly AnnotationContext[]`                      | (required)                | Annotation contexts              |
-| `showFilmstrip`                       | `boolean`                                           | `true`                    | Show the filmstrip sidebar       |
-| `showGridControls`                    | `boolean`                                           | `false`                   | Show the grid size controls      |
-| `showContextSwitcher`                 | `boolean`                                           | `false`                   | Show the context selector        |
-| `showFps`                             | `boolean`                                           | `false`                   | Show the FPS counter             |
+| Prop                                  | Type                                                | Default                   | Description                                                                                |
+| ------------------------------------- | --------------------------------------------------- | ------------------------- | ------------------------------------------------------------------------------------------ |
+| `images`                              | `readonly ImageSource[]`                            | (required)                | Available images                                                                           |
+| `contexts`                            | `readonly AnnotationContext[]`                      | (required)                | Annotation contexts                                                                        |
+| `showFilmstrip`                       | `boolean`                                           | `true`                    | Show the filmstrip sidebar                                                                 |
+| `showGridControls`                    | `boolean`                                           | `false`                   | Show the grid size controls                                                                |
+| `showContextSwitcher`                 | `boolean`                                           | `false`                   | Show the context selector                                                                  |
+| `showFps`                             | `boolean`                                           | `false`                   | Show the FPS counter                                                                       |
 | `displayedContextIds`                 | `readonly AnnotationContextId[]`                    | —                         | Context IDs whose annotations are displayed read-only (active context is always displayed) |
-| `filmstripPosition`                   | `'left' \| 'right' \| 'bottom'`                     | `'left'`                  | Filmstrip placement              |
-| `maxGridSize`                         | `{ columns: number; rows: number }`                 | `{ columns: 4, rows: 4 }` | Maximum grid dimensions          |
-| `style`                               | `JSX.CSSProperties`                                 | —                         | Custom style for root container  |
-| `initialAnnotations`                  | `Record<ImageId, Record<AnnotationId, Annotation>>` | —                         | Pre-existing annotations         |
-| `onAnnotationsChange`                 | `(annotations: Annotation[]) => void`               | —                         | Fires on annotation changes      |
-| `onConstraintChange`                  | `(status: ConstraintStatus) => void`                | —                         | Fires on constraint changes      |
-| `keyboardShortcuts`                   | `Partial<KeyboardShortcutMap>`                      | —                         | Override default shortcuts       |
-| `shouldSkipKeyboardShortcutPredicate` | `(target: HTMLElement) => boolean`                  | —                         | Suppress shortcuts conditionally |
+| `filmstripPosition`                   | `'left' \| 'right' \| 'bottom'`                     | `'left'`                  | Filmstrip placement                                                                        |
+| `maxGridSize`                         | `{ columns: number; rows: number }`                 | `{ columns: 4, rows: 4 }` | Maximum grid dimensions                                                                    |
+| `style`                               | `JSX.CSSProperties`                                 | —                         | Custom style for root container                                                            |
+| `initialAnnotations`                  | `Record<ImageId, Record<AnnotationId, Annotation>>` | —                         | Pre-existing annotations                                                                   |
+| `onAnnotationsChange`                 | `(annotations: Annotation[]) => void`               | —                         | Fires on annotation changes                                                                |
+| `onConstraintChange`                  | `(status: ConstraintStatus) => void`                | —                         | Fires on constraint changes                                                                |
+| `keyboardShortcuts`                   | `Partial<KeyboardShortcutMap>`                      | —                         | Override default shortcuts                                                                 |
+| `shouldSkipKeyboardShortcutPredicate` | `(target: HTMLElement) => boolean`                  | —                         | Suppress shortcuts conditionally                                                           |
 
 ### Example
 
@@ -693,14 +702,14 @@ import { useAnnotator } from 'osdlabel/state';
 }
 ```
 
-| Property           | Description                                                 |
-| ------------------ | ----------------------------------------------------------- |
-| `annotationState`  | All annotations organized by image ID with a change counter |
-| `uiState`          | Active tool, cell, grid dimensions, assignments, selection  |
+| Property           | Description                                                      |
+| ------------------ | ---------------------------------------------------------------- |
+| `annotationState`  | All annotations organized by image ID with a change counter      |
+| `uiState`          | Active tool, cell, grid dimensions, assignments, selection       |
 | `contextState`     | Available contexts, active context ID, and displayed context IDs |
-| `constraintStatus` | Reactive accessor returning tool enable/disable status      |
-| `actions`          | Object containing all state mutation functions              |
-| `shortcuts`        | Merged keyboard shortcut map (defaults + overrides)         |
+| `constraintStatus` | Reactive accessor returning tool enable/disable status           |
+| `actions`          | Object containing all state mutation functions                   |
+| `shortcuts`        | Merged keyboard shortcut map (defaults + overrides)              |
 
 ---
 
@@ -1085,9 +1094,9 @@ import { RawAnnotationDataSchema } from '@osdlabel/validation';
 const validate = createAnnotationValidator(myExtensionSchema);
 
 // Using a type guard function
-const validate = createAnnotationValidator(
-  (value: unknown): value is MyFields => { /* ... */ }
-);
+const validate = createAnnotationValidator((value: unknown): value is MyFields => {
+  /* ... */
+});
 ```
 
 ---

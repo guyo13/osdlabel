@@ -10,10 +10,7 @@ import {
   SerializationError,
 } from '../../src/serialization.js';
 import type { ExtensionValidator } from '../../src/serialization.js';
-import {
-  createAnnotationId,
-  createImageId,
-} from '../../src/types.js';
+import { createAnnotationId, createImageId } from '../../src/types.js';
 import type {
   BaseAnnotation,
   Annotation,
@@ -23,11 +20,7 @@ import type {
   ImageId,
   RawAnnotationData,
 } from '../../src/types.js';
-import {
-  MAX_COORDINATE,
-  MAX_STRING_LENGTH,
-  MAX_POINTS_COUNT,
-} from '../../src/data-sanitizer.js';
+import { MAX_COORDINATE, MAX_STRING_LENGTH, MAX_POINTS_COUNT } from '../../src/data-sanitizer.js';
 
 /** Extension fields for full annotation tests */
 interface TestExtFields {
@@ -249,7 +242,13 @@ describe('Serialization', () => {
     const baseAnn: BaseAnnotation = {
       id: annId1,
       imageId,
-      geometry: { type: 'rectangle', origin: { x: 10, y: 20 }, width: 100, height: 50, rotation: 0 },
+      geometry: {
+        type: 'rectangle',
+        origin: { x: 10, y: 20 },
+        width: 100,
+        height: 50,
+        rotation: 0,
+      },
       createdAt: '2024-01-01T00:00:00.000Z',
       updatedAt: '2024-01-01T00:00:00.000Z',
     };
@@ -283,7 +282,13 @@ describe('Serialization', () => {
     it('should reject NaN coordinates', () => {
       const badAnn = {
         ...baseAnn,
-        geometry: { type: 'rectangle', origin: { x: NaN, y: 20 }, width: 100, height: 50, rotation: 0 },
+        geometry: {
+          type: 'rectangle',
+          origin: { x: NaN, y: 20 },
+          width: 100,
+          height: 50,
+          rotation: 0,
+        },
       };
       expect(validateBaseAnnotation(badAnn)).toBe(false);
     });
@@ -325,7 +330,11 @@ describe('Serialization', () => {
         ...baseAnn,
         geometry: {
           type: 'path',
-          points: [{ x: 0, y: 0 }, { x: 10, y: 10 }, { x: 20, y: 0 }],
+          points: [
+            { x: 0, y: 0 },
+            { x: 10, y: 10 },
+            { x: 20, y: 0 },
+          ],
           closed: true,
         },
       };
@@ -365,85 +374,105 @@ describe('Serialization', () => {
     });
 
     it('should reject unsupported fabric type', () => {
-      expect(validateRawAnnotationData({
-        format: 'fabric',
-        fabricVersion: FABRIC_VERSION,
-        data: { type: 'malicious-type' },
-      })).toBe(false);
+      expect(
+        validateRawAnnotationData({
+          format: 'fabric',
+          fabricVersion: FABRIC_VERSION,
+          data: { type: 'malicious-type' },
+        }),
+      ).toBe(false);
     });
 
     it('should reject missing fabricVersion', () => {
-      expect(validateRawAnnotationData({
-        format: 'fabric',
-        data: { type: 'Rect', width: 100, height: 50 },
-      })).toBe(false);
+      expect(
+        validateRawAnnotationData({
+          format: 'fabric',
+          data: { type: 'Rect', width: 100, height: 50 },
+        }),
+      ).toBe(false);
     });
 
     it('should reject invalid numeric properties', () => {
-      expect(validateRawAnnotationData({
-        format: 'fabric',
-        fabricVersion: FABRIC_VERSION,
-        data: { type: 'Rect', width: 100, height: 50, left: 'invalid' },
-      })).toBe(false);
+      expect(
+        validateRawAnnotationData({
+          format: 'fabric',
+          fabricVersion: FABRIC_VERSION,
+          data: { type: 'Rect', width: 100, height: 50, left: 'invalid' },
+        }),
+      ).toBe(false);
     });
 
     it('should accept lowercase type (backward compat)', () => {
-      expect(validateRawAnnotationData({
-        format: 'fabric',
-        fabricVersion: FABRIC_VERSION,
-        data: { type: 'rect', width: 100, height: 50 },
-      })).toBe(true);
+      expect(
+        validateRawAnnotationData({
+          format: 'fabric',
+          fabricVersion: FABRIC_VERSION,
+          data: { type: 'rect', width: 100, height: 50 },
+        }),
+      ).toBe(true);
     });
 
     it('should reject Rect missing width', () => {
-      expect(validateRawAnnotationData({
-        format: 'fabric',
-        fabricVersion: FABRIC_VERSION,
-        data: { type: 'Rect', height: 50 },
-      })).toBe(false);
+      expect(
+        validateRawAnnotationData({
+          format: 'fabric',
+          fabricVersion: FABRIC_VERSION,
+          data: { type: 'Rect', height: 50 },
+        }),
+      ).toBe(false);
     });
 
     it('should reject Rect missing height', () => {
-      expect(validateRawAnnotationData({
-        format: 'fabric',
-        fabricVersion: FABRIC_VERSION,
-        data: { type: 'Rect', width: 100 },
-      })).toBe(false);
+      expect(
+        validateRawAnnotationData({
+          format: 'fabric',
+          fabricVersion: FABRIC_VERSION,
+          data: { type: 'Rect', width: 100 },
+        }),
+      ).toBe(false);
     });
 
     it('should reject negative radius in Circle', () => {
-      expect(validateRawAnnotationData({
-        format: 'fabric',
-        fabricVersion: FABRIC_VERSION,
-        data: { type: 'Circle', radius: -5 },
-      })).toBe(false);
+      expect(
+        validateRawAnnotationData({
+          format: 'fabric',
+          fabricVersion: FABRIC_VERSION,
+          data: { type: 'Circle', radius: -5 },
+        }),
+      ).toBe(false);
     });
 
     it('should reject coordinate exceeding MAX_COORDINATE', () => {
-      expect(validateRawAnnotationData({
-        format: 'fabric',
-        fabricVersion: FABRIC_VERSION,
-        data: { type: 'Rect', width: 100, height: 50, left: MAX_COORDINATE + 1 },
-      })).toBe(false);
+      expect(
+        validateRawAnnotationData({
+          format: 'fabric',
+          fabricVersion: FABRIC_VERSION,
+          data: { type: 'Rect', width: 100, height: 50, left: MAX_COORDINATE + 1 },
+        }),
+      ).toBe(false);
     });
 
     it('should reject oversized string property', () => {
-      expect(validateRawAnnotationData({
-        format: 'fabric',
-        fabricVersion: FABRIC_VERSION,
-        data: { type: 'Rect', width: 100, height: 50, fill: 'x'.repeat(MAX_STRING_LENGTH + 1) },
-      })).toBe(false);
+      expect(
+        validateRawAnnotationData({
+          format: 'fabric',
+          fabricVersion: FABRIC_VERSION,
+          data: { type: 'Rect', width: 100, height: 50, fill: 'x'.repeat(MAX_STRING_LENGTH + 1) },
+        }),
+      ).toBe(false);
     });
 
     it('should reject Polyline with oversized points array', () => {
-      expect(validateRawAnnotationData({
-        format: 'fabric',
-        fabricVersion: FABRIC_VERSION,
-        data: {
-          type: 'Polyline',
-          points: Array.from({ length: MAX_POINTS_COUNT + 1 }, (_, i) => ({ x: i, y: i })),
-        },
-      })).toBe(false);
+      expect(
+        validateRawAnnotationData({
+          format: 'fabric',
+          fabricVersion: FABRIC_VERSION,
+          data: {
+            type: 'Polyline',
+            points: Array.from({ length: MAX_POINTS_COUNT + 1 }, (_, i) => ({ x: i, y: i })),
+          },
+        }),
+      ).toBe(false);
     });
   });
 

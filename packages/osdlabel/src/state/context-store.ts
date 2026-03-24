@@ -1,10 +1,6 @@
 import { createStore } from 'solid-js/store';
 import { createMemo } from 'solid-js';
-import type {
-  AnnotationState,
-  AnnotationType,
-  ImageId,
-} from '@osdlabel/annotation';
+import type { AnnotationState, AnnotationType, ImageId } from '@osdlabel/annotation';
 import type {
   AnnotationContextId,
   ContextState,
@@ -31,7 +27,14 @@ export function createConstraintStatus(
     const activeContext = contextState.contexts.find((c) => c.id === contextState.activeContextId);
     const imgId = currentImageId();
 
-    const allTypes: AnnotationType[] = ['rectangle', 'circle', 'line', 'point', 'path', 'freeHandPath'];
+    const allTypes: AnnotationType[] = [
+      'rectangle',
+      'circle',
+      'line',
+      'point',
+      'path',
+      'freeHandPath',
+    ];
     const result: Partial<ConstraintStatus> = {};
 
     if (!activeContext || !imgId || !isContextScopedToImage(activeContext, imgId)) {

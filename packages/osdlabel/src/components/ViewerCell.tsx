@@ -111,9 +111,10 @@ const ViewerCell: Component<ViewerCellProps> = (props) => {
 
     // Filter annotations by imageId + visible contexts
     const imageAnns = annotationState.byImage[imageId] || {};
-    const matching = visibleSet.size > 0
-      ? Object.values(imageAnns).filter((a) => visibleSet.has(a.contextId))
-      : Object.values(imageAnns);
+    const matching =
+      visibleSet.size > 0
+        ? Object.values(imageAnns).filter((a) => visibleSet.has(a.contextId))
+        : Object.values(imageAnns);
 
     // Clear all existing annotation objects from canvas
     const toRemove = ov.canvas.getObjects().filter((obj) => obj.id);

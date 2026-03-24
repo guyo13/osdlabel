@@ -5,10 +5,7 @@ import { createAnnotationStore } from '../../../src/state/annotation-store';
 import { createUIStore } from '../../../src/state/ui-store';
 import { createContextStore, createConstraintStatus } from '../../../src/state/context-store';
 import { createActions } from '../../../src/state/actions';
-import {
-  createAnnotationId,
-  createImageId,
-} from '@osdlabel/annotation';
+import { createAnnotationId, createImageId } from '@osdlabel/annotation';
 import type { ImageId } from '@osdlabel/annotation';
 import { createAnnotationContextId } from '@osdlabel/annotation-context';
 import type { AnnotationContext } from '@osdlabel/annotation-context';

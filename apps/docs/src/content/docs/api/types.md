@@ -265,10 +265,10 @@ Per-cell visual adjustments (rotation, flip, exposure, inversion). These are tra
 
 ```ts
 interface CellTransform {
-  readonly rotation: number;  // degrees (0, 90, 180, 270)
+  readonly rotation: number; // degrees (0, 90, 180, 270)
   readonly flippedH: boolean;
   readonly flippedV: boolean;
-  readonly exposure: number;  // -1 to 1 (0 = default)
+  readonly exposure: number; // -1 to 1 (0 = default)
   readonly inverted: boolean; // false = normal, true = CSS invert
 }
 ```

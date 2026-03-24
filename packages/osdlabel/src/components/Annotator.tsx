@@ -153,9 +153,7 @@ const AnnotatorSetup: Component<{
   }
 
   createEffect(() => {
-    actions.setDisplayedContexts(
-      props.displayedContextIds ? [...props.displayedContextIds] : [],
-    );
+    actions.setDisplayedContexts(props.displayedContextIds ? [...props.displayedContextIds] : []);
   });
 
   return null;

@@ -1,9 +1,6 @@
 import { describe, it } from 'vitest';
 import { createFabricObjectFromRawData } from '@osdlabel/fabric-osd';
-import {
-  createAnnotationId,
-  createImageId,
-} from '@osdlabel/annotation';
+import { createAnnotationId, createImageId } from '@osdlabel/annotation';
 import type { Annotation, RawAnnotationData, Geometry } from '@osdlabel/annotation';
 import { createAnnotationContextId } from '@osdlabel/annotation-context';
 

@@ -55,11 +55,22 @@ export {
 
 // Fabric-OSD integration (re-exported from @osdlabel/fabric-osd)
 export { FabricOverlay, computeViewportTransform } from '@osdlabel/fabric-osd';
-export type { OverlayOptions, OverlayMode, ToolCallbacks, AddAnnotationParams, FabricFields } from '@osdlabel/fabric-osd';
+export type {
+  OverlayOptions,
+  OverlayMode,
+  ToolCallbacks,
+  AddAnnotationParams,
+  FabricFields,
+} from '@osdlabel/fabric-osd';
 export { validateFabricFields } from '@osdlabel/fabric-osd';
 
 // Validation schemas (re-exported from @osdlabel/validation)
-export { GeometrySchema, PointSchema, BaseAnnotationSchema, RawAnnotationDataSchema } from '@osdlabel/validation';
+export {
+  GeometrySchema,
+  PointSchema,
+  BaseAnnotationSchema,
+  RawAnnotationDataSchema,
+} from '@osdlabel/validation';
 
 // Own types
 export type { OsdAnnotation, OsdFields } from './types.js';

@@ -85,7 +85,12 @@ import { FabricOverlay, computeViewportTransform } from '@osdlabel/fabric-osd';
 JSON export/import functions. See [Serialization](/osdlabel/api/serialization/).
 
 ```ts
-import { serialize, deserialize, validateBaseAnnotation, getAllAnnotationsFlat } from '@osdlabel/annotation';
+import {
+  serialize,
+  deserialize,
+  validateBaseAnnotation,
+  getAllAnnotationsFlat,
+} from '@osdlabel/annotation';
 ```
 
 ### Validation
@@ -93,7 +98,11 @@ import { serialize, deserialize, validateBaseAnnotation, getAllAnnotationsFlat }
 Schema-based validators using [Standard Schema](https://github.com/standard-schema/standard-schema). See [Serialization](/osdlabel/api/serialization/).
 
 ```ts
-import { BaseAnnotationSchema, GeometrySchema, RawAnnotationDataSchema } from '@osdlabel/validation';
+import {
+  BaseAnnotationSchema,
+  GeometrySchema,
+  RawAnnotationDataSchema,
+} from '@osdlabel/validation';
 ```
 
 ### Hooks

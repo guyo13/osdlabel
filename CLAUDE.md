@@ -56,6 +56,7 @@ The project is split into five packages with clear dependency boundaries:
 The `Annotation` type is generic: `type Annotation<E extends object = Record<string, never>> = BaseAnnotation & E`. Extension interfaces (`ContextFields`, `FabricFields`) add fields via intersection. The composed type `OsdAnnotation = Annotation<OsdFields>` is used throughout `osdlabel`.
 
 Key architectural rules:
+
 - **`@osdlabel/annotation` has zero framework dependencies.** No imports from `solid-js`, `fabric`, or `openseadragon`. Only dependency is `@standard-schema/spec` (types-only, zero runtime).
 - **`@osdlabel/annotation-context` only depends on `@osdlabel/annotation`.** No framework deps.
 - **`@osdlabel/validation` depends only on `@osdlabel/annotation` and `valibot`.** No framework deps. Manual validators in `@osdlabel/annotation` are kept to avoid circular dependencies; equivalent Valibot schemas live here.

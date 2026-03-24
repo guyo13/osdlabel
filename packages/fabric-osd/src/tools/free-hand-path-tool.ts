@@ -23,7 +23,8 @@ export class FreeHandPathTool extends BaseTool {
 
   constructor(options?: { minSampleDistancePx?: number }) {
     super();
-    this.minSampleDistancePx = options?.minSampleDistancePx ?? DEFAULT_MIN_SAMPLE_DISTANCE_SCREEN_PX;
+    this.minSampleDistancePx =
+      options?.minSampleDistancePx ?? DEFAULT_MIN_SAMPLE_DISTANCE_SCREEN_PX;
   }
 
   onPointerDown(event: PointerEvent, imagePoint: Point): void {
@@ -33,19 +34,16 @@ export class FreeHandPathTool extends BaseTool {
     this.shiftHeld = event.shiftKey;
     this.vertices = [{ x: imagePoint.x, y: imagePoint.y }];
 
-    this.preview = new Polyline(
-      [{ x: imagePoint.x, y: imagePoint.y }],
-      {
-        fill: 'transparent',
-        stroke: 'rgba(0,0,0,0.5)',
-        strokeWidth: 2 / this.overlay.canvas.getZoom(),
-        strokeDashArray: [5 / this.overlay.canvas.getZoom(), 5 / this.overlay.canvas.getZoom()],
-        selectable: false,
-        evented: false,
-        strokeUniform: true,
-        objectCaching: false,
-      },
-    );
+    this.preview = new Polyline([{ x: imagePoint.x, y: imagePoint.y }], {
+      fill: 'transparent',
+      stroke: 'rgba(0,0,0,0.5)',
+      strokeWidth: 2 / this.overlay.canvas.getZoom(),
+      strokeDashArray: [5 / this.overlay.canvas.getZoom(), 5 / this.overlay.canvas.getZoom()],
+      selectable: false,
+      evented: false,
+      strokeUniform: true,
+      objectCaching: false,
+    });
     this.overlay.canvas.add(this.preview);
     this.overlay.canvas.requestRenderAll();
   }
