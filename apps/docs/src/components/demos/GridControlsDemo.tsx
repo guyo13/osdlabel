@@ -8,6 +8,9 @@ import { createImageId } from '@osdlabel/annotation';
 import type { ImageSource } from '@osdlabel/annotation';
 import { createAnnotationContextId } from '@osdlabel/annotation-context';
 import type { AnnotationContext } from '@osdlabel/annotation-context';
+import { initFabricModule } from 'osdlabel';
+
+initFabricModule();
 import { onMount } from 'solid-js';
 
 const images: ImageSource[] = [

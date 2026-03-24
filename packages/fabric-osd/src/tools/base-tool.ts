@@ -10,8 +10,6 @@ import type {
 } from '@osdlabel/annotation';
 import type { AnnotationContextId } from '@osdlabel/annotation-context';
 import type { ToolConstraint } from '@osdlabel/annotation-context';
-import '../fabric-module.js';
-
 /** Parameters for adding an annotation via a tool */
 export interface AddAnnotationParams {
   readonly fabricObject: FabricObject;

@@ -3,7 +3,10 @@ import { createAnnotationContextId } from '@osdlabel/annotation-context';
 import { AnnotatorProvider, useAnnotator } from 'osdlabel/state';
 import type { ImageSource } from '@osdlabel/annotation';
 import type { AnnotationContext } from '@osdlabel/annotation-context';
+import { initFabricModule } from 'osdlabel';
 import { createMemo, onMount } from 'solid-js';
+
+initFabricModule();
 
 const images: ImageSource[] = [
   {

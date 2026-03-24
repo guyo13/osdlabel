@@ -12,8 +12,11 @@ import {
   useAnnotator,
   serialize,
   deserialize,
+  initFabricModule,
 } from 'osdlabel';
 import type { AnnotationContextId, AnnotationContext, ImageSource } from 'osdlabel';
+
+initFabricModule();
 
 const IMAGES: ImageSource[] = [
   {

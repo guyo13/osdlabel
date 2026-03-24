@@ -54,7 +54,7 @@ export {
 } from '@osdlabel/annotation-context';
 
 // Fabric-OSD integration (re-exported from @osdlabel/fabric-osd)
-export { FabricOverlay, computeViewportTransform } from '@osdlabel/fabric-osd';
+export { FabricOverlay, computeViewportTransform, initFabricModule } from '@osdlabel/fabric-osd';
 export type {
   OverlayOptions,
   OverlayMode,

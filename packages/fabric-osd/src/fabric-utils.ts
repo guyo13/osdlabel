@@ -9,7 +9,6 @@ import {
   Color,
   version as FABRIC_VERSION,
 } from 'fabric';
-import './fabric-module.js';
 import type {
   Annotation,
   AnnotationStyle,

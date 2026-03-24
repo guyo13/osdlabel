@@ -56,6 +56,9 @@ The `Annotator` component provides a complete annotation interface with toolbar,
 ```tsx
 import { render } from 'solid-js/web';
 import { Annotator } from 'osdlabel/components';
+import { initFabricModule } from 'osdlabel';
+
+initFabricModule();
 
 function App() {
   return (

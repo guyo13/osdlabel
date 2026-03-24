@@ -15,8 +15,6 @@ import {
 } from '@osdlabel/fabric-osd';
 import { useAnnotator } from '../state/annotator-context.js';
 import type { AnnotationId, ImageId, Point, AnnotationType } from '@osdlabel/annotation';
-import '@osdlabel/fabric-osd/fabric-module';
-
 interface FabricPointerEvent {
   readonly e: MouseEvent | PointerEvent | TouchEvent;
   readonly scenePoint?: { readonly x: number; readonly y: number };

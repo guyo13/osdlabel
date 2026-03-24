@@ -2,8 +2,6 @@ import { FabricObject } from 'fabric';
 import { BaseTool, type ToolCallbacks } from './base-tool.js';
 import type { AnnotationId, ImageId, Point, KeyboardShortcutMap } from '@osdlabel/annotation';
 import type { FabricOverlay } from '../overlay/fabric-overlay.js';
-import '../fabric-module.js';
-
 interface SelectionEvent {
   readonly selected: FabricObject[];
   readonly e?: Event;

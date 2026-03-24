@@ -5,7 +5,10 @@ import { useConstraints } from 'osdlabel/hooks';
 import { AnnotatorProvider, useAnnotator } from 'osdlabel/state';
 import type { ImageSource, AnnotationType } from '@osdlabel/annotation';
 import type { AnnotationContext } from '@osdlabel/annotation-context';
+import { initFabricModule } from 'osdlabel';
 import { onMount } from 'solid-js';
+
+initFabricModule();
 
 const images: ImageSource[] = [
   {

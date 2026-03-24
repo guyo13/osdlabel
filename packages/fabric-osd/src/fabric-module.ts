@@ -11,6 +11,12 @@ declare module 'fabric' {
   }
 }
 
-// Register 'id' so toObject() includes it automatically.
-// _readOnly is intentionally NOT registered — it is transient display state, not persisted.
-FabricObject.customProperties = ['id'];
+/**
+ * Registers custom properties on FabricObject so toObject() includes them.
+ * Must be called once before any Fabric interaction.
+ *
+ * _readOnly is intentionally NOT registered — it is transient display state, not persisted.
+ */
+export function initFabricModule(): void {
+  FabricObject.customProperties = ['id'];
+}
