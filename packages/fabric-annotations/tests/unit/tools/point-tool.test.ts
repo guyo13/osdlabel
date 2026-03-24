@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { CircleTool } from '../../../src/tools/circle-tool.js';
-import type { FabricOverlay } from '../../../src/overlay/fabric-overlay.js';
+import { PointTool } from '../../../src/tools/point-tool.js';
+import type { ToolOverlay } from '../../../src/types.js';
 import type { ToolCallbacks, AddAnnotationParams } from '../../../src/tools/base-tool.js';
 import { createImageId } from '@osdlabel/annotation';
 import type { KeyboardShortcutMap } from '@osdlabel/annotation';
@@ -8,9 +8,9 @@ import { createAnnotationContextId } from '@osdlabel/annotation-context';
 import { Circle } from 'fabric';
 import { createTestKeyboardShortcuts } from '../test-helpers.js';
 
-describe('CircleTool', () => {
-  let tool: CircleTool;
-  let mockOverlay: FabricOverlay;
+describe('PointTool', () => {
+  let tool: PointTool;
+  let mockOverlay: ToolOverlay;
   let mockCanvas: {
     add: ReturnType<typeof vi.fn>;
     remove: ReturnType<typeof vi.fn>;
@@ -36,7 +36,7 @@ describe('CircleTool', () => {
 
     mockOverlay = {
       canvas: mockCanvas,
-    } as unknown as FabricOverlay;
+    } as unknown as ToolOverlay;
 
     mockCallbacks = {
       getActiveContextId: () => contextId,
@@ -52,56 +52,69 @@ describe('CircleTool', () => {
     };
   });
 
-  it('should create a preview circle on pointer down', () => {
-    tool = new CircleTool();
+  it('should create preview on pointer down and add to canvas', () => {
+    tool = new PointTool();
     tool.activate(mockOverlay, imageId, mockCallbacks, mockShortcuts);
 
-    const event = { type: 'pointerdown' } as PointerEvent;
-    tool.onPointerDown(event, { x: 10, y: 10 });
+    tool.onPointerDown({ type: 'pointerdown' } as PointerEvent, { x: 30, y: 30 });
 
+    // Preview is added to canvas
     expect(mockCanvas.add).toHaveBeenCalled();
-    const addedObj = mockCanvas.add.mock.calls[0][0];
-    expect(addedObj).toBeInstanceOf(Circle);
-    expect(addedObj.left).toBe(10);
-    expect(addedObj.top).toBe(10);
-    expect(addedObj.radius).toBe(0);
+    const preview = mockCanvas.add.mock.calls[0][0];
+    expect(preview).toBeInstanceOf(Circle);
+    expect(preview.left).toBe(30);
+    expect(preview.top).toBe(30);
+
+    // Not committed yet — committed on pointer up
+    expect(addedParams).toHaveLength(0);
   });
 
-  it('should update preview circle on pointer move', () => {
-    tool = new CircleTool();
+  it('should update position on pointer move (drag)', () => {
+    tool = new PointTool();
     tool.activate(mockOverlay, imageId, mockCallbacks, mockShortcuts);
 
-    const event = { type: 'pointerdown' } as PointerEvent;
-    tool.onPointerDown(event, { x: 10, y: 10 });
+    tool.onPointerDown({ type: 'pointerdown' } as PointerEvent, { x: 10, y: 10 });
 
     const preview = mockCanvas.add.mock.calls[0][0];
 
-    const moveEvent = { type: 'pointermove' } as PointerEvent;
-    tool.onPointerMove(moveEvent, { x: 30, y: 30 });
+    tool.onPointerMove({ type: 'pointermove' } as PointerEvent, { x: 30, y: 30 });
 
-    expect(preview.radius).toBeGreaterThan(0);
+    expect(preview.left).toBe(30);
+    expect(preview.top).toBe(30);
     expect(mockCanvas.requestRenderAll).toHaveBeenCalled();
   });
 
   it('should commit annotation on pointer up with fabricObject', () => {
-    tool = new CircleTool();
+    tool = new PointTool();
     tool.activate(mockOverlay, imageId, mockCallbacks, mockShortcuts);
 
-    tool.onPointerDown({ type: 'pointerdown' } as PointerEvent, { x: 10, y: 10 });
-    tool.onPointerMove({ type: 'pointermove' } as PointerEvent, { x: 30, y: 30 });
+    tool.onPointerDown({ type: 'pointerdown' } as PointerEvent, { x: 30, y: 30 });
     tool.onPointerUp({ type: 'pointerup' } as PointerEvent, { x: 30, y: 30 });
 
     expect(addedParams).toHaveLength(1);
     const params = addedParams[0]!;
 
-    expect(params.type).toBe('circle');
+    expect(params.type).toBe('point');
     expect(params.imageId).toBe(imageId);
     expect(params.contextId).toBe(contextId);
     expect(params.fabricObject).toBeInstanceOf(Circle);
-    expect(params.fabricObject.get('radius')).toBeGreaterThan(0);
 
     // Object stays on canvas
     expect(mockCanvas.remove).not.toHaveBeenCalled();
+  });
+
+  it('should allow drag-to-reposition before commit', () => {
+    tool = new PointTool();
+    tool.activate(mockOverlay, imageId, mockCallbacks, mockShortcuts);
+
+    tool.onPointerDown({ type: 'pointerdown' } as PointerEvent, { x: 10, y: 10 });
+    tool.onPointerMove({ type: 'pointermove' } as PointerEvent, { x: 50, y: 50 });
+    tool.onPointerUp({ type: 'pointerup' } as PointerEvent, { x: 50, y: 50 });
+
+    expect(addedParams).toHaveLength(1);
+    const preview = mockCanvas.add.mock.calls[0][0];
+    expect(preview.left).toBe(50);
+    expect(preview.top).toBe(50);
   });
 
   it('should not create annotation when no active context', () => {
@@ -110,14 +123,24 @@ describe('CircleTool', () => {
       getActiveContextId: () => null,
     };
 
-    tool = new CircleTool();
+    tool = new PointTool();
     tool.activate(mockOverlay, imageId, noContextCallbacks, mockShortcuts);
 
-    tool.onPointerDown({ type: 'pointerdown' } as PointerEvent, { x: 10, y: 10 });
-    tool.onPointerMove({ type: 'pointermove' } as PointerEvent, { x: 30, y: 30 });
-    tool.onPointerUp({ type: 'pointerup' } as PointerEvent, { x: 30, y: 30 });
+    tool.onPointerDown({ type: 'pointerdown' } as PointerEvent, { x: 30, y: 30 });
 
     expect(addedParams).toHaveLength(0);
     expect(mockCanvas.add).not.toHaveBeenCalled();
+  });
+
+  it('should cancel and remove preview on cancel()', () => {
+    tool = new PointTool();
+    tool.activate(mockOverlay, imageId, mockCallbacks, mockShortcuts);
+
+    tool.onPointerDown({ type: 'pointerdown' } as PointerEvent, { x: 30, y: 30 });
+    expect(mockCanvas.add).toHaveBeenCalled();
+
+    tool.cancel();
+    expect(mockCanvas.remove).toHaveBeenCalled();
+    expect(addedParams).toHaveLength(0);
   });
 });

@@ -1,7 +1,7 @@
 import { createEffect, onCleanup } from 'solid-js';
 import type { FabricObject } from 'fabric';
 import type { FabricOverlay } from '@osdlabel/fabric-osd';
-import type { AnnotationTool, ToolCallbacks, AddAnnotationParams } from '@osdlabel/fabric-osd';
+import type { AnnotationTool, ToolCallbacks, AddAnnotationParams } from '@osdlabel/fabric-annotations';
 import {
   RectangleTool,
   CircleTool,
@@ -12,7 +12,7 @@ import {
   SelectTool,
   getGeometryFromFabricObject,
   serializeFabricObject,
-} from '@osdlabel/fabric-osd';
+} from '@osdlabel/fabric-annotations';
 import { useAnnotator } from '../state/annotator-context.js';
 import type { AnnotationId, ImageId, Point, AnnotationType } from '@osdlabel/annotation';
 interface FabricPointerEvent {

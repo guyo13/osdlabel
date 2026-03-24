@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { LineTool } from '../../../src/tools/line-tool.js';
-import type { FabricOverlay } from '../../../src/overlay/fabric-overlay.js';
+import type { ToolOverlay } from '../../../src/types.js';
 import type { ToolCallbacks, AddAnnotationParams } from '../../../src/tools/base-tool.js';
 import { createImageId } from '@osdlabel/annotation';
 import type { KeyboardShortcutMap } from '@osdlabel/annotation';
@@ -10,7 +10,7 @@ import { createTestKeyboardShortcuts } from '../test-helpers.js';
 
 describe('LineTool', () => {
   let tool: LineTool;
-  let mockOverlay: FabricOverlay;
+  let mockOverlay: ToolOverlay;
   let mockCanvas: {
     add: ReturnType<typeof vi.fn>;
     remove: ReturnType<typeof vi.fn>;
@@ -36,7 +36,7 @@ describe('LineTool', () => {
 
     mockOverlay = {
       canvas: mockCanvas,
-    } as unknown as FabricOverlay;
+    } as unknown as ToolOverlay;
 
     mockCallbacks = {
       getActiveContextId: () => contextId,

@@ -1,7 +1,8 @@
 import { onMount, onCleanup, createEffect, on, createSignal } from 'solid-js';
 import type { Component } from 'solid-js';
 import OpenSeadragon from 'openseadragon';
-import { FabricOverlay, createFabricObjectFromRawData } from '@osdlabel/fabric-osd';
+import { FabricOverlay } from '@osdlabel/fabric-osd';
+import { createFabricObjectFromRawData } from '@osdlabel/fabric-annotations';
 import type { OverlayMode } from '@osdlabel/fabric-osd';
 import type { ImageSource } from '@osdlabel/annotation';
 import type { AnnotationContextId } from '@osdlabel/annotation-context';

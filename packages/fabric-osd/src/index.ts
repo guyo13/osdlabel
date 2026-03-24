@@ -1,16 +1,3 @@
-export * from './fabric-module.js';
-export * from './fabric-utils.js';
-export type { FabricFields } from './types.js';
-export { validateFabricFields } from './validator.js';
 export { FabricOverlay, computeViewportTransform } from './overlay/fabric-overlay.js';
 export type { OverlayOptions, OverlayMode } from './overlay/fabric-overlay.js';
-export type { AnnotationTool, ToolCallbacks, AddAnnotationParams } from './tools/base-tool.js';
-export { BaseTool } from './tools/base-tool.js';
-export { ShapeTool } from './tools/shape-tool.js';
-export { RectangleTool } from './tools/rectangle-tool.js';
-export { CircleTool } from './tools/circle-tool.js';
-export { LineTool } from './tools/line-tool.js';
-export { PointTool } from './tools/point-tool.js';
-export { PathTool } from './tools/path-tool.js';
-export { FreeHandPathTool } from './tools/free-hand-path-tool.js';
-export { SelectTool } from './tools/select-tool.js';
+export { validateFabricFields } from './validator.js';

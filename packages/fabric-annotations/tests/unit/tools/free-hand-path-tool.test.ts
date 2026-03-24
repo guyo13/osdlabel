@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { FreeHandPathTool } from '../../../src/tools/free-hand-path-tool.js';
-import type { FabricOverlay } from '../../../src/overlay/fabric-overlay.js';
+import type { ToolOverlay } from '../../../src/types.js';
 import type { ToolCallbacks, AddAnnotationParams } from '../../../src/tools/base-tool.js';
 import { createImageId } from '@osdlabel/annotation';
 import type { KeyboardShortcutMap } from '@osdlabel/annotation';
@@ -10,7 +10,7 @@ import { createTestKeyboardShortcuts } from '../test-helpers.js';
 
 describe('FreeHandPathTool', () => {
   let tool: FreeHandPathTool;
-  let mockOverlay: FabricOverlay;
+  let mockOverlay: ToolOverlay;
   let mockCanvas: {
     add: ReturnType<typeof vi.fn>;
     remove: ReturnType<typeof vi.fn>;
@@ -37,7 +37,7 @@ describe('FreeHandPathTool', () => {
     mockOverlay = {
       canvas: mockCanvas,
       imageToScreen: vi.fn((p: { x: number; y: number }) => p),
-    } as unknown as FabricOverlay;
+    } as unknown as ToolOverlay;
 
     mockCallbacks = {
       getActiveContextId: () => contextId,

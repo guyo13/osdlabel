@@ -1,5 +1,5 @@
 import { FabricObject } from 'fabric';
-import type { FabricOverlay } from '../overlay/fabric-overlay.js';
+import type { ToolOverlay } from '../types.js';
 import type {
   AnnotationType,
   Point,
@@ -42,7 +42,7 @@ export interface AnnotationTool {
 
   /** Called when the tool becomes active */
   activate(
-    overlay: FabricOverlay,
+    overlay: ToolOverlay,
     imageId: ImageId,
     callbacks: ToolCallbacks,
     shortcuts: KeyboardShortcutMap,
@@ -69,13 +69,13 @@ export interface AnnotationTool {
 
 export abstract class BaseTool implements AnnotationTool {
   abstract readonly type: AnnotationType | 'select';
-  protected overlay: FabricOverlay | null = null;
+  protected overlay: ToolOverlay | null = null;
   protected imageId: ImageId | null = null;
   protected callbacks: ToolCallbacks | null = null;
   protected shortcuts: KeyboardShortcutMap | null = null;
 
   activate(
-    overlay: FabricOverlay,
+    overlay: ToolOverlay,
     imageId: ImageId,
     callbacks: ToolCallbacks,
     shortcuts: KeyboardShortcutMap,

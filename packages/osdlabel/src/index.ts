@@ -53,15 +53,36 @@ export {
   validateContextFields,
 } from '@osdlabel/annotation-context';
 
-// Fabric-OSD integration (re-exported from @osdlabel/fabric-osd)
-export { FabricOverlay, computeViewportTransform, initFabricModule } from '@osdlabel/fabric-osd';
+// Fabric annotations (re-exported from @osdlabel/fabric-annotations)
+export {
+  initFabricModule,
+  BaseTool,
+  ShapeTool,
+  RectangleTool,
+  CircleTool,
+  LineTool,
+  PointTool,
+  PathTool,
+  FreeHandPathTool,
+  SelectTool,
+  getFabricOptions,
+  serializeFabricObject,
+  deserializeFabricObject,
+  createFabricObjectFromRawData,
+  getGeometryFromFabricObject,
+} from '@osdlabel/fabric-annotations';
 export type {
-  OverlayOptions,
-  OverlayMode,
+  ToolOverlay,
+  FabricFields,
+  FabricShapeOptions,
+  AnnotationTool,
   ToolCallbacks,
   AddAnnotationParams,
-  FabricFields,
-} from '@osdlabel/fabric-osd';
+} from '@osdlabel/fabric-annotations';
+
+// Fabric-OSD overlay (re-exported from @osdlabel/fabric-osd)
+export { FabricOverlay, computeViewportTransform } from '@osdlabel/fabric-osd';
+export type { OverlayOptions, OverlayMode } from '@osdlabel/fabric-osd';
 export { validateFabricFields } from '@osdlabel/fabric-osd';
 
 // Validation schemas (re-exported from @osdlabel/validation)

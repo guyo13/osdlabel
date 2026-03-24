@@ -30,8 +30,8 @@ vi.mock('../../../src/state/annotator-context.js', () => ({
   useAnnotator: () => mockState,
 }));
 
-vi.mock('@osdlabel/fabric-osd', async () => {
-  const actual = await vi.importActual('@osdlabel/fabric-osd');
+vi.mock('@osdlabel/fabric-annotations', async () => {
+  const actual = await vi.importActual('@osdlabel/fabric-annotations');
   return {
     ...(actual as Record<string, unknown>),
     getGeometryFromFabricObject: vi.fn().mockReturnValue({ type: 'rectangle' }),

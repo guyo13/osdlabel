@@ -1,7 +1,7 @@
 import * as v from 'valibot';
 import type { ExtensionValidatorFn } from '@osdlabel/annotation';
 import { RawAnnotationDataSchema } from '@osdlabel/validation';
-import type { FabricFields } from './types.js';
+import type { FabricFields } from '@osdlabel/fabric-annotations';
 
 const FabricFieldsSchema = v.pipe(
   v.object({
