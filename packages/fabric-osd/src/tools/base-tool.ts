@@ -6,6 +6,7 @@ import type {
   ImageId,
   AnnotationId,
   KeyboardShortcutMap,
+  BaseAnnotation,
 } from '@osdlabel/annotation';
 import type { AnnotationContextId } from '@osdlabel/annotation-context';
 import type { ToolConstraint } from '@osdlabel/annotation-context';
@@ -34,10 +35,7 @@ export interface ToolCallbacks {
   ) => void;
   readonly deleteAnnotation: (id: AnnotationId, imageId: ImageId) => void;
   readonly setSelectedAnnotation: (id: AnnotationId | null) => void;
-  readonly getAnnotation: (
-    id: AnnotationId,
-    imageId: ImageId,
-  ) => import('@osdlabel/annotation').BaseAnnotation | undefined;
+  readonly getAnnotation: (id: AnnotationId, imageId: ImageId) => BaseAnnotation | undefined;
 }
 
 export interface AnnotationTool {

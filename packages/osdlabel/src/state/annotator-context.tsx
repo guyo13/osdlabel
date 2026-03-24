@@ -5,12 +5,10 @@ import type {
   AnnotationId,
   ImageId,
   KeyboardShortcutMap,
+  UIState,
 } from '@osdlabel/annotation';
 import { getAllAnnotationsFlat } from '@osdlabel/annotation';
-import type {
-  ConstraintStatus,
-  ContextState,
-} from '@osdlabel/annotation-context';
+import type { ConstraintStatus, ContextState } from '@osdlabel/annotation-context';
 import { createAnnotationStore } from './annotation-store.js';
 import { createUIStore } from './ui-store.js';
 import { createContextStore, createConstraintStatus } from './context-store.js';
@@ -24,7 +22,7 @@ export interface ActiveToolKeyHandlerRef {
 
 interface AnnotatorContextValue {
   annotationState: AnnotationState<OsdFields>;
-  uiState: import('@osdlabel/annotation').UIState;
+  uiState: UIState;
   contextState: ContextState;
   constraintStatus: Accessor<ConstraintStatus>;
   actions: ReturnType<typeof createActions>;
