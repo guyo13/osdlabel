@@ -1,4 +1,4 @@
-// ── Branded ID Types ──────────────────────────────────────────────────────
+import type { Geometry } from './geometry';
 
 declare const annotationIdBrand: unique symbol;
 declare const imageIdBrand: unique symbol;
@@ -17,34 +17,6 @@ export function createAnnotationId(value: string): AnnotationId {
 export function createImageId(value: string): ImageId {
   return value as ImageId;
 }
-
-// ── Core Geometry Types ──────────────────────────────────────────────────
-
-/** Supported annotation geometry types */
-export type AnnotationType = 'rectangle' | 'circle' | 'line' | 'point' | 'path' | 'freeHandPath';
-
-/** 2D point in image-space coordinates */
-export interface Point {
-  readonly x: number;
-  readonly y: number;
-}
-
-/** Discriminated union of annotation geometries */
-export type Geometry =
-  | {
-      readonly type: 'rectangle';
-      readonly origin: Point;
-      readonly width: number;
-      readonly height: number;
-      readonly rotation: number;
-    }
-  | { readonly type: 'circle'; readonly center: Point; readonly radius: number }
-  | { readonly type: 'line'; readonly start: Point; readonly end: Point }
-  | { readonly type: 'point'; readonly position: Point }
-  | { readonly type: 'path'; readonly points: readonly Point[]; readonly closed: boolean }
-  | { readonly type: 'freeHandPath'; readonly points: readonly Point[]; readonly closed: boolean };
-
-// ── Annotation Style ─────────────────────────────────────────────────────
 
 /** Visual styling for an annotation */
 export interface AnnotationStyle {
@@ -145,7 +117,7 @@ export interface AnnotationState<E extends object = Record<string, never>> {
 
 /** UI state */
 export interface UIState {
-  activeTool: AnnotationType | 'select' | null;
+  activeTool: Geometry['type'] | 'select' | null;
   activeCellIndex: number;
   gridColumns: number;
   gridRows: number;

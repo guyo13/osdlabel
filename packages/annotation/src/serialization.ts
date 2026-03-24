@@ -4,12 +4,12 @@ import type {
   AnnotationDocument,
   AnnotationId,
   AnnotationState,
-  AnnotationType,
   BaseAnnotation,
   ImageAnnotations,
   ImageId,
   ImageSource,
 } from './types.js';
+import type { Geometry } from './geometry.js';
 import { createImageId } from './types.js';
 import {
   normalizeFabricType,
@@ -289,7 +289,7 @@ function validateGeometry(value: unknown): boolean {
 
   if (typeof g.type !== 'string' || !ANNOTATION_TYPES.includes(g.type)) return false;
 
-  switch (g.type as AnnotationType) {
+  switch (g.type as Geometry['type']) {
     case 'rectangle':
       return (
         validatePointValue(g.origin) &&

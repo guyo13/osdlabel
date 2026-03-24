@@ -1,7 +1,11 @@
 import { createEffect, onCleanup } from 'solid-js';
 import type { FabricObject } from 'fabric';
 import type { FabricOverlay } from '@osdlabel/fabric-osd';
-import type { AnnotationTool, ToolCallbacks, AddAnnotationParams } from '@osdlabel/fabric-annotations';
+import type {
+  AnnotationTool,
+  ToolCallbacks,
+  AddAnnotationParams,
+} from '@osdlabel/fabric-annotations';
 import {
   RectangleTool,
   CircleTool,
