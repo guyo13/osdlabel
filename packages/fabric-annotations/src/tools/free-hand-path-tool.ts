@@ -1,7 +1,7 @@
 import { Polyline, Polygon } from 'fabric';
 import { BaseTool } from './base-tool.js';
 import {
-  type AnnotationType,
+  type ToolType,
   type Point,
   type AnnotationStyle,
   createAnnotationId,
@@ -14,7 +14,7 @@ import { getFabricOptions } from '../fabric-utils.js';
 const DEFAULT_MIN_SAMPLE_DISTANCE_SCREEN_PX = 3;
 
 export class FreeHandPathTool extends BaseTool {
-  readonly type: AnnotationType = 'freeHandPath';
+  readonly type: ToolType = 'freeHandPath';
   private preview: Polyline | null = null;
   private vertices: Point[] = [];
   private isDrawing = false;

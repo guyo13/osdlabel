@@ -1,7 +1,7 @@
 import { FabricObject } from 'fabric';
 import type { ToolOverlay } from '../types.js';
 import type {
-  AnnotationType,
+  ToolType,
   Point,
   ImageId,
   AnnotationId,
@@ -15,7 +15,7 @@ export interface AddAnnotationParams {
   readonly fabricObject: FabricObject;
   readonly imageId: ImageId;
   readonly contextId: AnnotationContextId;
-  readonly type: AnnotationType;
+  readonly type: ToolType;
   readonly label?: string;
   readonly metadata?: Readonly<Record<string, unknown>>;
 }
@@ -23,8 +23,8 @@ export interface AddAnnotationParams {
 /** Framework-agnostic callbacks that tools use to interact with application state */
 export interface ToolCallbacks {
   readonly getActiveContextId: () => AnnotationContextId | null;
-  readonly getToolConstraint: (type: AnnotationType) => ToolConstraint | undefined;
-  readonly canAddAnnotation: (type: AnnotationType) => boolean;
+  readonly getToolConstraint: (type: ToolType) => ToolConstraint | undefined;
+  readonly canAddAnnotation: (type: ToolType) => boolean;
   readonly addAnnotation: (params: AddAnnotationParams) => void;
   readonly updateAnnotation: (
     id: AnnotationId,
@@ -38,7 +38,7 @@ export interface ToolCallbacks {
 
 export interface AnnotationTool {
   /** Tool identifier */
-  readonly type: AnnotationType | 'select';
+  readonly type: ToolType | 'select';
 
   /** Called when the tool becomes active */
   activate(
@@ -68,7 +68,7 @@ export interface AnnotationTool {
 }
 
 export abstract class BaseTool implements AnnotationTool {
-  abstract readonly type: AnnotationType | 'select';
+  abstract readonly type: ToolType | 'select';
   protected overlay: ToolOverlay | null = null;
   protected imageId: ImageId | null = null;
   protected callbacks: ToolCallbacks | null = null;

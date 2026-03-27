@@ -1,5 +1,21 @@
 import type { Geometry } from './geometry';
 
+// ── Tool & Geometry Type Aliases ────────────────────────────────────────
+
+/** Tool used to create an annotation. Multiple tools may produce the same geometry type. */
+export type ToolType = 'rectangle' | 'circle' | 'line' | 'point' | 'path' | 'freeHandPath';
+
+/** Geometry discriminator values — derived from the Geometry union */
+export type GeometryType = Geometry['type'];
+
+/** Maps a ToolType to the GeometryType it produces */
+export function toolTypeToGeometryType(toolType: ToolType): GeometryType {
+  if (toolType === 'freeHandPath') return 'path';
+  return toolType as GeometryType;
+}
+
+// ── Branded ID Types ────────────────────────────────────────────────────
+
 declare const annotationIdBrand: unique symbol;
 declare const imageIdBrand: unique symbol;
 /** Unique annotation identifier */
@@ -45,6 +61,7 @@ export interface BaseAnnotation {
   readonly id: AnnotationId;
   readonly imageId: ImageId;
   readonly geometry: Geometry;
+  readonly toolType: ToolType;
   readonly label?: string | undefined;
   readonly metadata?: Readonly<Record<string, unknown>> | undefined;
   readonly createdAt: string;
@@ -117,7 +134,7 @@ export interface AnnotationState<E extends object = Record<string, never>> {
 
 /** UI state */
 export interface UIState {
-  activeTool: Geometry['type'] | 'select' | null;
+  activeTool: ToolType | 'select' | null;
   activeCellIndex: number;
   gridColumns: number;
   gridRows: number;

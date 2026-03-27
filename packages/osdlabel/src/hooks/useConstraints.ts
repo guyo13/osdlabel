@@ -1,5 +1,5 @@
 import { useAnnotator } from '../state/annotator-context.js';
-import type { AnnotationType } from '@osdlabel/annotation';
+import type { ToolType } from '@osdlabel/annotation';
 
 export function useConstraints() {
   const { constraintStatus } = useAnnotator();
@@ -8,7 +8,7 @@ export function useConstraints() {
    * Returns whether a given annotation type tool is enabled
    * (i.e. the active context allows it and its limit hasn't been reached).
    */
-  const isToolEnabled = (type: AnnotationType): boolean => {
+  const isToolEnabled = (type: ToolType): boolean => {
     const status = constraintStatus();
     return status[type].enabled;
   };
@@ -17,7 +17,7 @@ export function useConstraints() {
    * Returns whether a new annotation of the given type can be added.
    * Same check as isToolEnabled — used by tools as a safety net before committing.
    */
-  const canAddAnnotation = (type: AnnotationType): boolean => {
+  const canAddAnnotation = (type: ToolType): boolean => {
     const status = constraintStatus();
     return status[type].enabled;
   };

@@ -2,7 +2,8 @@
 export type {
   AnnotationId,
   ImageId,
-  AnnotationType,
+  ToolType,
+  GeometryType,
   Point,
   Geometry,
   AnnotationStyle,
@@ -33,6 +34,7 @@ export {
   createAnnotationValidator,
   getAllAnnotationsFlat,
   SerializationError,
+  toolTypeToGeometryType,
 } from '@osdlabel/annotation';
 
 // Annotation context (re-exported from @osdlabel/annotation-context)
@@ -91,6 +93,7 @@ export {
   PointSchema,
   BaseAnnotationSchema,
   RawAnnotationDataSchema,
+  ToolTypeSchema,
 } from '@osdlabel/validation';
 
 // Own types

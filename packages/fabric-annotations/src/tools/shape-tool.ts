@@ -1,7 +1,7 @@
 import { FabricObject } from 'fabric';
 import { BaseTool } from './base-tool.js';
 import {
-  type AnnotationType,
+  type ToolType,
   type Point,
   type AnnotationStyle,
   createAnnotationId,
@@ -16,7 +16,7 @@ import { type FabricShapeOptions, getFabricOptions } from '../fabric-utils.js';
  * Handles common lifecycle, state management, and canvas interaction.
  */
 export abstract class ShapeTool<T extends FabricObject> extends BaseTool {
-  abstract override readonly type: AnnotationType;
+  abstract override readonly type: ToolType;
   protected preview: T | null = null;
   protected startPoint: Point | null = null;
   protected activeContextId: AnnotationContextId | null = null;

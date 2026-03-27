@@ -13,7 +13,7 @@ import type {
   Annotation,
   AnnotationStyle,
   Geometry,
-  AnnotationType,
+  GeometryType,
   RawAnnotationData,
 } from '@osdlabel/annotation';
 import { sanitizeFabricData } from '@osdlabel/annotation';
@@ -90,7 +90,7 @@ export async function createFabricObjectFromRawData(
 
 export function getGeometryFromFabricObject(
   obj: FabricObject,
-  type: AnnotationType,
+  type: GeometryType,
 ): Geometry | null {
   if (type === 'rectangle' && obj instanceof Rect) {
     const width = obj.width * obj.scaleX;
@@ -138,7 +138,7 @@ export function getGeometryFromFabricObject(
     };
   }
 
-  if (type === 'path' || type === 'freeHandPath') {
+  if (type === 'path') {
     // Polygon extends Polyline in Fabric, so instanceof Polyline matches both
     if (obj instanceof Polyline) {
       const matrix = obj.calcTransformMatrix();
@@ -149,7 +149,7 @@ export function getGeometryFromFabricObject(
         return { x: tp.x, y: tp.y };
       });
       return {
-        type,
+        type: 'path',
         points: points,
         closed: obj instanceof Polygon,
       };

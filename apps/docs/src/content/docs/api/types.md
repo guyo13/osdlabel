@@ -56,13 +56,30 @@ const ctxId = createAnnotationContextId('fracture');
 
 ## Geometry types
 
-### AnnotationType
+### ToolType
 
 ```ts
-type AnnotationType = 'rectangle' | 'circle' | 'line' | 'point' | 'path';
+type ToolType = 'rectangle' | 'circle' | 'line' | 'point' | 'path' | 'freeHandPath';
 ```
 
-The five supported annotation geometry types.
+The six supported tool types. Each tool type corresponds to a drawing tool in the toolbar.
+
+### GeometryType
+
+```ts
+type GeometryType = Geometry['type'];
+// = 'rectangle' | 'circle' | 'line' | 'point' | 'path'
+```
+
+The five geometry types, derived from the `Geometry` discriminated union. Note that `freeHandPath` is a tool type but produces `path` geometry.
+
+### toolTypeToGeometryType
+
+```ts
+function toolTypeToGeometryType(toolType: ToolType): GeometryType;
+```
+
+Maps a `ToolType` to its corresponding `GeometryType`. Both `'path'` and `'freeHandPath'` map to `'path'` geometry.
 
 ### Point
 
@@ -151,6 +168,7 @@ interface Annotation {
   readonly id: AnnotationId;
   readonly imageId: ImageId;
   readonly contextId: AnnotationContextId;
+  readonly toolType: ToolType;
   readonly geometry: Geometry;
   readonly rawAnnotationData: RawAnnotationData;
   readonly label?: string;
@@ -204,7 +222,7 @@ Defines a tool's availability and limits within a context.
 
 ```ts
 interface ToolConstraint {
-  readonly type: AnnotationType;
+  readonly type: ToolType;
   readonly maxCount?: number;
   readonly countScope?: CountScope; // Default: 'global'
   readonly defaultStyle?: Partial<AnnotationStyle>;
@@ -231,7 +249,7 @@ Derived state showing tool availability for the active context.
 
 ```ts
 type ConstraintStatus = Record<
-  AnnotationType,
+  ToolType,
   {
     readonly enabled: boolean;
     readonly currentCount: number;
@@ -290,7 +308,7 @@ interface AnnotationState {
 
 ```ts
 interface UIState {
-  activeTool: AnnotationType | 'select' | null;
+  activeTool: ToolType | 'select' | null;
   activeCellIndex: number;
   gridColumns: number;
   gridRows: number;

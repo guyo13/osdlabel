@@ -1,4 +1,4 @@
-import type { AnnotationType, AnnotationStyle, ImageId } from '@osdlabel/annotation';
+import type { ToolType, AnnotationStyle, ImageId } from '@osdlabel/annotation';
 
 // ── Branded ID Type ─────────────────────────────────────────────────────
 
@@ -25,7 +25,7 @@ export type CountScope = 'per-image' | 'global';
 
 /** Tool constraint within an annotation context */
 export interface ToolConstraint {
-  readonly type: AnnotationType;
+  readonly type: ToolType;
   readonly maxCount?: number | undefined;
   readonly countScope?: CountScope | undefined;
   readonly defaultStyle?: Partial<AnnotationStyle> | undefined;
@@ -51,7 +51,7 @@ export interface ContextState {
 
 /** Derived state showing which tools are enabled/disabled for the active context */
 export type ConstraintStatus = Record<
-  AnnotationType,
+  ToolType,
   {
     readonly enabled: boolean;
     readonly currentCount: number;

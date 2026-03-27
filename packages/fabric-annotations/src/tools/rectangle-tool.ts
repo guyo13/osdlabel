@@ -1,10 +1,10 @@
 import { Rect } from 'fabric';
 import { ShapeTool } from './shape-tool.js';
 import type { FabricShapeOptions } from '../fabric-utils.js';
-import type { AnnotationType, Point } from '@osdlabel/annotation';
+import type { ToolType, Point } from '@osdlabel/annotation';
 
 export class RectangleTool extends ShapeTool<Rect> {
-  readonly type: AnnotationType = 'rectangle';
+  readonly type: ToolType = 'rectangle';
 
   protected createPreview(imagePoint: Point, options: FabricShapeOptions): Rect {
     return new Rect({

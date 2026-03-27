@@ -35,17 +35,10 @@ export interface PathGeometry {
   readonly closed: boolean;
 }
 
-export interface FreeHandPathGeometry {
-  readonly type: 'freeHandPath';
-  readonly points: readonly Point[];
-  readonly closed: boolean;
-}
-
 /** Discriminated union of annotation geometries */
 export type Geometry =
   | RectangleGeometry
   | CircleGeometry
   | LineGeometry
   | PointGeometry
-  | PathGeometry
-  | FreeHandPathGeometry;
+  | PathGeometry;

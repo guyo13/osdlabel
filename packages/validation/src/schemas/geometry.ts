@@ -47,18 +47,10 @@ export const PathGeometrySchema = v.object({
   closed: v.boolean(),
 });
 
-/** A schema for validating @see {@link import("@osdlabel/annotation/geometry").FreeHandPathGeometry}. */
-export const FreeHandPathGeometrySchema = v.object({
-  type: v.literal('freeHandPath'),
-  points: PathPointsSchema,
-  closed: v.boolean(),
-});
-
 export const GeometrySchema = v.variant('type', [
   RectangleGeometrySchema,
   CircleGeometrySchema,
   LineGeometrySchema,
   PointGeometrySchema,
   PathGeometrySchema,
-  FreeHandPathGeometrySchema,
 ]);

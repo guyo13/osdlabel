@@ -48,7 +48,7 @@ Each tool in a context can have:
 
 | Property       | Type                       | Default       | Description                                                        |
 | -------------- | -------------------------- | ------------- | ------------------------------------------------------------------ |
-| `type`         | `AnnotationType`           | (required)    | `'rectangle'` \| `'circle'` \| `'line'` \| `'point'` \| `'path'`   |
+| `type`         | `ToolType`                 | (required)    | `'rectangle'` \| `'circle'` \| `'line'` \| `'point'` \| `'path'` \| `'freeHandPath'` |
 | `maxCount`     | `number`                   | unlimited     | Maximum number of annotations of this type                         |
 | `countScope`   | `CountScope`               | `'global'`    | Whether `maxCount` applies per-image or globally across all images |
 | `defaultStyle` | `Partial<AnnotationStyle>` | default style | Override the default stroke/fill for this tool                     |

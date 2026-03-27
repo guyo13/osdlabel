@@ -1,5 +1,5 @@
 import { type SetStoreFunction, produce } from 'solid-js/store';
-import type { AnnotationId, ImageId, AnnotationType, AnnotationState } from '@osdlabel/annotation';
+import type { AnnotationId, ImageId, ToolType, AnnotationState } from '@osdlabel/annotation';
 import { DEFAULT_CELL_TRANSFORM } from '@osdlabel/annotation';
 import type {
   AnnotationContext,
@@ -71,7 +71,7 @@ export function createActions(
     );
   }
 
-  function setActiveTool(tool: AnnotationType | 'select' | null): void {
+  function setActiveTool(tool: ToolType | 'select' | null): void {
     setUIState('activeTool', tool);
   }
 

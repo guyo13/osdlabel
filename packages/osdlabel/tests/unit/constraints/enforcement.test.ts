@@ -72,6 +72,7 @@ describe('Constraint Enforcement', () => {
       id: createAnnotationId('r1'),
       imageId,
       contextId: contextId1,
+      toolType: 'rectangle',
       geometry: { type: 'rectangle', origin: { x: 0, y: 0 }, width: 10, height: 10, rotation: 0 },
       rawAnnotationData: baseRawData,
     });
@@ -85,6 +86,7 @@ describe('Constraint Enforcement', () => {
       id: createAnnotationId('r2'),
       imageId,
       contextId: contextId1,
+      toolType: 'rectangle',
       geometry: { type: 'rectangle', origin: { x: 20, y: 20 }, width: 10, height: 10, rotation: 0 },
       rawAnnotationData: baseRawData,
     });
@@ -107,6 +109,7 @@ describe('Constraint Enforcement', () => {
       id: createAnnotationId('r1'),
       imageId,
       contextId: contextId1,
+      toolType: 'rectangle',
       geometry: { type: 'rectangle', origin: { x: 0, y: 0 }, width: 10, height: 10, rotation: 0 },
       rawAnnotationData: baseRawData,
     });
@@ -114,6 +117,7 @@ describe('Constraint Enforcement', () => {
       id: createAnnotationId('r2'),
       imageId,
       contextId: contextId1,
+      toolType: 'rectangle',
       geometry: { type: 'rectangle', origin: { x: 20, y: 20 }, width: 10, height: 10, rotation: 0 },
       rawAnnotationData: baseRawData,
     });
@@ -176,6 +180,7 @@ describe('Constraint Enforcement', () => {
         id: createAnnotationId(`c${i}`),
         imageId,
         contextId: contextId1,
+        toolType: 'circle',
         geometry: { type: 'circle', center: { x: i * 10, y: 0 }, radius: 5 },
         rawAnnotationData: baseRawData,
       });
@@ -215,6 +220,7 @@ describe('Constraint Enforcement', () => {
       id: createAnnotationId('r1'),
       imageId,
       contextId: contextId1,
+      toolType: 'rectangle',
       geometry: { type: 'rectangle', origin: { x: 0, y: 0 }, width: 10, height: 10, rotation: 0 },
       rawAnnotationData: baseRawData,
     });
@@ -224,6 +230,7 @@ describe('Constraint Enforcement', () => {
       id: createAnnotationId('l1'),
       imageId,
       contextId: contextId2,
+      toolType: 'line',
       geometry: { type: 'line', start: { x: 0, y: 0 }, end: { x: 10, y: 10 } },
       rawAnnotationData: baseRawData,
     });
@@ -257,6 +264,7 @@ describe('Constraint Enforcement', () => {
       id: createAnnotationId('l1'),
       imageId,
       contextId: contextId2,
+      toolType: 'line',
       geometry: { type: 'line', start: { x: 0, y: 0 }, end: { x: 10, y: 10 } },
       rawAnnotationData: baseRawData,
     });
@@ -361,6 +369,7 @@ describe('Constraint Enforcement', () => {
       id: createAnnotationId('r1'),
       imageId,
       contextId: contextId1,
+      toolType: 'rectangle',
       geometry: { type: 'rectangle', origin: { x: 0, y: 0 }, width: 10, height: 10, rotation: 0 },
       rawAnnotationData: baseRawData,
     });
@@ -374,6 +383,7 @@ describe('Constraint Enforcement', () => {
       id: createAnnotationId('r2'),
       imageId: imageId2,
       contextId: contextId1,
+      toolType: 'rectangle',
       geometry: { type: 'rectangle', origin: { x: 0, y: 0 }, width: 10, height: 10, rotation: 0 },
       rawAnnotationData: baseRawData,
     });
@@ -404,6 +414,7 @@ describe('Constraint Enforcement', () => {
       id: createAnnotationId('r1'),
       imageId,
       contextId: contextId1,
+      toolType: 'rectangle',
       geometry: { type: 'rectangle', origin: { x: 0, y: 0 }, width: 10, height: 10, rotation: 0 },
       rawAnnotationData: baseRawData,
     });
@@ -413,6 +424,7 @@ describe('Constraint Enforcement', () => {
       id: createAnnotationId('r2'),
       imageId: imageId2,
       contextId: contextId1,
+      toolType: 'rectangle',
       geometry: { type: 'rectangle', origin: { x: 0, y: 0 }, width: 10, height: 10, rotation: 0 },
       rawAnnotationData: baseRawData,
     });
@@ -427,6 +439,7 @@ describe('Constraint Enforcement', () => {
       id: createAnnotationId('r3'),
       imageId: imageId3,
       contextId: contextId1,
+      toolType: 'rectangle',
       geometry: { type: 'rectangle', origin: { x: 0, y: 0 }, width: 10, height: 10, rotation: 0 },
       rawAnnotationData: baseRawData,
     });
@@ -456,6 +469,7 @@ describe('Constraint Enforcement', () => {
       id: createAnnotationId('r1'),
       imageId: imageId2,
       contextId: contextId1,
+      toolType: 'rectangle',
       geometry: { type: 'rectangle', origin: { x: 0, y: 0 }, width: 10, height: 10, rotation: 0 },
       rawAnnotationData: baseRawData,
     });

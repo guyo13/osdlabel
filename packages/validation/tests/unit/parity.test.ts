@@ -39,14 +39,6 @@ describe('Geometry schema parity', () => {
       ],
       closed: true,
     },
-    {
-      type: 'freeHandPath',
-      points: [
-        { x: 0, y: 0 },
-        { x: 10, y: 10 },
-      ],
-      closed: false,
-    },
   ];
 
   for (const geom of validGeometries) {
@@ -57,6 +49,10 @@ describe('Geometry schema parity', () => {
 
   const invalidGeometries = [
     { name: 'unknown type', value: { type: 'polygon' } },
+    {
+      name: 'freeHandPath (tool type, not a geometry type)',
+      value: { type: 'freeHandPath', points: [{ x: 0, y: 0 }, { x: 10, y: 10 }], closed: false },
+    },
     {
       name: 'NaN coordinate',
       value: { type: 'rectangle', origin: { x: NaN, y: 20 }, width: 100, height: 50, rotation: 0 },
@@ -92,6 +88,7 @@ describe('BaseAnnotation schema parity', () => {
     id: annId,
     imageId: imgId,
     geometry: { type: 'rectangle', origin: { x: 10, y: 20 }, width: 100, height: 50, rotation: 0 },
+    toolType: 'rectangle',
     createdAt: '2024-01-01T00:00:00.000Z',
     updatedAt: '2024-01-01T00:00:00.000Z',
   };

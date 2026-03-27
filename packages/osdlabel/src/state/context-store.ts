@@ -1,6 +1,6 @@
 import { createStore } from 'solid-js/store';
 import { createMemo } from 'solid-js';
-import type { AnnotationState, AnnotationType, ImageId } from '@osdlabel/annotation';
+import type { AnnotationState, ToolType, ImageId } from '@osdlabel/annotation';
 import type {
   AnnotationContextId,
   ContextState,
@@ -27,7 +27,7 @@ export function createConstraintStatus(
     const activeContext = contextState.contexts.find((c) => c.id === contextState.activeContextId);
     const imgId = currentImageId();
 
-    const allTypes: AnnotationType[] = [
+    const allTypes: ToolType[] = [
       'rectangle',
       'circle',
       'line',
@@ -73,7 +73,7 @@ export function createConstraintStatus(
 function countAnnotationsForContextAndType(
   annotationState: AnnotationState<OsdFields>,
   contextId: AnnotationContextId,
-  type: AnnotationType,
+  type: ToolType,
   scopedImageIds?: readonly ImageId[] | undefined,
 ): number {
   let count = 0;
@@ -84,7 +84,7 @@ function countAnnotationsForContextAndType(
   for (const imageAnns of imageBuckets) {
     if (!imageAnns) continue;
     for (const ann of Object.values(imageAnns)) {
-      if (ann.contextId === contextId && ann.geometry.type === type) {
+      if (ann.contextId === contextId && ann.toolType === type) {
         count++;
       }
     }

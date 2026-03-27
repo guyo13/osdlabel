@@ -1,10 +1,10 @@
 import { Line } from 'fabric';
 import { ShapeTool } from './shape-tool.js';
 import type { FabricShapeOptions } from '../fabric-utils.js';
-import type { AnnotationType, Point } from '@osdlabel/annotation';
+import type { ToolType, Point } from '@osdlabel/annotation';
 
 export class LineTool extends ShapeTool<Line> {
-  readonly type: AnnotationType = 'line';
+  readonly type: ToolType = 'line';
 
   protected createPreview(imagePoint: Point, options: FabricShapeOptions): Line {
     return new Line([imagePoint.x, imagePoint.y, imagePoint.x, imagePoint.y], {

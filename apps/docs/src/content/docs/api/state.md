@@ -83,7 +83,7 @@ Replace all annotation state. Used for importing deserialized data.
 #### setActiveTool
 
 ```ts
-setActiveTool(tool: AnnotationType | 'select' | null): void
+setActiveTool(tool: ToolType | 'select' | null): void
 ```
 
 Set the active drawing/selection tool, or `null` to deactivate.

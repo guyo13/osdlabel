@@ -1,7 +1,7 @@
 import { Polyline, Polygon } from 'fabric';
 import { BaseTool } from './base-tool.js';
 import {
-  type AnnotationType,
+  type ToolType,
   type Point,
   type AnnotationStyle,
   createAnnotationId,
@@ -14,7 +14,7 @@ import { getFabricOptions } from '../fabric-utils.js';
 const CLOSE_THRESHOLD_SCREEN_PX = 10;
 
 export class PathTool extends BaseTool {
-  readonly type: AnnotationType = 'path';
+  readonly type: ToolType = 'path';
   private preview: Polyline | null = null;
   /** Committed vertices (does not include the live cursor point) */
   private vertices: Point[] = [];

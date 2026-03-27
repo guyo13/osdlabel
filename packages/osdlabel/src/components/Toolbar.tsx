@@ -1,8 +1,8 @@
 import type { Component } from 'solid-js';
 import { useAnnotator } from '../state/annotator-context.js';
-import type { AnnotationType } from '@osdlabel/annotation';
+import type { ToolType } from '@osdlabel/annotation';
 
-const TOOL_LABELS: Record<AnnotationType, string> = {
+const TOOL_LABELS: Record<ToolType, string> = {
   rectangle: 'Rect',
   circle: 'Circle',
   line: 'Line',
@@ -19,7 +19,7 @@ const Toolbar: Component = () => {
     return contextState.contexts.find((c) => c.id === contextState.activeContextId);
   };
 
-  const allowedTools = (): AnnotationType[] => {
+  const allowedTools = (): ToolType[] => {
     const ctx = activeContext();
     if (!ctx) return [];
     return ctx.tools.map((t) => t.type);

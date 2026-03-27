@@ -28,6 +28,7 @@ describe('version counter', () => {
       id: createAnnotationId(`ann${index}`),
       imageId,
       contextId: dummyContextId,
+      toolType: 'rectangle',
       geometry: { type: 'rectangle', origin: { x: 0, y: 0 }, width: 10, height: 10, rotation: 0 },
       rawAnnotationData: {
         format: 'fabric' as const,

@@ -30,7 +30,8 @@ export class SerializationError extends Error {
 }
 
 const SUPPORTED_VERSION = '1.0.0';
-const ANNOTATION_TYPES: readonly string[] = [
+const GEOMETRY_TYPES: readonly string[] = ['rectangle', 'circle', 'line', 'point', 'path'];
+const TOOL_TYPES: readonly string[] = [
   'rectangle',
   'circle',
   'line',
@@ -183,6 +184,9 @@ export function validateBaseAnnotation(value: unknown): value is BaseAnnotation 
   // Validate geometry
   if (!validateGeometry(v.geometry)) return false;
 
+  // Validate toolType
+  if (typeof v.toolType !== 'string' || !TOOL_TYPES.includes(v.toolType)) return false;
+
   return true;
 }
 
@@ -287,7 +291,7 @@ function validateGeometry(value: unknown): boolean {
   if (!isObject(value)) return false;
   const g = value as Record<string, unknown>;
 
-  if (typeof g.type !== 'string' || !ANNOTATION_TYPES.includes(g.type)) return false;
+  if (typeof g.type !== 'string' || !GEOMETRY_TYPES.includes(g.type)) return false;
 
   switch (g.type as Geometry['type']) {
     case 'rectangle':
@@ -308,7 +312,6 @@ function validateGeometry(value: unknown): boolean {
       return validatePointValue(g.position);
 
     case 'path':
-    case 'freeHandPath':
       if (typeof g.closed !== 'boolean') return false;
       if (!Array.isArray(g.points)) return false;
       if (g.points.length < 2) return false;

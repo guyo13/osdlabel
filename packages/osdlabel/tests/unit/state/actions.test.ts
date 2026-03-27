@@ -41,6 +41,7 @@ describe('State Management', () => {
     id: dummyAnnotationId,
     imageId: dummyImageId,
     contextId: dummyContextId,
+    toolType: 'rectangle',
     geometry: { type: 'rectangle', origin: { x: 0, y: 0 }, width: 10, height: 10, rotation: 0 },
     rawAnnotationData: {
       format: 'fabric' as const,

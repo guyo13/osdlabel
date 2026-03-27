@@ -69,6 +69,7 @@ describe('Serialization', () => {
     imageId,
     contextId,
     geometry: { type: 'rectangle', origin: { x: 10, y: 20 }, width: 100, height: 50, rotation: 0 },
+    toolType: 'rectangle',
     rawAnnotationData: baseRawAnnotationData,
     createdAt: '2024-01-01T00:00:00.000Z',
     updatedAt: '2024-01-01T00:00:00.000Z',
@@ -79,6 +80,7 @@ describe('Serialization', () => {
     imageId,
     contextId,
     geometry: { type: 'circle', center: { x: 200, y: 300 }, radius: 75 },
+    toolType: 'circle',
     rawAnnotationData: baseRawAnnotationData,
     createdAt: '2024-01-01T00:00:00.000Z',
     updatedAt: '2024-01-01T00:00:00.000Z',
@@ -249,6 +251,7 @@ describe('Serialization', () => {
         height: 50,
         rotation: 0,
       },
+      toolType: 'rectangle',
       createdAt: '2024-01-01T00:00:00.000Z',
       updatedAt: '2024-01-01T00:00:00.000Z',
     };

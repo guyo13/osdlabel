@@ -1,10 +1,10 @@
 import { Circle } from 'fabric';
 import { ShapeTool } from './shape-tool.js';
 import type { FabricShapeOptions } from '../fabric-utils.js';
-import type { AnnotationType, Point } from '@osdlabel/annotation';
+import type { ToolType, Point } from '@osdlabel/annotation';
 
 export class CircleTool extends ShapeTool<Circle> {
-  readonly type: AnnotationType = 'circle';
+  readonly type: ToolType = 'circle';
 
   protected createPreview(imagePoint: Point, options: FabricShapeOptions): Circle {
     return new Circle({
