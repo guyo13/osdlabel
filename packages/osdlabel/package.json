@@ -57,7 +57,8 @@
     "@osdlabel/annotation-context": "workspace:*",
     "@osdlabel/fabric-annotations": "workspace:*",
     "@osdlabel/fabric-osd": "workspace:*",
-    "@osdlabel/validation": "workspace:*"
+    "@osdlabel/validation": "workspace:*",
+    "@osdlabel/viewer-api": "workspace:*"
   },
   "devDependencies": {
     "@types/openseadragon": "catalog:",

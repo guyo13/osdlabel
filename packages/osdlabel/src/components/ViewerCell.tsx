@@ -6,7 +6,7 @@ import { createFabricObjectFromRawData } from '@osdlabel/fabric-annotations';
 import type { OverlayMode } from '@osdlabel/fabric-osd';
 import type { ImageSource } from '@osdlabel/annotation';
 import type { AnnotationContextId } from '@osdlabel/annotation-context';
-import { DEFAULT_CELL_TRANSFORM } from '@osdlabel/annotation';
+import { DEFAULT_CELL_TRANSFORM } from '@osdlabel/viewer-api';
 import { useAnnotationTool } from '../hooks/useAnnotationTool.js';
 import { useAnnotator } from '../state/annotator-context.js';
 export interface ViewerCellProps {

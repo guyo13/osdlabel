@@ -5,9 +5,9 @@ import type {
   Point,
   ImageId,
   AnnotationId,
-  KeyboardShortcutMap,
   BaseAnnotation,
 } from '@osdlabel/annotation';
+import type { KeyboardShortcutMap } from '@osdlabel/viewer-api';
 import type { AnnotationContextId } from '@osdlabel/annotation-context';
 import type { ToolConstraint } from '@osdlabel/annotation-context';
 /** Parameters for adding an annotation via a tool */

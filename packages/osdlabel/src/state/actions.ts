@@ -1,13 +1,13 @@
 import { type SetStoreFunction, produce } from 'solid-js/store';
 import type { AnnotationId, ImageId, ToolType, AnnotationState } from '@osdlabel/annotation';
-import { DEFAULT_CELL_TRANSFORM } from '@osdlabel/annotation';
 import type {
   AnnotationContext,
   AnnotationContextId,
   ContextState,
 } from '@osdlabel/annotation-context';
 import { isContextScopedToImage } from '@osdlabel/annotation-context';
-import type { UIState } from '@osdlabel/annotation';
+import type { UIState } from '@osdlabel/viewer-api';
+import { DEFAULT_CELL_TRANSFORM } from '@osdlabel/viewer-api';
 import type { OsdAnnotation, OsdFields } from '../types.js';
 
 export function createActions(

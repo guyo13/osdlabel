@@ -48,6 +48,15 @@ import type { AnnotationId, ImageId, Geometry, Annotation } from '@osdlabel/anno
 import { createImageId, createAnnotationId } from '@osdlabel/annotation';
 ```
 
+### Viewer API
+
+Viewer-level types for UI state, cell transforms, and keyboard shortcuts. See [Types](/osdlabel/api/types/).
+
+```ts
+import type { CellTransform, UIState, KeyboardShortcutMap } from '@osdlabel/viewer-api';
+import { DEFAULT_CELL_TRANSFORM } from '@osdlabel/viewer-api';
+```
+
 ### Components
 
 SolidJS UI components for building annotation interfaces. See [Components](/osdlabel/api/components/).

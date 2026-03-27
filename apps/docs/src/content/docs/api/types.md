@@ -281,6 +281,12 @@ The `dziUrl` can point to a `.dzi` file for tiled deep zoom images, or a standar
 
 Per-cell visual adjustments (rotation, flip, exposure, inversion). These are transient view state — not serialized with annotations.
 
+Defined in `@osdlabel/viewer-api`. Also re-exported from `osdlabel`.
+
+```ts
+import type { CellTransform } from '@osdlabel/viewer-api';
+```
+
 ```ts
 interface CellTransform {
   readonly rotation: number; // degrees (0, 90, 180, 270)
@@ -305,6 +311,12 @@ interface AnnotationState {
 ```
 
 ### UIState
+
+Defined in `@osdlabel/viewer-api`. Also re-exported from `osdlabel`.
+
+```ts
+import type { UIState } from '@osdlabel/viewer-api';
+```
 
 ```ts
 interface UIState {
@@ -337,6 +349,12 @@ State container types (`AnnotationState`, `UIState`, `ContextState`) intentional
 ## Keyboard types
 
 ### KeyboardShortcutMap
+
+Defined in `@osdlabel/viewer-api`. Also re-exported from `osdlabel`.
+
+```ts
+import type { KeyboardShortcutMap } from '@osdlabel/viewer-api';
+```
 
 ```ts
 interface KeyboardShortcutMap {

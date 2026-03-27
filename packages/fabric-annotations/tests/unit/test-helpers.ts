@@ -1,4 +1,4 @@
-import type { KeyboardShortcutMap } from '@osdlabel/annotation';
+import type { KeyboardShortcutMap } from '@osdlabel/viewer-api';
 
 /** Creates a KeyboardShortcutMap with default values for use in tests. */
 export function createTestKeyboardShortcuts(): KeyboardShortcutMap {

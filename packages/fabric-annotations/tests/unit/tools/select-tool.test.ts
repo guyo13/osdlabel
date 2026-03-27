@@ -3,7 +3,7 @@ import { SelectTool } from '../../../src/tools/select-tool.js';
 import type { ToolOverlay } from '../../../src/types.js';
 import type { ToolCallbacks } from '../../../src/tools/base-tool.js';
 import { createImageId, createAnnotationId } from '@osdlabel/annotation';
-import type { KeyboardShortcutMap } from '@osdlabel/annotation';
+import type { KeyboardShortcutMap } from '@osdlabel/viewer-api';
 import { createAnnotationContextId } from '@osdlabel/annotation-context';
 import { FabricObject } from 'fabric';
 import { createTestKeyboardShortcuts } from '../test-helpers.js';

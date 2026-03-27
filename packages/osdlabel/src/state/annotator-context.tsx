@@ -4,9 +4,8 @@ import type {
   AnnotationState,
   AnnotationId,
   ImageId,
-  KeyboardShortcutMap,
-  UIState,
 } from '@osdlabel/annotation';
+import type { KeyboardShortcutMap, UIState } from '@osdlabel/viewer-api';
 import { getAllAnnotationsFlat } from '@osdlabel/annotation';
 import type { ConstraintStatus, ContextState } from '@osdlabel/annotation-context';
 import { createAnnotationStore } from './annotation-store.js';

@@ -13,10 +13,7 @@ export type {
   ImageAnnotations,
   ImageSource,
   AnnotationState,
-  UIState,
-  KeyboardShortcutMap,
   RawAnnotationData,
-  CellTransform,
   ExtensionValidator,
   ExtensionValidatorFn,
   DeserializeResult,
@@ -25,7 +22,6 @@ export type {
 export {
   createAnnotationId,
   createImageId,
-  DEFAULT_CELL_TRANSFORM,
   DEFAULT_ANNOTATION_STYLE,
   DEFAULT_GRID_CONFIG,
   MAX_GRID_SIZE,
@@ -36,6 +32,10 @@ export {
   SerializationError,
   toolTypeToGeometryType,
 } from '@osdlabel/annotation';
+
+// Viewer API (re-exported from @osdlabel/viewer-api)
+export type { UIState, KeyboardShortcutMap, CellTransform } from '@osdlabel/viewer-api';
+export { DEFAULT_CELL_TRANSFORM } from '@osdlabel/viewer-api';
 
 // Annotation context (re-exported from @osdlabel/annotation-context)
 export type {

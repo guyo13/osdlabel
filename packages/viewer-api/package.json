@@ -1,7 +1,7 @@
 {
-  "name": "@osdlabel/fabric-annotations",
+  "name": "@osdlabel/viewer-api",
   "version": "0.0.1",
-  "description": "Fabric.js annotation tools and utilities for osdlabel — drawing tools, serialization, and module augmentation.",
+  "description": "Viewer state types for osdlabel — cell transforms, UI state, and keyboard shortcut mappings.",
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -29,12 +29,7 @@
     "test": "vitest run"
   },
   "dependencies": {
-    "@osdlabel/annotation": "workspace:*",
-    "@osdlabel/annotation-context": "workspace:*",
-    "@osdlabel/viewer-api": "workspace:*"
-  },
-  "peerDependencies": {
-    "fabric": "catalog:"
+    "@osdlabel/annotation": "workspace:*"
   },
   "devDependencies": {
     "typescript": "catalog:",

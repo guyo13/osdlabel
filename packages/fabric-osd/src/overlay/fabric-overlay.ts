@@ -1,8 +1,9 @@
 import OpenSeadragon from 'openseadragon';
 import { Canvas as FabricCanvas } from 'fabric';
 import type { TMat2D } from 'fabric';
-import type { Point, CellTransform } from '@osdlabel/annotation';
-import { DEFAULT_CELL_TRANSFORM } from '@osdlabel/annotation';
+import type { Point } from '@osdlabel/annotation';
+import type { CellTransform } from '@osdlabel/viewer-api';
+import { DEFAULT_CELL_TRANSFORM } from '@osdlabel/viewer-api';
 
 import {
   POINTER_DOWN,

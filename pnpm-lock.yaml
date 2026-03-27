@@ -161,6 +161,9 @@ importers:
       '@osdlabel/annotation-context':
         specifier: workspace:*
         version: link:../annotation-context
+      '@osdlabel/viewer-api':
+        specifier: workspace:*
+        version: link:../viewer-api
       fabric:
         specifier: 'catalog:'
         version: 7.2.0
@@ -183,6 +186,9 @@ importers:
       '@osdlabel/validation':
         specifier: workspace:*
         version: link:../validation
+      '@osdlabel/viewer-api':
+        specifier: workspace:*
+        version: link:../viewer-api
       fabric:
         specifier: 'catalog:'
         version: 7.2.0
@@ -220,6 +226,9 @@ importers:
       '@osdlabel/validation':
         specifier: workspace:*
         version: link:../validation
+      '@osdlabel/viewer-api':
+        specifier: workspace:*
+        version: link:../viewer-api
       fabric:
         specifier: 'catalog:'
         version: 7.2.0
@@ -270,6 +279,19 @@ importers:
       fabric:
         specifier: 'catalog:'
         version: 7.2.0
+      typescript:
+        specifier: 'catalog:'
+        version: 5.9.3
+      vitest:
+        specifier: 'catalog:'
+        version: 3.0.5(@types/debug@4.1.12)(jsdom@26.1.0(canvas@3.2.1))
+
+  packages/viewer-api:
+    dependencies:
+      '@osdlabel/annotation':
+        specifier: workspace:*
+        version: link:../annotation
+    devDependencies:
       typescript:
         specifier: 'catalog:'
         version: 5.9.3
