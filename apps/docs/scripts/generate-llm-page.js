@@ -18,7 +18,6 @@ const pageOrder = [
   'guides/keyboard-shortcuts.md',
   'guides/coordinate-systems.md',
   'api/overview.md',
-  'api/types.md',
   'api/components.md',
   'api/state.md',
   'api/overlay.md',
