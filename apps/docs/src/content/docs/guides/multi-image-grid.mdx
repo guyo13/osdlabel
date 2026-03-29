@@ -4,14 +4,10 @@ description: Working with multiple images in a grid layout
 ---
 
 import GridDemoWrapper from '../../../components/demos/GridDemoWrapper.astro';
-import GridControlsDemoWrapper from '../../../components/demos/GridControlsDemoWrapper.astro';
-import AnnotatorWithGridControlsDemoWrapper from '../../../components/demos/AnnotatorWithGridControlsDemoWrapper.astro';
 
 ## Grid view
 
 The `GridView` component displays images in an MxN grid. Each cell is an independent OpenSeaDragon viewer with its own Fabric.js overlay.
-
-<GridDemoWrapper />
 
 ```tsx
 import { GridView } from 'osdlabel/components';
@@ -32,15 +28,13 @@ Resize the grid using keyboard shortcuts or the `GridControls` component (which 
 - `=` / `+` — Add a column (up to `maxColumns`)
 - `-` — Remove a column (minimum 1)
 
-<GridControlsDemoWrapper />
-
 ```tsx
 import { GridControls } from 'osdlabel/components';
 
 <GridControls maxColumns={4} maxRows={4} />;
 ```
 
-Programmatic control:
+#### Programmatic control:
 
 ```tsx
 const { actions } = useAnnotator();
@@ -92,7 +86,7 @@ Each cell can display one image at a time. Multiple cells can show the same imag
 
 The `Annotator` component bundles the grid, filmstrip, toolbar, and status bar into a single layout:
 
-<AnnotatorWithGridControlsDemoWrapper />
+<GridDemoWrapper />
 
 ```tsx
 import { Annotator } from 'osdlabel/components';
@@ -100,10 +94,12 @@ import { Annotator } from 'osdlabel/components';
 <Annotator
   images={images}
   contexts={contexts}
-  showFilmstrip={true}
-  showGridControls={true}
   filmstripPosition="left"
   maxGridSize={{ columns: 4, rows: 4 }}
+  showGridControls
+  showFilmstrip
+  showViewControls
+  showFps
 />;
 ```
 

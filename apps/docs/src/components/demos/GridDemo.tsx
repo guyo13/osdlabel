@@ -29,7 +29,14 @@ const contexts: AnnotationContext[] = [
   {
     id: createAnnotationContextId('default'),
     label: 'Default',
-    tools: [{ type: 'rectangle' }, { type: 'circle' }],
+    tools: [
+      { type: 'rectangle' },
+      { type: 'circle' },
+      { type: 'line' },
+      { type: 'point' },
+      { type: 'path' },
+      { type: 'freeHandPath' },
+    ],
   },
 ];
 
@@ -50,7 +57,11 @@ export default function GridDemo() {
         images={images}
         contexts={contexts}
         filmstripPosition="left"
-        maxGridSize={{ columns: 2, rows: 2 }}
+        maxGridSize={{ columns: 4, rows: 4 }}
+        showGridControls
+        showFilmstrip
+        showViewControls
+        showFps
       />
     </div>
   );
