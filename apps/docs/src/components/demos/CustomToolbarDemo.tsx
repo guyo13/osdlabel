@@ -57,8 +57,7 @@ function CustomToolbar() {
             background: uiState.activeTool === tool.type ? '#2a2a5e' : '#2a2a3e',
             color: '#fff',
             cursor: 'pointer',
-            opacity:
-              tool.type !== 'select' && !isToolEnabled(tool.type as ToolType) ? '0.5' : '1',
+            opacity: tool.type !== 'select' && !isToolEnabled(tool.type as ToolType) ? '0.5' : '1',
             'font-size': '12px',
           }}
         >
@@ -92,6 +91,7 @@ function AppContent() {
   onMount(() => {
     actions.setContexts(contexts);
     actions.setActiveContext(contexts[0]!.id);
+    actions.assignImageToCell(0, createImageId('sample'));
   });
 
   return (
