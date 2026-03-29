@@ -38,6 +38,16 @@ const ViewerCell: Component<ViewerCellProps> = (props) => {
       constrainDuringPan: true,
     });
 
+    viewer.addHandler('canvas-key', (e: any) => {
+      // Prevent OpenSeadragon's default horizontal flip on 'f' / 'F' (keyCode 70)
+      // This conflicts with our freeHandPathTool shortcut and our own flip state.
+      const originalEvent = e.originalEvent as KeyboardEvent;
+      const key = originalEvent.key?.toLowerCase();
+      if (originalEvent.keyCode === 70 || key === 'f') {
+        e.preventDefaultAction = true;
+      }
+    });
+
     viewer.addHandler('open', () => {
       if (!viewer || overlay()) return;
       const ov = new FabricOverlay(viewer);
