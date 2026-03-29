@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { createRoot, createSignal } from 'solid-js';
 import { useAnnotationTool } from '../../../src/hooks/useAnnotationTool.js';
-import { FabricOverlay } from '../../../src/overlay/fabric-overlay.js';
+import type { FabricOverlay } from '@osdlabel/fabric-osd';
 import { DEFAULT_KEYBOARD_SHORTCUTS } from '../../../src/hooks/useKeyboard.js';
 
 // Mock useAnnotator
@@ -30,10 +30,14 @@ vi.mock('../../../src/state/annotator-context.js', () => ({
   useAnnotator: () => mockState,
 }));
 
-vi.mock('../../../src/core/fabric-utils.js', () => ({
-  getGeometryFromFabricObject: vi.fn().mockReturnValue({ type: 'rectangle' }),
-  serializeFabricObject: vi.fn().mockReturnValue({}),
-}));
+vi.mock('@osdlabel/fabric-annotations', async () => {
+  const actual = await vi.importActual('@osdlabel/fabric-annotations');
+  return {
+    ...(actual as Record<string, unknown>),
+    getGeometryFromFabricObject: vi.fn().mockReturnValue({ type: 'rectangle' }),
+    serializeFabricObject: vi.fn().mockReturnValue({}),
+  };
+});
 
 describe('useAnnotationTool', () => {
   let mockOverlay: any;

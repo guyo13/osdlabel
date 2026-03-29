@@ -59,7 +59,7 @@ You generally don't interact with this directly. It's used internally by OSD for
 The overlay computes a 6-element affine matrix `[a, b, c, d, tx, ty]` that maps image-space to screen-space:
 
 ```ts
-import { computeViewportTransform } from 'osdlabel/overlay';
+import { computeViewportTransform } from '@osdlabel/fabric-osd';
 
 // Called internally on every OSD animation frame
 const matrix = computeViewportTransform(viewer);

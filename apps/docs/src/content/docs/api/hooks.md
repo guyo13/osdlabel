@@ -17,8 +17,8 @@ Must be used within an `AnnotatorProvider`.
 
 ```ts
 {
-  isToolEnabled: (type: AnnotationType) => boolean;
-  canAddAnnotation: (type: AnnotationType) => boolean;
+  isToolEnabled: (type: ToolType) => boolean;
+  canAddAnnotation: (type: ToolType) => boolean;
 }
 ```
 

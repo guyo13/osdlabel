@@ -5,15 +5,10 @@ import { createAnnotationStore } from '../../../src/state/annotation-store';
 import { createUIStore } from '../../../src/state/ui-store';
 import { createContextStore, createConstraintStatus } from '../../../src/state/context-store';
 import { createActions } from '../../../src/state/actions';
-import {
-  createAnnotationId,
-  createImageId,
-  createAnnotationContextId,
-  Annotation,
-  AnnotationContext,
-  AnnotationContextId,
-  ImageId,
-} from '../../../src/core/types';
+import { createAnnotationId, createImageId } from '@osdlabel/annotation';
+import type { Annotation, ImageId } from '@osdlabel/annotation';
+import { createAnnotationContextId } from '@osdlabel/annotation-context';
+import type { AnnotationContext, AnnotationContextId } from '@osdlabel/annotation-context';
 
 describe('State Management', () => {
   function createTestStore() {
@@ -46,6 +41,7 @@ describe('State Management', () => {
     id: dummyAnnotationId,
     imageId: dummyImageId,
     contextId: dummyContextId,
+    toolType: 'rectangle',
     geometry: { type: 'rectangle', origin: { x: 0, y: 0 }, width: 10, height: 10, rotation: 0 },
     rawAnnotationData: {
       format: 'fabric' as const,

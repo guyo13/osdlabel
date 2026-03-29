@@ -25,14 +25,14 @@ import { useAnnotator } from 'osdlabel/state';
 }
 ```
 
-| Property           | Description                                                 |
-| ------------------ | ----------------------------------------------------------- |
-| `annotationState`  | All annotations organized by image ID with a change counter |
-| `uiState`          | Active tool, cell, grid dimensions, assignments, selection  |
+| Property           | Description                                                      |
+| ------------------ | ---------------------------------------------------------------- |
+| `annotationState`  | All annotations organized by image ID with a change counter      |
+| `uiState`          | Active tool, cell, grid dimensions, assignments, selection       |
 | `contextState`     | Available contexts, active context ID, and displayed context IDs |
-| `constraintStatus` | Reactive accessor returning tool enable/disable status      |
-| `actions`          | Object containing all state mutation functions              |
-| `shortcuts`        | Merged keyboard shortcut map (defaults + overrides)         |
+| `constraintStatus` | Reactive accessor returning tool enable/disable status           |
+| `actions`          | Object containing all state mutation functions                   |
+| `shortcuts`        | Merged keyboard shortcut map (defaults + overrides)              |
 
 ---
 
@@ -83,7 +83,7 @@ Replace all annotation state. Used for importing deserialized data.
 #### setActiveTool
 
 ```ts
-setActiveTool(tool: AnnotationType | 'select' | null): void
+setActiveTool(tool: ToolType | 'select' | null): void
 ```
 
 Set the active drawing/selection tool, or `null` to deactivate.

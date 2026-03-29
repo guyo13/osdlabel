@@ -25,9 +25,10 @@ Preferred for better build performance and tree-shaking in production apps.
 
 ```ts
 import { Annotator } from 'osdlabel/components';
-import { serialize } from 'osdlabel/core';
+import { serialize } from '@osdlabel/annotation';
 import { useAnnotator } from 'osdlabel/state';
-import type { Annotation, ImageSource, AnnotationContext } from 'osdlabel/core';
+import type { Annotation, ImageSource } from '@osdlabel/annotation';
+import type { AnnotationContext } from '@osdlabel/annotation-context';
 ```
 
 ### 3. Granular imports
@@ -47,8 +48,17 @@ import { Annotator } from 'osdlabel/components/Annotator';
 Core TypeScript types and branded ID factories. See [Types](/osdlabel/api/types/).
 
 ```ts
-import type { AnnotationId, ImageId, Geometry, Annotation } from 'osdlabel/core';
-import { createImageId, createAnnotationId } from 'osdlabel/core';
+import type { AnnotationId, ImageId, Geometry, Annotation } from '@osdlabel/annotation';
+import { createImageId, createAnnotationId } from '@osdlabel/annotation';
+```
+
+### Viewer API
+
+Viewer-level types for UI state, cell transforms, and keyboard shortcuts. See [Types](/osdlabel/api/types/).
+
+```ts
+import type { CellTransform, UIState, KeyboardShortcutMap } from '@osdlabel/viewer-api';
+import { DEFAULT_CELL_TRANSFORM } from '@osdlabel/viewer-api';
 ```
 
 ### Components
@@ -80,7 +90,7 @@ import { AnnotatorProvider, useAnnotator, createActions } from 'osdlabel/state';
 Low-level OSD-Fabric integration. See [Overlay](/osdlabel/api/overlay/).
 
 ```ts
-import { FabricOverlay, computeViewportTransform } from 'osdlabel/overlay';
+import { FabricOverlay, computeViewportTransform } from '@osdlabel/fabric-osd';
 ```
 
 ### Serialization
@@ -88,7 +98,24 @@ import { FabricOverlay, computeViewportTransform } from 'osdlabel/overlay';
 JSON export/import functions. See [Serialization](/osdlabel/api/serialization/).
 
 ```ts
-import { serialize, deserialize, validateAnnotation, getAllAnnotationsFlat } from 'osdlabel/core';
+import {
+  serialize,
+  deserialize,
+  validateBaseAnnotation,
+  getAllAnnotationsFlat,
+} from '@osdlabel/annotation';
+```
+
+### Validation
+
+Schema-based validators using [Standard Schema](https://github.com/standard-schema/standard-schema). See [Serialization](/osdlabel/api/serialization/).
+
+```ts
+import {
+  BaseAnnotationSchema,
+  GeometrySchema,
+  RawAnnotationDataSchema,
+} from '@osdlabel/validation';
 ```
 
 ### Hooks
@@ -104,359 +131,8 @@ import { useConstraints, useKeyboard } from 'osdlabel/hooks';
 Default configuration values. See [Constants](/osdlabel/api/constants/).
 
 ```ts
-import { DEFAULT_ANNOTATION_STYLE, DEFAULT_GRID_CONFIG, MAX_GRID_SIZE } from 'osdlabel/core';
+import { DEFAULT_ANNOTATION_STYLE, DEFAULT_GRID_CONFIG, MAX_GRID_SIZE } from '@osdlabel/annotation';
 ```
-
----
-
-# Types
-
-## Branded ID types
-
-osdlabel uses TypeScript branded types to prevent mixing different kinds of IDs.
-
-### AnnotationId
-
-```ts
-declare const annotationIdBrand: unique symbol;
-type AnnotationId = string & { readonly __brand: typeof annotationIdBrand };
-```
-
-Unique identifier for an annotation.
-
-### ImageId
-
-```ts
-declare const imageIdBrand: unique symbol;
-type ImageId = string & { readonly __brand: typeof imageIdBrand };
-```
-
-Unique identifier for an image.
-
-### AnnotationContextId
-
-```ts
-declare const annotationContextIdBrand: unique symbol;
-type AnnotationContextId = string & { readonly __brand: typeof annotationContextIdBrand };
-```
-
-Unique identifier for an annotation context.
-
-### ID factory functions
-
-Since branded types cannot be assigned from plain strings, use these factory functions:
-
-```ts
-function createAnnotationId(value: string): AnnotationId;
-function createImageId(value: string): ImageId;
-function createAnnotationContextId(value: string): AnnotationContextId;
-```
-
-**Example:**
-
-```ts
-const imageId = createImageId('xray-001');
-const annId = createAnnotationId('ann-1');
-const ctxId = createAnnotationContextId('fracture');
-```
-
----
-
-## Geometry types
-
-### AnnotationType
-
-```ts
-type AnnotationType = 'rectangle' | 'circle' | 'line' | 'point' | 'path';
-```
-
-The five supported annotation geometry types.
-
-### Point
-
-```ts
-interface Point {
-  readonly x: number;
-  readonly y: number;
-}
-```
-
-A 2D point in image-space coordinates (pixels).
-
-### Geometry
-
-Discriminated union of all annotation geometries. Always check `geometry.type` before accessing type-specific fields.
-
-```ts
-type Geometry =
-  | {
-      readonly type: 'rectangle';
-      readonly origin: Point;
-      readonly width: number;
-      readonly height: number;
-      readonly rotation: number;
-    }
-  | { readonly type: 'circle'; readonly center: Point; readonly radius: number }
-  | { readonly type: 'line'; readonly start: Point; readonly end: Point }
-  | { readonly type: 'point'; readonly position: Point }
-  | { readonly type: 'path'; readonly points: readonly Point[]; readonly closed: boolean };
-```
-
-**Usage:**
-
-```ts
-function describeGeometry(g: Geometry): string {
-  switch (g.type) {
-    case 'rectangle':
-      return `${g.width}x${g.height} at (${g.origin.x}, ${g.origin.y})`;
-    case 'circle':
-      return `radius ${g.radius} at (${g.center.x}, ${g.center.y})`;
-    case 'line':
-      return `from (${g.start.x}, ${g.start.y}) to (${g.end.x}, ${g.end.y})`;
-    case 'point':
-      return `at (${g.position.x}, ${g.position.y})`;
-    case 'path':
-      return `${g.points.length} points, ${g.closed ? 'closed' : 'open'}`;
-  }
-}
-```
-
----
-
-## Annotation types
-
-### AnnotationStyle
-
-```ts
-interface AnnotationStyle {
-  readonly strokeColor: string;
-  readonly strokeWidth: number; // Screen pixels
-  readonly strokeDashArray?: readonly number[];
-  readonly fillColor: string;
-  readonly fillOpacity: number;
-  readonly opacity: number;
-}
-```
-
-### RawAnnotationData
-
-Low-level rendering data preserved for round-trip serialization.
-
-```ts
-type RawAnnotationData = {
-  readonly format: 'fabric';
-  readonly fabricVersion: string;
-  readonly data: Record<string, unknown>;
-};
-```
-
-### Annotation
-
-A single annotation entity.
-
-```ts
-interface Annotation {
-  readonly id: AnnotationId;
-  readonly imageId: ImageId;
-  readonly contextId: AnnotationContextId;
-  readonly geometry: Geometry;
-  readonly rawAnnotationData: RawAnnotationData;
-  readonly label?: string;
-  readonly metadata?: Readonly<Record<string, unknown>>;
-  readonly createdAt: string; // ISO 8601
-  readonly updatedAt: string; // ISO 8601
-}
-```
-
----
-
-## Serialization types
-
-### AnnotationDocument
-
-Top-level serialization envelope.
-
-```ts
-interface AnnotationDocument {
-  readonly version: '1.0.0';
-  readonly exportedAt: string;
-  readonly images: readonly ImageAnnotations[];
-}
-```
-
-### ImageAnnotations
-
-Annotations for a single image within a document.
-
-```ts
-interface ImageAnnotations {
-  readonly imageId: ImageId;
-  readonly sourceUrl: string;
-  readonly annotations: readonly Annotation[];
-}
-```
-
----
-
-## Constraint types
-
-### CountScope
-
-```ts
-type CountScope = 'per-image' | 'global';
-```
-
-### ToolConstraint
-
-Defines a tool's availability and limits within a context.
-
-```ts
-interface ToolConstraint {
-  readonly type: AnnotationType;
-  readonly maxCount?: number;
-  readonly countScope?: CountScope; // Default: 'global'
-  readonly defaultStyle?: Partial<AnnotationStyle>;
-}
-```
-
-### AnnotationContext
-
-An annotation context defining tool constraints for a labelling task.
-
-```ts
-interface AnnotationContext {
-  readonly id: AnnotationContextId;
-  readonly label: string;
-  readonly tools: readonly ToolConstraint[];
-  readonly imageIds?: readonly ImageId[]; // Restrict to specific images
-  readonly metadata?: Readonly<Record<string, unknown>>;
-}
-```
-
-### ConstraintStatus
-
-Derived state showing tool availability for the active context.
-
-```ts
-type ConstraintStatus = Record<
-  AnnotationType,
-  {
-    readonly enabled: boolean;
-    readonly currentCount: number;
-    readonly maxCount: number | null;
-  }
->;
-```
-
----
-
-## Image types
-
-### ImageSource
-
-Descriptor for an image available to the annotator.
-
-```ts
-interface ImageSource {
-  readonly id: ImageId;
-  readonly dziUrl: string;
-  readonly thumbnailUrl?: string;
-  readonly label?: string;
-}
-```
-
-The `dziUrl` can point to a `.dzi` file for tiled deep zoom images, or a standard image URL (`.jpg`, `.png`) for simple images.
-
-### CellTransform
-
-Per-cell visual adjustments (rotation, flip, exposure, inversion). These are transient view state — not serialized with annotations.
-
-```ts
-interface CellTransform {
-  readonly rotation: number;  // degrees (0, 90, 180, 270)
-  readonly flippedH: boolean;
-  readonly flippedV: boolean;
-  readonly exposure: number;  // -1 to 1 (0 = default)
-  readonly inverted: boolean; // false = normal, true = CSS invert
-}
-```
-
----
-
-## State types
-
-### AnnotationState
-
-```ts
-interface AnnotationState {
-  byImage: Record<ImageId, Record<AnnotationId, Annotation>>;
-  changeCounter: number; // Incremented on every mutation
-}
-```
-
-### UIState
-
-```ts
-interface UIState {
-  activeTool: AnnotationType | 'select' | null;
-  activeCellIndex: number;
-  gridColumns: number;
-  gridRows: number;
-  gridAssignments: Record<number, ImageId>;
-  selectedAnnotationId: AnnotationId | null;
-  cellTransforms: Record<number, CellTransform>;
-}
-```
-
-### ContextState
-
-```ts
-interface ContextState {
-  contexts: AnnotationContext[];
-  activeContextId: AnnotationContextId | null;
-  displayedContextIds: AnnotationContextId[];
-}
-```
-
-:::note
-State container types (`AnnotationState`, `UIState`, `ContextState`) intentionally omit `readonly` — SolidJS store proxies enforce immutability at runtime, and `readonly` would conflict with SolidJS's `SetStoreFunction` path-based API.
-:::
-
----
-
-## Keyboard types
-
-### KeyboardShortcutMap
-
-```ts
-interface KeyboardShortcutMap {
-  readonly selectTool: string;
-  readonly rectangleTool: string;
-  readonly circleTool: string;
-  readonly lineTool: string;
-  readonly pointTool: string;
-  readonly pathTool: string;
-  readonly cancel: string;
-  readonly delete: string;
-  readonly deleteAlt: string;
-  readonly gridCell1: string;
-  readonly gridCell2: string;
-  readonly gridCell3: string;
-  readonly gridCell4: string;
-  readonly gridCell5: string;
-  readonly gridCell6: string;
-  readonly gridCell7: string;
-  readonly gridCell8: string;
-  readonly gridCell9: string;
-  readonly increaseGridColumns: string;
-  readonly decreaseGridColumns: string;
-  readonly pathFinish: string;
-  readonly pathClose: string;
-  readonly pathCancel: string;
-}
-```
-
-See [Keyboard Shortcuts](/osdlabel/guides/keyboard-shortcuts/) for default values and customization.
 
 ---
 
@@ -474,23 +150,23 @@ import { Annotator } from 'osdlabel/components';
 
 `AnnotatorProps` extends `AnnotatorProviderProps` (minus `children`):
 
-| Prop                                  | Type                                                | Default                   | Description                      |
-| ------------------------------------- | --------------------------------------------------- | ------------------------- | -------------------------------- |
-| `images`                              | `readonly ImageSource[]`                            | (required)                | Available images                 |
-| `contexts`                            | `readonly AnnotationContext[]`                      | (required)                | Annotation contexts              |
-| `showFilmstrip`                       | `boolean`                                           | `true`                    | Show the filmstrip sidebar       |
-| `showGridControls`                    | `boolean`                                           | `false`                   | Show the grid size controls      |
-| `showContextSwitcher`                 | `boolean`                                           | `false`                   | Show the context selector        |
-| `showFps`                             | `boolean`                                           | `false`                   | Show the FPS counter             |
+| Prop                                  | Type                                                | Default                   | Description                                                                                |
+| ------------------------------------- | --------------------------------------------------- | ------------------------- | ------------------------------------------------------------------------------------------ |
+| `images`                              | `readonly ImageSource[]`                            | (required)                | Available images                                                                           |
+| `contexts`                            | `readonly AnnotationContext[]`                      | (required)                | Annotation contexts                                                                        |
+| `showFilmstrip`                       | `boolean`                                           | `true`                    | Show the filmstrip sidebar                                                                 |
+| `showGridControls`                    | `boolean`                                           | `false`                   | Show the grid size controls                                                                |
+| `showContextSwitcher`                 | `boolean`                                           | `false`                   | Show the context selector                                                                  |
+| `showFps`                             | `boolean`                                           | `false`                   | Show the FPS counter                                                                       |
 | `displayedContextIds`                 | `readonly AnnotationContextId[]`                    | —                         | Context IDs whose annotations are displayed read-only (active context is always displayed) |
-| `filmstripPosition`                   | `'left' \| 'right' \| 'bottom'`                     | `'left'`                  | Filmstrip placement              |
-| `maxGridSize`                         | `{ columns: number; rows: number }`                 | `{ columns: 4, rows: 4 }` | Maximum grid dimensions          |
-| `style`                               | `JSX.CSSProperties`                                 | —                         | Custom style for root container  |
-| `initialAnnotations`                  | `Record<ImageId, Record<AnnotationId, Annotation>>` | —                         | Pre-existing annotations         |
-| `onAnnotationsChange`                 | `(annotations: Annotation[]) => void`               | —                         | Fires on annotation changes      |
-| `onConstraintChange`                  | `(status: ConstraintStatus) => void`                | —                         | Fires on constraint changes      |
-| `keyboardShortcuts`                   | `Partial<KeyboardShortcutMap>`                      | —                         | Override default shortcuts       |
-| `shouldSkipKeyboardShortcutPredicate` | `(target: HTMLElement) => boolean`                  | —                         | Suppress shortcuts conditionally |
+| `filmstripPosition`                   | `'left' \| 'right' \| 'bottom'`                     | `'left'`                  | Filmstrip placement                                                                        |
+| `maxGridSize`                         | `{ columns: number; rows: number }`                 | `{ columns: 4, rows: 4 }` | Maximum grid dimensions                                                                    |
+| `style`                               | `JSX.CSSProperties`                                 | —                         | Custom style for root container                                                            |
+| `initialAnnotations`                  | `Record<ImageId, Record<AnnotationId, Annotation>>` | —                         | Pre-existing annotations                                                                   |
+| `onAnnotationsChange`                 | `(annotations: Annotation[]) => void`               | —                         | Fires on annotation changes                                                                |
+| `onConstraintChange`                  | `(status: ConstraintStatus) => void`                | —                         | Fires on constraint changes                                                                |
+| `keyboardShortcuts`                   | `Partial<KeyboardShortcutMap>`                      | —                         | Override default shortcuts                                                                 |
+| `shouldSkipKeyboardShortcutPredicate` | `(target: HTMLElement) => boolean`                  | —                         | Suppress shortcuts conditionally                                                           |
 
 ### Example
 
@@ -684,14 +360,14 @@ import { useAnnotator } from 'osdlabel/state';
 }
 ```
 
-| Property           | Description                                                 |
-| ------------------ | ----------------------------------------------------------- |
-| `annotationState`  | All annotations organized by image ID with a change counter |
-| `uiState`          | Active tool, cell, grid dimensions, assignments, selection  |
+| Property           | Description                                                      |
+| ------------------ | ---------------------------------------------------------------- |
+| `annotationState`  | All annotations organized by image ID with a change counter      |
+| `uiState`          | Active tool, cell, grid dimensions, assignments, selection       |
 | `contextState`     | Available contexts, active context ID, and displayed context IDs |
-| `constraintStatus` | Reactive accessor returning tool enable/disable status      |
-| `actions`          | Object containing all state mutation functions              |
-| `shortcuts`        | Merged keyboard shortcut map (defaults + overrides)         |
+| `constraintStatus` | Reactive accessor returning tool enable/disable status           |
+| `actions`          | Object containing all state mutation functions                   |
+| `shortcuts`        | Merged keyboard shortcut map (defaults + overrides)              |
 
 ---
 
@@ -742,7 +418,7 @@ Replace all annotation state. Used for importing deserialized data.
 #### setActiveTool
 
 ```ts
-setActiveTool(tool: AnnotationType | 'select' | null): void
+setActiveTool(tool: ToolType | 'select' | null): void
 ```
 
 Set the active drawing/selection tool, or `null` to deactivate.
@@ -870,7 +546,7 @@ Creates a reactive accessor that derives tool enable/disable status from the cur
 A Fabric.js canvas overlay synchronized with an OpenSeaDragon viewer. Handles event routing, coordinate transforms, and mode switching.
 
 ```ts
-import { FabricOverlay } from 'osdlabel/overlay';
+import { FabricOverlay } from '@osdlabel/fabric-osd';
 ```
 
 ### Constructor
@@ -1002,7 +678,7 @@ Serialize the current annotation state into a portable JSON document. Creates on
 **Example:**
 
 ```ts
-import { serialize } from 'osdlabel/core';
+import { serialize } from '@osdlabel/annotation';
 
 const doc = serialize(annotationState, images);
 const json = JSON.stringify(doc, null, 2);
@@ -1013,10 +689,15 @@ const json = JSON.stringify(doc, null, 2);
 ## deserialize
 
 ```ts
-function deserialize(doc: unknown): Record<ImageId, Record<AnnotationId, Annotation>>;
+function deserialize<E extends object = Record<string, never>>(
+  doc: unknown,
+  extensionValidator?: ExtensionValidator<E>,
+): DeserializeResult<E>;
 ```
 
 Parse and validate a serialized document, returning the `byImage` store structure. Throws `SerializationError` on invalid input.
+
+Pass an `extensionValidator` to also validate extension fields (e.g. `contextId`, `rawAnnotationData`). Accepts either a type guard function or a [Standard Schema](https://github.com/standard-schema/standard-schema) (e.g. from Valibot or Zod).
 
 **Validates:**
 
@@ -1027,7 +708,7 @@ Parse and validate a serialized document, returning the `byImage` store structur
 **Example:**
 
 ```ts
-import { deserialize } from 'osdlabel/core';
+import { deserialize } from '@osdlabel/annotation';
 
 try {
   const byImage = deserialize(JSON.parse(jsonString));
@@ -1041,21 +722,40 @@ try {
 
 ---
 
-## validateAnnotation
+## validateBaseAnnotation
 
 ```ts
-function validateAnnotation(value: unknown): value is Annotation;
+function validateBaseAnnotation(value: unknown): value is BaseAnnotation;
 ```
 
-Type guard that validates the shape of an annotation object. Checks:
+Type guard that validates the base annotation fields (id, imageId, geometry, timestamps). Does **not** validate extension fields — use `createAnnotationValidator` for that.
 
-- Required string fields (`id`, `imageId`, `contextId`, `createdAt`, `updatedAt`)
-- Geometry structure (discriminated by `type`)
-- `rawAnnotationData` structure (format, Fabric version, data type whitelisting)
-- Numeric bounds (coordinates, dimensions)
-- Path point count limits
+---
 
-Returns `true` if the value is a valid `Annotation`.
+## createAnnotationValidator
+
+```ts
+function createAnnotationValidator<E extends object>(
+  extensionValidator: ExtensionValidator<E>,
+): (value: unknown) => value is Annotation<E>;
+```
+
+Creates a composed validator that checks both base annotation fields and extension fields. The `extensionValidator` can be either a type guard function or a Standard Schema (e.g. a Valibot schema from `@osdlabel/validation`).
+
+**Example:**
+
+```ts
+import { createAnnotationValidator } from '@osdlabel/annotation';
+import { RawAnnotationDataSchema } from '@osdlabel/validation';
+
+// Using a Standard Schema (Valibot)
+const validate = createAnnotationValidator(myExtensionSchema);
+
+// Using a type guard function
+const validate = createAnnotationValidator((value: unknown): value is MyFields => {
+  /* ... */
+});
+```
 
 ---
 
@@ -1070,7 +770,7 @@ Flatten all annotations from the nested `byImage` store into a single array.
 **Example:**
 
 ```ts
-import { getAllAnnotationsFlat } from 'osdlabel/core';
+import { getAllAnnotationsFlat } from '@osdlabel/annotation';
 
 const all = getAllAnnotationsFlat(annotationState);
 console.log(`Total annotations: ${all.length}`);
@@ -1106,8 +806,8 @@ Must be used within an `AnnotatorProvider`.
 
 ```ts
 {
-  isToolEnabled: (type: AnnotationType) => boolean;
-  canAddAnnotation: (type: AnnotationType) => boolean;
+  isToolEnabled: (type: ToolType) => boolean;
+  canAddAnnotation: (type: ToolType) => boolean;
 }
 ```
 
@@ -1194,7 +894,7 @@ Returns `true` if:
 Default visual style applied to new annotations.
 
 ```ts
-import { DEFAULT_ANNOTATION_STYLE } from 'osdlabel/core';
+import { DEFAULT_ANNOTATION_STYLE } from '@osdlabel/annotation';
 ```
 
 ```ts
@@ -1216,7 +916,7 @@ Override per-tool via `defaultStyle` in [`ToolConstraint`](/osdlabel/api/types/#
 Default grid dimensions on initialization.
 
 ```ts
-import { DEFAULT_GRID_CONFIG } from 'osdlabel/core';
+import { DEFAULT_GRID_CONFIG } from '@osdlabel/annotation';
 ```
 
 ```ts
@@ -1233,7 +933,7 @@ const DEFAULT_GRID_CONFIG = {
 Maximum allowed grid dimensions.
 
 ```ts
-import { MAX_GRID_SIZE } from 'osdlabel/core';
+import { MAX_GRID_SIZE } from '@osdlabel/annotation';
 ```
 
 ```ts
@@ -1250,7 +950,7 @@ const MAX_GRID_SIZE = {
 Default keyboard shortcut bindings. See [Keyboard Shortcuts](/osdlabel/guides/keyboard-shortcuts/) for the full table.
 
 ```ts
-import { DEFAULT_KEYBOARD_SHORTCUTS } from 'osdlabel/core';
+import { DEFAULT_KEYBOARD_SHORTCUTS } from '@osdlabel/annotation';
 ```
 
 ```ts

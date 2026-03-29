@@ -1,28 +1,26 @@
 import { createContext, useContext, createEffect, on, type JSX, type Accessor } from 'solid-js';
 import { produce } from 'solid-js/store';
 import type {
-  Annotation,
   AnnotationState,
-  UIState,
-  ConstraintStatus,
-  ContextState,
   AnnotationId,
   ImageId,
-  KeyboardShortcutMap,
-} from '../core/types.js';
+} from '@osdlabel/annotation';
+import type { KeyboardShortcutMap, UIState } from '@osdlabel/viewer-api';
+import { getAllAnnotationsFlat } from '@osdlabel/annotation';
+import type { ConstraintStatus, ContextState } from '@osdlabel/annotation-context';
 import { createAnnotationStore } from './annotation-store.js';
 import { createUIStore } from './ui-store.js';
 import { createContextStore, createConstraintStatus } from './context-store.js';
 import { createActions } from './actions.js';
-import { getAllAnnotationsFlat } from '../core/annotations/serialization.js';
 import { DEFAULT_KEYBOARD_SHORTCUTS, useKeyboard } from '../hooks/useKeyboard.js';
+import type { OsdAnnotation, OsdFields } from '../types.js';
 
 export interface ActiveToolKeyHandlerRef {
   handler: ((event: KeyboardEvent) => boolean) | null;
 }
 
 interface AnnotatorContextValue {
-  annotationState: AnnotationState;
+  annotationState: AnnotationState<OsdFields>;
   uiState: UIState;
   contextState: ContextState;
   constraintStatus: Accessor<ConstraintStatus>;
@@ -46,9 +44,9 @@ const AnnotatorContext = createContext<AnnotatorContextValue>();
 export interface AnnotatorProviderProps {
   readonly children: JSX.Element;
   /** Pre-existing annotations to load on mount */
-  readonly initialAnnotations?: Record<ImageId, Record<AnnotationId, Annotation>> | undefined;
+  readonly initialAnnotations?: Record<ImageId, Record<AnnotationId, OsdAnnotation>> | undefined;
   /** Called when annotation state changes (after initial mount) */
-  readonly onAnnotationsChange?: ((annotations: Annotation[]) => void) | undefined;
+  readonly onAnnotationsChange?: ((annotations: OsdAnnotation[]) => void) | undefined;
   /** Called when constraint status changes (after initial mount) */
   readonly onConstraintChange?: ((status: ConstraintStatus) => void) | undefined;
   readonly keyboardShortcuts?: Partial<KeyboardShortcutMap> | undefined;

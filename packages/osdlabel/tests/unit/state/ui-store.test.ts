@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { createRoot } from 'solid-js';
 import { createUIStore } from '../../../src/state/ui-store.js';
-import { createAnnotationId } from '../../../src/core/types.js';
+import { createAnnotationId } from '@osdlabel/annotation';
 
 describe('UI Store', () => {
   it('should initialize with correct default values', () => {

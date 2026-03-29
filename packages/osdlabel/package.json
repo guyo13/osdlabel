@@ -16,30 +16,15 @@
       "import": "./dist/components/index.js",
       "default": "./dist/components/index.js"
     },
-    "./core": {
-      "types": "./dist/core/index.d.ts",
-      "import": "./dist/core/index.js",
-      "default": "./dist/core/index.js"
-    },
     "./hooks": {
       "types": "./dist/hooks/index.d.ts",
       "import": "./dist/hooks/index.js",
       "default": "./dist/hooks/index.js"
     },
-    "./overlay": {
-      "types": "./dist/overlay/index.d.ts",
-      "import": "./dist/overlay/index.js",
-      "default": "./dist/overlay/index.js"
-    },
     "./state": {
       "types": "./dist/state/index.d.ts",
       "import": "./dist/state/index.js",
       "default": "./dist/state/index.js"
-    },
-    "./utils": {
-      "types": "./dist/utils/index.d.ts",
-      "import": "./dist/utils/index.js",
-      "default": "./dist/utils/index.js"
     },
     "./*": {
       "types": "./dist/*.d.ts",
@@ -62,11 +47,18 @@
     "lint": "eslint src/ tests/"
   },
   "peerDependencies": {
-    "solid-js": "catalog:"
+    "fabric": "catalog:",
+    "openseadragon": "catalog:",
+    "solid-js": "catalog:",
+    "valibot": "catalog:"
   },
   "dependencies": {
-    "fabric": "catalog:",
-    "openseadragon": "catalog:"
+    "@osdlabel/annotation": "workspace:*",
+    "@osdlabel/annotation-context": "workspace:*",
+    "@osdlabel/fabric-annotations": "workspace:*",
+    "@osdlabel/fabric-osd": "workspace:*",
+    "@osdlabel/validation": "workspace:*",
+    "@osdlabel/viewer-api": "workspace:*"
   },
   "devDependencies": {
     "@types/openseadragon": "catalog:",

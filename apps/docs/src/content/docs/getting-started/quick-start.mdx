@@ -14,8 +14,8 @@ This guide walks you through setting up a minimal annotation interface with osdl
 Create an array of `ImageSource` objects. Each image needs a unique branded ID and a URL (DZI or standard image).
 
 ```tsx
-import { createImageId } from 'osdlabel/core';
-import type { ImageSource } from 'osdlabel/core';
+import { createImageId } from '@osdlabel/annotation';
+import type { ImageSource } from '@osdlabel/annotation';
 
 const images: ImageSource[] = [
   {
@@ -31,8 +31,8 @@ const images: ImageSource[] = [
 Contexts define which tools are available and their constraints. Each context represents a labelling task (e.g., marking a specific pathology).
 
 ```tsx
-import { createAnnotationContextId } from 'osdlabel/core';
-import type { AnnotationContext } from 'osdlabel/core';
+import { createAnnotationContextId } from '@osdlabel/annotation-context';
+import type { AnnotationContext } from '@osdlabel/annotation-context';
 
 const contexts: AnnotationContext[] = [
   {
@@ -56,6 +56,9 @@ The `Annotator` component provides a complete annotation interface with toolbar,
 ```tsx
 import { render } from 'solid-js/web';
 import { Annotator } from 'osdlabel/components';
+import { initFabricModule } from 'osdlabel';
+
+initFabricModule();
 
 function App() {
   return (

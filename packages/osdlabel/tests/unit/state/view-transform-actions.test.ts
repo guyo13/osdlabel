@@ -4,8 +4,8 @@ import { createAnnotationStore } from '../../../src/state/annotation-store';
 import { createUIStore } from '../../../src/state/ui-store';
 import { createContextStore } from '../../../src/state/context-store';
 import { createActions } from '../../../src/state/actions';
-import { createImageId } from '../../../src/core/types';
-import { DEFAULT_CELL_TRANSFORM } from '../../../src/core/types';
+import { createImageId } from '@osdlabel/annotation';
+import { DEFAULT_CELL_TRANSFORM } from '@osdlabel/viewer-api';
 
 describe('View Transform Actions', () => {
   function createTestStore() {

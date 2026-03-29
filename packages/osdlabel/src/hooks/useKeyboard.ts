@@ -1,8 +1,8 @@
 import { onMount, onCleanup } from 'solid-js';
 import { useAnnotator, type ActiveToolKeyHandlerRef } from '../state/annotator-context.js';
 import { useConstraints } from './useConstraints.js';
-import type { KeyboardShortcutMap } from '../core/types.js';
-import { MAX_GRID_SIZE } from '../core/constants.js';
+import type { KeyboardShortcutMap } from '@osdlabel/viewer-api';
+import { MAX_GRID_SIZE } from '@osdlabel/annotation';
 
 export const DEFAULT_KEYBOARD_SHORTCUTS: KeyboardShortcutMap = {
   selectTool: 'v',

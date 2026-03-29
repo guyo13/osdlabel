@@ -12,8 +12,11 @@ import {
   useAnnotator,
   serialize,
   deserialize,
+  initFabricModule,
 } from 'osdlabel';
 import type { AnnotationContextId, AnnotationContext, ImageSource } from 'osdlabel';
+
+initFabricModule();
 
 const IMAGES: ImageSource[] = [
   {
@@ -182,10 +185,21 @@ function AppContent() {
           ))}
         </select>
 
-        <div data-testid="displayed-contexts-panel" style={{ display: 'flex', gap: '8px', 'align-items': 'center' }}>
+        <div
+          data-testid="displayed-contexts-panel"
+          style={{ display: 'flex', gap: '8px', 'align-items': 'center' }}
+        >
           <span style={{ 'font-size': '12px', color: '#aaa' }}>Show:</span>
           {CONTEXTS.map((ctx) => (
-            <label style={{ display: 'flex', gap: '4px', 'align-items': 'center', 'font-size': '12px', cursor: 'pointer' }}>
+            <label
+              style={{
+                display: 'flex',
+                gap: '4px',
+                'align-items': 'center',
+                'font-size': '12px',
+                cursor: 'pointer',
+              }}
+            >
               <input
                 type="checkbox"
                 data-testid={`display-ctx-${ctx.id}`}

@@ -1,45 +1,107 @@
-// Core types
+// Annotation model (re-exported from @osdlabel/annotation)
 export type {
   AnnotationId,
   ImageId,
-  AnnotationContextId,
-  AnnotationType,
+  ToolType,
+  GeometryType,
   Point,
   Geometry,
   AnnotationStyle,
+  BaseAnnotation,
   Annotation,
   AnnotationDocument,
   ImageAnnotations,
-  ToolConstraint,
-  AnnotationContext,
   ImageSource,
   AnnotationState,
-  UIState,
-  ContextState,
-  ConstraintStatus,
-  KeyboardShortcutMap,
   RawAnnotationData,
-  CellTransform,
-} from './core/types.js';
+  ExtensionValidator,
+  ExtensionValidatorFn,
+  DeserializeResult,
+} from '@osdlabel/annotation';
 
-// ID factory functions
 export {
   createAnnotationId,
   createImageId,
+  DEFAULT_ANNOTATION_STYLE,
+  DEFAULT_GRID_CONFIG,
+  MAX_GRID_SIZE,
+  validateBaseAnnotation,
+  validateRawAnnotationData,
+  createAnnotationValidator,
+  getAllAnnotationsFlat,
+  SerializationError,
+  toolTypeToGeometryType,
+} from '@osdlabel/annotation';
+
+// Viewer API (re-exported from @osdlabel/viewer-api)
+export type { UIState, KeyboardShortcutMap, CellTransform } from '@osdlabel/viewer-api';
+export { DEFAULT_CELL_TRANSFORM } from '@osdlabel/viewer-api';
+
+// Annotation context (re-exported from @osdlabel/annotation-context)
+export type {
+  AnnotationContext,
+  AnnotationContextId,
+  ToolConstraint,
+  ConstraintStatus,
+  ContextState,
+  CountScope,
+  ContextFields,
+} from '@osdlabel/annotation-context';
+
+export {
   createAnnotationContextId,
-  DEFAULT_CELL_TRANSFORM,
-} from './core/types.js';
+  isContextScopedToImage,
+  getCountableImageIds,
+  validateContextFields,
+} from '@osdlabel/annotation-context';
 
-// Context scoping
-export { isContextScopedToImage } from './core/context-scoping.js';
-export type { CountScope } from './core/types.js';
+// Fabric annotations (re-exported from @osdlabel/fabric-annotations)
+export {
+  initFabricModule,
+  BaseTool,
+  ShapeTool,
+  RectangleTool,
+  CircleTool,
+  LineTool,
+  PointTool,
+  PathTool,
+  FreeHandPathTool,
+  SelectTool,
+  getFabricOptions,
+  serializeFabricObject,
+  deserializeFabricObject,
+  createFabricObjectFromRawData,
+  getGeometryFromFabricObject,
+} from '@osdlabel/fabric-annotations';
+export type {
+  ToolOverlay,
+  FabricFields,
+  FabricShapeOptions,
+  AnnotationTool,
+  ToolCallbacks,
+  AddAnnotationParams,
+} from '@osdlabel/fabric-annotations';
 
-// Constants
-export { DEFAULT_ANNOTATION_STYLE, DEFAULT_GRID_CONFIG, MAX_GRID_SIZE } from './core/constants.js';
+// Fabric-OSD overlay (re-exported from @osdlabel/fabric-osd)
+export { FabricOverlay, computeViewportTransform } from '@osdlabel/fabric-osd';
+export type { OverlayOptions, OverlayMode } from '@osdlabel/fabric-osd';
+export { validateFabricFields } from '@osdlabel/fabric-osd';
 
-// Overlay
-export { FabricOverlay, computeViewportTransform } from './overlay/index.js';
-export type { OverlayOptions, OverlayMode } from './overlay/index.js';
+// Validation schemas (re-exported from @osdlabel/validation)
+export {
+  GeometrySchema,
+  PointSchema,
+  BaseAnnotationSchema,
+  RawAnnotationDataSchema,
+  ToolTypeSchema,
+} from '@osdlabel/validation';
+
+// Own types
+export type { OsdAnnotation, OsdFields } from './types.js';
+export { validateOsdAnnotation, validateOsdFields } from './validator.js';
+
+// Pre-configured serialization (uses OSD validators)
+export { serialize, deserialize } from './serialization-configured.js';
 
 // State
 export {
@@ -52,19 +114,6 @@ export {
   createConstraintStatus,
 } from './state/index.js';
 export type { AnnotatorProviderProps } from './state/annotator-context.js';
-
-// Tools
-export type { ToolCallbacks, AddAnnotationParams } from './core/tools/base-tool.js';
-
-// Serialization
-export {
-  serialize,
-  deserialize,
-  validateAnnotation,
-  getAllAnnotationsFlat,
-  SerializationError,
-} from './core/annotations/serialization.js';
-export type { DeserializeResult } from './core/annotations/serialization.js';
 
 // Components
 export { default as ViewerCell } from './components/ViewerCell.js';

@@ -1,23 +1,25 @@
 import { createEffect, onCleanup } from 'solid-js';
 import type { FabricObject } from 'fabric';
-import type { FabricOverlay } from '../overlay/fabric-overlay.js';
+import type { FabricOverlay } from '@osdlabel/fabric-osd';
 import type {
   AnnotationTool,
   ToolCallbacks,
   AddAnnotationParams,
-} from '../core/tools/base-tool.js';
-import { RectangleTool } from '../core/tools/rectangle-tool.js';
-import { CircleTool } from '../core/tools/circle-tool.js';
-import { LineTool } from '../core/tools/line-tool.js';
-import { PointTool } from '../core/tools/point-tool.js';
-import { PathTool } from '../core/tools/path-tool.js';
-import { FreeHandPathTool } from '../core/tools/free-hand-path-tool.js';
-import { SelectTool } from '../core/tools/select-tool.js';
+} from '@osdlabel/fabric-annotations';
+import {
+  RectangleTool,
+  CircleTool,
+  LineTool,
+  PointTool,
+  PathTool,
+  FreeHandPathTool,
+  SelectTool,
+  getGeometryFromFabricObject,
+  serializeFabricObject,
+} from '@osdlabel/fabric-annotations';
 import { useAnnotator } from '../state/annotator-context.js';
-import type { AnnotationId, ImageId, Point, AnnotationType } from '../core/types.js';
-import { getGeometryFromFabricObject, serializeFabricObject } from '../core/fabric-utils.js';
-import '../core/fabric-module.js';
-
+import type { AnnotationId, ImageId, Point, ToolType } from '@osdlabel/annotation';
+import { toolTypeToGeometryType } from '@osdlabel/annotation';
 interface FabricPointerEvent {
   readonly e: MouseEvent | PointerEvent | TouchEvent;
   readonly scenePoint?: { readonly x: number; readonly y: number };
@@ -45,7 +47,7 @@ export function useAnnotationTool(
     const tool = uiState.activeTool;
     if (tool && tool !== 'select') {
       const status = constraintStatus();
-      if (!status[tool as AnnotationType].enabled) {
+      if (!status[tool as ToolType].enabled) {
         actions.setActiveTool('select');
       }
     }
@@ -140,7 +142,7 @@ export function useAnnotationTool(
         const activeContext = contextState.contexts.find((c) => c.id === activeContextId);
         return activeContext?.tools.find((t) => t.type === toolType);
       },
-      canAddAnnotation: (toolType: AnnotationType) => {
+      canAddAnnotation: (toolType: ToolType) => {
         const status = constraintStatus();
         return status[toolType].enabled;
       },
@@ -158,7 +160,7 @@ export function useAnnotationTool(
         const id = fabricObject.id as AnnotationId;
 
         // Derive geometry from the Fabric object
-        const geometry = getGeometryFromFabricObject(fabricObject, annType);
+        const geometry = getGeometryFromFabricObject(fabricObject, toolTypeToGeometryType(annType));
         if (!geometry) {
           console.warn('Could not extract geometry from Fabric object');
           return;
@@ -172,6 +174,7 @@ export function useAnnotationTool(
           imageId: imgIdParam,
           contextId,
           geometry,
+          toolType: annType,
           rawAnnotationData,
           label,
           metadata,

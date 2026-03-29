@@ -12,10 +12,12 @@ Use `AnnotatorProvider` and `useAnnotator()` to build a fully custom annotation 
 ```tsx
 import { render } from 'solid-js/web';
 import { GridView, StatusBar } from 'osdlabel/components';
-import { createImageId, createAnnotationContextId } from 'osdlabel/core';
+import { createImageId } from '@osdlabel/annotation';
+import { createAnnotationContextId } from '@osdlabel/annotation-context';
 import { useConstraints } from 'osdlabel/hooks';
 import { AnnotatorProvider, useAnnotator } from 'osdlabel/state';
-import type { ImageSource, AnnotationContext, AnnotationType } from 'osdlabel/core';
+import type { ImageSource, ToolType } from '@osdlabel/annotation';
+import type { AnnotationContext } from '@osdlabel/annotation-context';
 
 const images: ImageSource[] = [
   {
@@ -37,14 +39,14 @@ function CustomToolbar() {
   const { actions, uiState, constraintStatus } = useAnnotator();
   const { isToolEnabled } = useConstraints();
 
-  const tools: { type: AnnotationType | 'select'; label: string }[] = [
+  const tools: { type: ToolType | 'select'; label: string }[] = [
     { type: 'select', label: 'Select' },
     { type: 'rectangle', label: 'Rect' },
     { type: 'circle', label: 'Circle' },
     { type: 'line', label: 'Line' },
   ];
 
-  const toolInfo = (type: AnnotationType) => {
+  const toolInfo = (type: ToolType) => {
     const status = constraintStatus();
     const s = status[type];
     if (s.maxCount === null) return '';

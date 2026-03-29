@@ -1,9 +1,14 @@
 import { GridView, StatusBar } from 'osdlabel/components';
-import { createImageId, createAnnotationContextId } from 'osdlabel/core';
+import { createImageId } from '@osdlabel/annotation';
+import { createAnnotationContextId } from '@osdlabel/annotation-context';
 import { useConstraints } from 'osdlabel/hooks';
 import { AnnotatorProvider, useAnnotator } from 'osdlabel/state';
-import type { ImageSource, AnnotationContext, AnnotationType } from 'osdlabel/core';
+import type { ImageSource, ToolType } from '@osdlabel/annotation';
+import type { AnnotationContext } from '@osdlabel/annotation-context';
+import { initFabricModule } from 'osdlabel';
 import { onMount } from 'solid-js';
+
+initFabricModule();
 
 const images: ImageSource[] = [
   {
@@ -25,14 +30,14 @@ function CustomToolbar() {
   const { actions, uiState, constraintStatus } = useAnnotator();
   const { isToolEnabled } = useConstraints();
 
-  const tools: { type: AnnotationType | 'select'; label: string }[] = [
+  const tools: { type: ToolType | 'select'; label: string }[] = [
     { type: 'select', label: 'Select' },
     { type: 'rectangle', label: 'Rect' },
     { type: 'circle', label: 'Circle' },
     { type: 'line', label: 'Line' },
   ];
 
-  const toolInfo = (type: AnnotationType) => {
+  const toolInfo = (type: ToolType) => {
     const status = constraintStatus();
     const s = status[type];
     if (s.maxCount === null) return '';
@@ -43,7 +48,7 @@ function CustomToolbar() {
     <div style={{ display: 'flex', gap: '4px', padding: '8px', background: '#1a1a2e' }}>
       {tools.map((tool) => (
         <button
-          disabled={tool.type !== 'select' && !isToolEnabled(tool.type as AnnotationType)}
+          disabled={tool.type !== 'select' && !isToolEnabled(tool.type as ToolType)}
           onClick={() => actions.setActiveTool(tool.type)}
           style={{
             padding: '4px 8px',
@@ -53,12 +58,12 @@ function CustomToolbar() {
             color: '#fff',
             cursor: 'pointer',
             opacity:
-              tool.type !== 'select' && !isToolEnabled(tool.type as AnnotationType) ? '0.5' : '1',
+              tool.type !== 'select' && !isToolEnabled(tool.type as ToolType) ? '0.5' : '1',
             'font-size': '12px',
           }}
         >
           {tool.label}
-          {tool.type !== 'select' && toolInfo(tool.type as AnnotationType)}
+          {tool.type !== 'select' && toolInfo(tool.type as ToolType)}
         </button>
       ))}
 

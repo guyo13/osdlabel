@@ -1,5 +1,5 @@
 import { createStore } from 'solid-js/store';
-import type { UIState } from '../core/types.js';
+import type { UIState } from '@osdlabel/viewer-api';
 
 export function createUIStore() {
   const [state, setState] = createStore<UIState>({

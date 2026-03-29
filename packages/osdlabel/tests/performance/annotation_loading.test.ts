@@ -1,13 +1,8 @@
 import { describe, it } from 'vitest';
-import { createFabricObjectFromRawData } from '../../src/core/fabric-utils';
-import {
-  Annotation,
-  createAnnotationId,
-  createImageId,
-  createAnnotationContextId,
-  RawAnnotationData,
-  Geometry,
-} from '../../src/core/types';
+import { createFabricObjectFromRawData } from '@osdlabel/fabric-annotations';
+import { createAnnotationId, createImageId } from '@osdlabel/annotation';
+import type { Annotation, RawAnnotationData, Geometry } from '@osdlabel/annotation';
+import { createAnnotationContextId } from '@osdlabel/annotation-context';
 
 describe('Performance: Annotation Loading', () => {
   const COUNT = 1000;

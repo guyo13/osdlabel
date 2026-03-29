@@ -1,6 +1,6 @@
 import { type Component, Show } from 'solid-js';
 import { useAnnotator } from '../state/annotator-context.js';
-import { DEFAULT_CELL_TRANSFORM } from '../core/types.js';
+import { DEFAULT_CELL_TRANSFORM } from '@osdlabel/viewer-api';
 
 export const ViewControls: Component = () => {
   const { uiState, actions, activeImageId } = useAnnotator();

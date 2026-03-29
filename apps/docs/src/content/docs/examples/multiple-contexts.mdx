@@ -12,8 +12,10 @@ A setup with multiple annotation contexts for classifying different types of fea
 ```tsx
 import { render } from 'solid-js/web';
 import { Annotator } from 'osdlabel/components';
-import { createImageId, createAnnotationContextId } from 'osdlabel/core';
-import type { ImageSource, AnnotationContext } from 'osdlabel/core';
+import { createImageId } from '@osdlabel/annotation';
+import { createAnnotationContextId } from '@osdlabel/annotation-context';
+import type { ImageSource } from '@osdlabel/annotation';
+import type { AnnotationContext } from '@osdlabel/annotation-context';
 
 const images: ImageSource[] = [
   {

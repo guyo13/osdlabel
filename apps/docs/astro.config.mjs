@@ -2,6 +2,7 @@ import { defineConfig } from 'astro/config';
 import starlight from '@astrojs/starlight';
 import sitemap from '@astrojs/sitemap';
 import solidJs from '@astrojs/solid-js';
+import starlightTypeDoc, { typeDocSidebarGroup } from 'starlight-typedoc';
 
 export default defineConfig({
   site: 'https://guyo13.github.io',
@@ -23,6 +24,31 @@ export default defineConfig({
         baseUrl: 'https://github.com/guyo13/osdlabel/edit/main/apps/docs/',
       },
       customCss: ['./src/styles/custom.css'],
+      plugins: [
+        starlightTypeDoc({
+          entryPoints: [
+            '../../packages/annotation',
+            '../../packages/viewer-api',
+            '../../packages/annotation-context',
+            '../../packages/validation',
+            '../../packages/fabric-annotations',
+            '../../packages/fabric-osd',
+            '../../packages/osdlabel',
+          ],
+          tsconfig: '../../packages/annotation/tsconfig.json',
+          output: 'api/reference',
+          typeDoc: {
+            entryPointStrategy: 'packages',
+            excludePrivate: true,
+            excludeInternal: true,
+            readme: 'none',
+          },
+          sidebar: {
+            label: 'Package Reference',
+            collapsed: true,
+          },
+        }),
+      ],
       sidebar: [
         {
           label: 'Getting Started',
@@ -48,13 +74,13 @@ export default defineConfig({
           label: 'API Reference',
           items: [
             { label: 'Overview', slug: 'api/overview' },
-            { label: 'Types', slug: 'api/types' },
             { label: 'Components', slug: 'api/components' },
             { label: 'State Management', slug: 'api/state' },
             { label: 'Overlay', slug: 'api/overlay' },
             { label: 'Serialization', slug: 'api/serialization' },
             { label: 'Hooks', slug: 'api/hooks' },
             { label: 'Constants', slug: 'api/constants' },
+            typeDocSidebarGroup,
           ],
         },
         {

@@ -1,0 +1,43 @@
+{
+  "name": "@osdlabel/fabric-annotations",
+  "version": "0.0.1",
+  "description": "Fabric.js annotation tools and utilities for osdlabel — drawing tools, serialization, and module augmentation.",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "default": "./dist/index.js"
+    },
+    "./*": {
+      "types": "./dist/*.d.ts",
+      "import": "./dist/*.js",
+      "default": "./dist/*.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "sideEffects": false,
+  "author": "Guy Or <guydude1@gmail.com>",
+  "license": "BSD-3-Clause",
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@osdlabel/annotation": "workspace:*",
+    "@osdlabel/annotation-context": "workspace:*",
+    "@osdlabel/viewer-api": "workspace:*"
+  },
+  "peerDependencies": {
+    "fabric": "catalog:"
+  },
+  "devDependencies": {
+    "typescript": "catalog:",
+    "vitest": "catalog:"
+  }
+}

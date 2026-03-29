@@ -1,15 +1,14 @@
 import { onMount, onCleanup, createEffect, on, createSignal } from 'solid-js';
 import type { Component } from 'solid-js';
 import OpenSeadragon from 'openseadragon';
-import { FabricOverlay } from '../overlay/fabric-overlay.js';
-import type { OverlayMode } from '../overlay/fabric-overlay.js';
-import type { ImageSource, AnnotationContextId } from '../core/types.js';
-import { DEFAULT_CELL_TRANSFORM } from '../core/types.js';
+import { FabricOverlay } from '@osdlabel/fabric-osd';
+import { createFabricObjectFromRawData } from '@osdlabel/fabric-annotations';
+import type { OverlayMode } from '@osdlabel/fabric-osd';
+import type { ImageSource } from '@osdlabel/annotation';
+import type { AnnotationContextId } from '@osdlabel/annotation-context';
+import { DEFAULT_CELL_TRANSFORM } from '@osdlabel/viewer-api';
 import { useAnnotationTool } from '../hooks/useAnnotationTool.js';
 import { useAnnotator } from '../state/annotator-context.js';
-import { createFabricObjectFromRawData } from '../core/fabric-utils.js';
-import '../core/fabric-module.js';
-
 export interface ViewerCellProps {
   readonly imageSource: ImageSource | undefined;
   readonly isActive: boolean;
@@ -111,9 +110,10 @@ const ViewerCell: Component<ViewerCellProps> = (props) => {
 
     // Filter annotations by imageId + visible contexts
     const imageAnns = annotationState.byImage[imageId] || {};
-    const matching = visibleSet.size > 0
-      ? Object.values(imageAnns).filter((a) => visibleSet.has(a.contextId))
-      : Object.values(imageAnns);
+    const matching =
+      visibleSet.size > 0
+        ? Object.values(imageAnns).filter((a) => visibleSet.has(a.contextId))
+        : Object.values(imageAnns);
 
     // Clear all existing annotation objects from canvas
     const toRemove = ov.canvas.getObjects().filter((obj) => obj.id);

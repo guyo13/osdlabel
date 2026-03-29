@@ -1,0 +1,41 @@
+import type { KeyboardShortcutMap } from '@osdlabel/viewer-api';
+
+/** Creates a KeyboardShortcutMap with default values for use in tests. */
+export function createTestKeyboardShortcuts(): KeyboardShortcutMap {
+  return {
+    selectTool: 'v',
+    rectangleTool: 'r',
+    circleTool: 'c',
+    lineTool: 'l',
+    pointTool: 'p',
+    pathTool: 'd',
+    freeHandPathTool: 'f',
+    cancel: 'Escape',
+    delete: 'Delete',
+    deleteAlt: 'Backspace',
+    gridCell1: '1',
+    gridCell2: '2',
+    gridCell3: '3',
+    gridCell4: '4',
+    gridCell5: '5',
+    gridCell6: '6',
+    gridCell7: '7',
+    gridCell8: '8',
+    gridCell9: '9',
+    increaseGridColumns: '=',
+    decreaseGridColumns: '-',
+    increaseGridRows: ']',
+    decreaseGridRows: '[',
+    pathFinish: 'Enter',
+    pathClose: 'c',
+    pathCancel: 'Escape',
+    rotateCW: 'R',
+    rotateCCW: 'L',
+    flipHorizontal: 'H',
+    flipVertical: 'V',
+    resetView: ')',
+    toggleNegative: 'N',
+    increaseExposure: 'E',
+    decreaseExposure: 'D',
+  };
+}

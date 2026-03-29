@@ -1,14 +1,13 @@
 import { createStore } from 'solid-js/store';
 import { createMemo } from 'solid-js';
+import type { AnnotationState, ToolType, ImageId } from '@osdlabel/annotation';
 import type {
-  ContextState,
   AnnotationContextId,
-  AnnotationState,
+  ContextState,
   ConstraintStatus,
-  AnnotationType,
-  ImageId,
-} from '../core/types.js';
-import { isContextScopedToImage, getCountableImageIds } from '../core/context-scoping.js';
+} from '@osdlabel/annotation-context';
+import { isContextScopedToImage, getCountableImageIds } from '@osdlabel/annotation-context';
+import type { OsdFields } from '../types.js';
 
 export function createContextStore() {
   const [state, setState] = createStore<ContextState>({
@@ -21,14 +20,21 @@ export function createContextStore() {
 
 export function createConstraintStatus(
   contextState: ContextState,
-  annotationState: AnnotationState,
+  annotationState: AnnotationState<OsdFields>,
   currentImageId: () => ImageId | undefined,
 ) {
   return createMemo<ConstraintStatus>(() => {
     const activeContext = contextState.contexts.find((c) => c.id === contextState.activeContextId);
     const imgId = currentImageId();
 
-    const allTypes: AnnotationType[] = ['rectangle', 'circle', 'line', 'point', 'path', 'freeHandPath'];
+    const allTypes: ToolType[] = [
+      'rectangle',
+      'circle',
+      'line',
+      'point',
+      'path',
+      'freeHandPath',
+    ];
     const result: Partial<ConstraintStatus> = {};
 
     if (!activeContext || !imgId || !isContextScopedToImage(activeContext, imgId)) {
@@ -65,9 +71,9 @@ export function createConstraintStatus(
 }
 
 function countAnnotationsForContextAndType(
-  annotationState: AnnotationState,
+  annotationState: AnnotationState<OsdFields>,
   contextId: AnnotationContextId,
-  type: AnnotationType,
+  type: ToolType,
   scopedImageIds?: readonly ImageId[] | undefined,
 ): number {
   let count = 0;
@@ -78,7 +84,7 @@ function countAnnotationsForContextAndType(
   for (const imageAnns of imageBuckets) {
     if (!imageAnns) continue;
     for (const ann of Object.values(imageAnns)) {
-      if (ann.contextId === contextId && ann.geometry.type === type) {
+      if (ann.contextId === contextId && ann.toolType === type) {
         count++;
       }
     }

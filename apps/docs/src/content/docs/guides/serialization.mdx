@@ -52,7 +52,7 @@ osdlabel uses a JSON document format for persisting annotations:
 Use `serialize()` to create an `AnnotationDocument` from the current state:
 
 ```tsx
-import { serialize } from 'osdlabel/core';
+import { serialize } from '@osdlabel/annotation';
 
 const { annotationState } = useAnnotator();
 
@@ -67,7 +67,7 @@ const json = JSON.stringify(doc, null, 2);
 Use `deserialize()` to parse a document and load it into the store:
 
 ```tsx
-import { deserialize } from 'osdlabel/core';
+import { deserialize } from '@osdlabel/annotation';
 
 const { actions } = useAnnotator();
 
@@ -80,21 +80,29 @@ actions.loadAnnotations(byImage);
 
 ## Validation
 
-The `validateAnnotation()` function is a type guard that checks if a value is a valid `Annotation`:
+The `validateBaseAnnotation()` function is a type guard that checks if a value has valid base annotation fields:
 
 ```tsx
-import { validateAnnotation } from 'osdlabel/core';
+import { validateBaseAnnotation } from '@osdlabel/annotation';
 
-if (validateAnnotation(unknownData)) {
-  // unknownData is Annotation
+if (validateBaseAnnotation(unknownData)) {
+  // unknownData is BaseAnnotation
 }
+```
+
+For full annotation validation including extension fields, use `createAnnotationValidator()` with either a type guard function or a Standard Schema:
+
+```tsx
+import { createAnnotationValidator } from '@osdlabel/annotation';
+
+const validate = createAnnotationValidator(myExtensionValidator);
 ```
 
 Validation checks include:
 
-- Required string fields (`id`, `imageId`, `contextId`, timestamps)
+- Required string fields (`id`, `imageId`, timestamps)
 - Geometry type and shape validation
-- Raw annotation data structure and Fabric object type whitelisting
+- Extension fields (when using a composed validator)
 - Numeric bounds checking (coordinates, dimensions)
 
 ## Listening to changes
@@ -117,7 +125,7 @@ The `onAnnotationsChange` callback fires whenever annotations are added, updated
 Use `getAllAnnotationsFlat()` to extract a flat array from the state at any time:
 
 ```tsx
-import { getAllAnnotationsFlat } from 'osdlabel/core';
+import { getAllAnnotationsFlat } from '@osdlabel/annotation';
 
 const { annotationState } = useAnnotator();
 const allAnnotations = getAllAnnotationsFlat(annotationState);

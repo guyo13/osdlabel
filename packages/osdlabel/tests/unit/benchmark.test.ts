@@ -5,12 +5,9 @@ import { createAnnotationStore } from '../../src/state/annotation-store';
 import { createActions } from '../../src/state/actions';
 import { createUIStore } from '../../src/state/ui-store';
 import { createContextStore } from '../../src/state/context-store';
-import {
-  createAnnotationId,
-  createImageId,
-  createAnnotationContextId,
-  Annotation,
-} from '../../src/core/types';
+import { createAnnotationId, createImageId } from '@osdlabel/annotation';
+import type { Annotation } from '@osdlabel/annotation';
+import { createAnnotationContextId } from '@osdlabel/annotation-context';
 
 describe('version counter', () => {
   const dummyContextId = createAnnotationContextId('ctx1');
@@ -31,6 +28,7 @@ describe('version counter', () => {
       id: createAnnotationId(`ann${index}`),
       imageId,
       contextId: dummyContextId,
+      toolType: 'rectangle',
       geometry: { type: 'rectangle', origin: { x: 0, y: 0 }, width: 10, height: 10, rotation: 0 },
       rawAnnotationData: {
         format: 'fabric' as const,
