@@ -76,12 +76,3 @@ For additional suppression logic, use the `shouldSkipKeyboardShortcutPredicate` 
   {/* ... */}
 </AnnotatorProvider>
 ```
-
-## Escape cascading
-
-Pressing `Escape` follows a cascading behavior:
-
-1. If an annotation is selected, deselect it
-2. If no annotation is selected but a tool is active, deactivate the tool
-
-This means pressing `Escape` twice will go from "annotation selected with rectangle tool active" to "no tool active."

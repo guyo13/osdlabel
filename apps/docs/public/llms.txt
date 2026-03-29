@@ -485,23 +485,6 @@ osdlabel provides six geometric annotation tools:
 | **Path**           | `d`      | Array of points, open/closed    | Click to add vertices, `Enter` to finish, `c` to close |
 | **Free Hand Path** | `f`      | Array of sampled points         | Click and drag to draw; release to commit              |
 
-## Selecting a tool
-
-Activate a tool through the toolbar UI or keyboard shortcuts. Tools are only available if enabled by the active [annotation context](/osdlabel/guides/annotation-contexts/).
-
-```tsx
-const { actions } = useAnnotator();
-
-// Programmatically set the active tool
-actions.setActiveTool('rectangle');
-
-// Switch to selection mode
-actions.setActiveTool('select');
-
-// Deactivate all tools (navigation mode)
-actions.setActiveTool(null);
-```
-
 ## Drawing workflow
 
 1. Select a drawing tool (toolbar click or keyboard shortcut)
@@ -554,8 +537,21 @@ The free hand path tool captures a continuous stroke as you drag:
 
 Closed paths require at least 3 sampled points; open paths require at least 2. If the stroke is too short the annotation is discarded automatically.
 
+## Programmatically selecting a tool
+
+Activate a tool through the toolbar UI or keyboard shortcuts. Tools are only available if enabled by the active [annotation context](/osdlabel/guides/annotation-contexts/).
+
 ```tsx
-actions.setActiveTool('freeHandPath');
+const { actions } = useAnnotator();
+
+// Programmatically set the active tool
+actions.setActiveTool('rectangle');
+
+// Switch to selection mode
+actions.setActiveTool('select');
+
+// Deactivate all tools (navigation mode)
+actions.setActiveTool(null);
 ```
 
 ---

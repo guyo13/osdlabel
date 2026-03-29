@@ -25,6 +25,7 @@ const contexts: AnnotationContext[] = [
       { type: 'line' },
       { type: 'point' },
       { type: 'path' },
+      { type: 'freeHandPath' },
     ],
   },
 ];
@@ -42,7 +43,15 @@ export default function MinimalViewerDemo() {
         margin: '1rem 0',
       }}
     >
-      <Annotator images={images} contexts={contexts} />
+      <Annotator
+        images={images}
+        contexts={contexts}
+        maxGridSize={{ columns: 3, rows: 3 }}
+        showGridControls
+        showFilmstrip
+        showViewControls
+        showFps
+      />
     </div>
   );
 }
