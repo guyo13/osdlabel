@@ -462,21 +462,22 @@ Sets up keyboard shortcut handling. This is called automatically by `AnnotatorPr
 
 ---
 
-# Basic Annotation
+# Basic Controls
 
 ## Drawing tools
 
-osdlabel provides five geometric annotation tools:
+osdlabel provides six geometric annotation tools:
 
 <MinimalViewerDemoWrapper />
 
-| Tool          | Shortcut | Geometry                        | Drawing action                                         |
-| ------------- | -------- | ------------------------------- | ------------------------------------------------------ |
-| **Rectangle** | `r`      | Origin, width, height, rotation | Click and drag to define opposite corners              |
-| **Circle**    | `c`      | Center, radius                  | Click and drag from center outward                     |
-| **Line**      | `l`      | Start point, end point          | Click and drag between endpoints                       |
-| **Point**     | `p`      | Single position                 | Single click to place                                  |
-| **Path**      | `d`      | Array of points, open/closed    | Click to add vertices, `Enter` to finish, `c` to close |
+| Tool               | Shortcut | Geometry                        | Drawing action                                         |
+| ------------------ | -------- | ------------------------------- | ------------------------------------------------------ |
+| **Rectangle**      | `r`      | Origin, width, height, rotation | Click and drag to define opposite corners              |
+| **Circle**         | `c`      | Center, radius                  | Click and drag from center outward                     |
+| **Line**           | `l`      | Start point, end point          | Click and drag between endpoints                       |
+| **Point**          | `p`      | Single position                 | Single click to place                                  |
+| **Path**           | `d`      | Array of points, open/closed    | Click to add vertices, `Enter` to finish, `c` to close |
+| **Free Hand Path** | `f`      | Array of sampled points         | Click and drag to draw; release to commit              |
 
 ## Selecting a tool
 
@@ -535,9 +536,25 @@ The path tool is multi-click (not drag-based):
 
 Paths require at least 2 points to be committed.
 
+## Free hand path tool workflow
+
+The free hand path tool captures a continuous stroke as you drag:
+
+1. Press `f` to activate the free hand path tool
+2. Click and hold, then drag to draw — vertices are sampled automatically as you move
+3. **Release** the mouse button to commit the annotation
+4. By default the path is **closed** (a filled polygon); hold **Shift** while drawing to produce an **open** polyline instead
+5. Press `Escape` during a drag to cancel
+
+Closed paths require at least 3 sampled points; open paths require at least 2. If the stroke is too short the annotation is discarded automatically.
+
+```tsx
+actions.setActiveTool('freeHandPath');
+```
+
 ---
 
-# Multi-Image Grid
+# Viewer Grid
 
 ## Grid view
 
@@ -950,6 +967,7 @@ osdlabel is designed for high-throughput annotation tasks with a comprehensive s
 | `l`                    | Line tool                                 |
 | `p`                    | Point tool                                |
 | `d`                    | Path (draw) tool                          |
+| `f`                    | Free hand path tool                       |
 | `Escape`               | Deselect annotation, then deactivate tool |
 | `Delete` / `Backspace` | Delete selected annotation                |
 | `1`–`9`                | Activate grid cell by position            |

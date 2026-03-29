@@ -62,22 +62,20 @@ export default defineConfig({
           label: 'Guides',
           items: [
             { label: 'Packages & Architecture', slug: 'guides/packages-and-architecture' },
-            { label: 'Components', slug: 'guides/components' },
-            { label: 'State & Hooks', slug: 'guides/state-and-hooks' },
-            { label: 'Basic Annotation', slug: 'guides/basic-annotation' },
-            { label: 'Multi-Image Grid', slug: 'guides/multi-image-grid' },
+            { label: 'Basic Controls', slug: 'guides/basic-annotation' },
+            { label: 'Keyboard Shortcuts', slug: 'guides/keyboard-shortcuts' },
+            { label: 'Viewer Grid', slug: 'guides/multi-image-grid' },
             { label: 'Annotation Contexts', slug: 'guides/annotation-contexts' },
             { label: 'Serialization', slug: 'guides/serialization' },
-            { label: 'Keyboard Shortcuts', slug: 'guides/keyboard-shortcuts' },
+            { label: 'Components', slug: 'guides/components' },
+            { label: 'State & Hooks', slug: 'guides/state-and-hooks' },
             { label: 'Coordinate Systems', slug: 'guides/coordinate-systems' },
             { label: 'OSD-Fabric Integration', slug: 'guides/osd-fabric-integration' },
           ],
         },
         {
           label: 'API Reference',
-          items: [
-            typeDocSidebarGroup,
-          ],
+          items: [typeDocSidebarGroup],
         },
         {
           label: 'Examples',
