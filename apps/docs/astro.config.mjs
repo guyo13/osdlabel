@@ -62,9 +62,9 @@ export default defineConfig({
           label: 'Guides',
           items: [
             { label: 'Packages & Architecture', slug: 'guides/packages-and-architecture' },
-            { label: 'Basic Controls', slug: 'guides/basic-annotation' },
+            { label: 'Basic Controls', slug: 'guides/basic-controls' },
             { label: 'Keyboard Shortcuts', slug: 'guides/keyboard-shortcuts' },
-            { label: 'Viewer Grid', slug: 'guides/multi-image-grid' },
+            { label: 'Viewer Grid', slug: 'guides/viewer-grid' },
             { label: 'Annotation Contexts', slug: 'guides/annotation-contexts' },
             { label: 'Serialization', slug: 'guides/serialization' },
             { label: 'Components', slug: 'guides/components' },

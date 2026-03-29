@@ -20,7 +20,14 @@ const contexts: AnnotationContext[] = [
   {
     id: createAnnotationContextId('default'),
     label: 'Default',
-    tools: [{ type: 'rectangle' }, { type: 'circle' }],
+    tools: [
+      { type: 'rectangle' },
+      { type: 'circle' },
+      { type: 'line' },
+      { type: 'point' },
+      { type: 'path' },
+      { type: 'freeHandPath' },
+    ],
   },
 ];
 
