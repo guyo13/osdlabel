@@ -55,7 +55,6 @@ function AppContent() {
   onMount(() => {
     actions.setContexts(contexts);
     actions.setActiveContext(contexts[0]!.id);
-    actions.assignImageToCell(0, images[0]!.id);
   });
 
   return (
@@ -84,7 +83,6 @@ function SerializationDemoContent() {
   onMount(() => {
     actions.setContexts(contexts);
     actions.setActiveContext(contexts[0]!.id);
-    actions.assignImageToCell(0, images[0]!.id);
   });
 
   const json = createMemo(() => {
@@ -144,7 +142,6 @@ function RealSerializationDemo() {
   onMount(() => {
     actions.setContexts(contexts);
     actions.setActiveContext(contexts[0]!.id);
-    actions.assignImageToCell(0, images[0]!.id);
   });
 
   const json = createMemo(() => {

@@ -1,0 +1,76 @@
+---
+title: State Management & Hooks
+description: Accessing and mutating the internal SolidJS stores
+---
+
+osdlabel is built on SolidJS and uses a reactive state model. State is managed via context providers and accessed through custom hooks.
+
+## State Architecture
+
+osdlabel uses three internal SolidJS stores:
+
+| Store               | Contents                                                                         |
+| ------------------- | -------------------------------------------------------------------------------- |
+| **AnnotationState** | All annotations organized by image ID                                            |
+| **UIState**         | Active tool, active cell, grid dimensions, grid assignments, selected annotation |
+| **ContextState**    | Available contexts and the active context ID                                     |
+
+All of these stores are provided to the component tree via the `AnnotatorProvider`.
+
+## `useAnnotator`
+
+The primary hook for accessing all annotation state and actions. Must be used within an `AnnotatorProvider`.
+
+```ts
+import { useAnnotator } from 'osdlabel/state';
+
+function MyComponent() {
+  const { annotationState, uiState, actions } = useAnnotator();
+
+  // Read state
+  console.log('Active tool:', uiState.activeTool);
+
+  // Mutate state using actions
+  return (
+    <button onClick={() => actions.setActiveTool('rectangle')}>
+      Select Rectangle Tool
+    </button>
+  );
+}
+```
+
+### Mutating State
+
+You **must never** modify the stores directly. All mutations must go through the provided `actions` object returned by `useAnnotator()`.
+
+The `actions` object provides methods for:
+- **Annotations**: `addAnnotation`, `updateAnnotation`, `deleteAnnotation`, `loadAnnotations`
+- **UI**: `setActiveTool`, `setActiveCell`, `setSelectedAnnotation`, `assignImageToCell`, `setGridDimensions`
+- **Contexts**: `setContexts`, `setActiveContext`, `setDisplayedContexts`
+
+## `useConstraints`
+
+A convenience hook for checking tool availability based on the active context's constraints.
+
+```ts
+import { useConstraints } from 'osdlabel/hooks';
+
+function MyToolbar() {
+  const { isToolEnabled } = useConstraints();
+
+  return (
+    <div>
+      <button disabled={!isToolEnabled('rectangle')}>Rectangle</button>
+      <button disabled={!isToolEnabled('circle')}>Circle</button>
+    </div>
+  );
+}
+```
+
+## `useKeyboard`
+
+Sets up keyboard shortcut handling. This is called automatically by `AnnotatorProvider`, so you usually don't need to call it directly unless you are building a completely custom provider setup.
+
+```ts
+import { useKeyboard } from 'osdlabel/hooks';
+```

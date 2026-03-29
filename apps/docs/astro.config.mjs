@@ -61,6 +61,9 @@ export default defineConfig({
         {
           label: 'Guides',
           items: [
+            { label: 'Packages & Architecture', slug: 'guides/packages-and-architecture' },
+            { label: 'Components', slug: 'guides/components' },
+            { label: 'State & Hooks', slug: 'guides/state-and-hooks' },
             { label: 'Basic Annotation', slug: 'guides/basic-annotation' },
             { label: 'Multi-Image Grid', slug: 'guides/multi-image-grid' },
             { label: 'Annotation Contexts', slug: 'guides/annotation-contexts' },
@@ -73,13 +76,6 @@ export default defineConfig({
         {
           label: 'API Reference',
           items: [
-            { label: 'Overview', slug: 'api/overview' },
-            { label: 'Components', slug: 'api/components' },
-            { label: 'State Management', slug: 'api/state' },
-            { label: 'Overlay', slug: 'api/overlay' },
-            { label: 'Serialization', slug: 'api/serialization' },
-            { label: 'Hooks', slug: 'api/hooks' },
-            { label: 'Constants', slug: 'api/constants' },
             typeDocSidebarGroup,
           ],
         },
@@ -98,10 +94,30 @@ export default defineConfig({
   ],
   vite: {
     ssr: {
-      noExternal: ['osdlabel'],
+      noExternal: [
+        'osdlabel',
+        '@osdlabel/annotation',
+        '@osdlabel/annotation-context',
+        '@osdlabel/viewer-api',
+        '@osdlabel/validation',
+        '@osdlabel/fabric-annotations',
+        '@osdlabel/fabric-osd',
+        'fabric',
+        'openseadragon',
+      ],
     },
     optimizeDeps: {
-      include: ['osdlabel'],
+      include: [
+        'osdlabel',
+        '@osdlabel/annotation',
+        '@osdlabel/annotation-context',
+        '@osdlabel/viewer-api',
+        '@osdlabel/validation',
+        '@osdlabel/fabric-annotations',
+        '@osdlabel/fabric-osd',
+        'fabric',
+        'openseadragon',
+      ],
     },
   },
 });

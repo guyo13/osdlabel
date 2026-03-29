@@ -108,6 +108,12 @@ importers:
       astro:
         specifier: ^5.8.1
         version: 5.18.0(rollup@4.57.1)(typescript@5.9.3)(yaml@2.8.3)
+      fabric:
+        specifier: 'catalog:'
+        version: 7.2.0
+      openseadragon:
+        specifier: 'catalog:'
+        version: 5.0.1
       osdlabel:
         specifier: workspace:*
         version: link:../../packages/osdlabel
@@ -126,6 +132,9 @@ importers:
       typedoc-plugin-markdown:
         specifier: latest
         version: 4.11.0(typedoc@0.28.18(typescript@5.9.3))
+      valibot:
+        specifier: 'catalog:'
+        version: 1.3.1(typescript@5.9.3)
     devDependencies:
       '@astrojs/solid-js':
         specifier: ^5.1.3

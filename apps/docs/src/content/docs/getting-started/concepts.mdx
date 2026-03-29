@@ -5,11 +5,13 @@ description: Key concepts and architecture of osdlabel
 
 ## Architecture overview
 
-osdlabel is composed of three layers:
+`osdlabel` is built as a layered monorepo of 7 separate packages, ensuring that the core data model and generic utilities have **zero framework dependencies**. The architecture is composed of three main layers:
 
 1. **OpenSeaDragon** — Manages the DZI/tiled image viewer, handling pan, zoom, and tile loading
-2. **Fabric.js overlay** — A transparent Fabric.js canvas positioned on top of each OSD viewer, synchronized on every animation frame
-3. **SolidJS state** — Reactive stores that drive the UI, tool selection, constraints, and annotation data
+2. **Fabric.js overlay** — A transparent Fabric.js canvas positioned on top of each OSD viewer, synchronized on every animation frame (via `@osdlabel/fabric-osd`)
+3. **SolidJS state & UI** — Reactive stores that drive the UI, tool selection, constraints, and annotation data (the main `osdlabel` package)
+
+For full details on how the packages are split, see the [Packages & Architecture](/osdlabel/guides/packages-and-architecture/) guide.
 
 The overlay's job is to compute a `viewportTransform` matrix that maps **image-space** coordinates to **screen-space**, so annotations stored in image pixels render correctly at any zoom level.
 
