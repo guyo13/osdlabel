@@ -3,11 +3,11 @@ title: Quick Start
 description: Create your first image annotator in minutes
 ---
 
-import QuickStartDemoWrapper from '../../../components/demos/QuickStartDemoWrapper.astro';
+import MinimalViewerDemoWrapper from '../../../components/demos/MinimalViewerDemoWrapper.astro';
 
 This guide walks you through setting up a minimal annotation interface with osdlabel.
 
-<QuickStartDemoWrapper />
+<MinimalViewerDemoWrapper />
 
 ## 1. Define your images
 
@@ -21,7 +21,12 @@ const images: ImageSource[] = [
   {
     id: createImageId('sample-1'),
     dziUrl: 'https://openseadragon.github.io/example-images/highsmith/highsmith.dzi',
-    label: 'Sample Image',
+    label: 'Highsmith',
+  },
+  {
+    id: createImageId('sample-2'),
+    dziUrl: 'https://openseadragon.github.io/example-images/duomo/duomo.dzi',
+    label: 'Duomo',
   },
 ];
 ```
@@ -36,14 +41,15 @@ import type { AnnotationContext } from '@osdlabel/annotation-context';
 
 const contexts: AnnotationContext[] = [
   {
-    id: createAnnotationContextId('general'),
-    label: 'General',
+    id: createAnnotationContextId('default'),
+    label: 'Default',
     tools: [
       { type: 'rectangle' },
       { type: 'circle' },
       { type: 'line' },
       { type: 'point' },
       { type: 'path' },
+      { type: 'freeHandPath' },
     ],
   },
 ];
@@ -66,6 +72,12 @@ function App() {
       <Annotator
         images={images}
         contexts={contexts}
+        filmstripPosition="left"
+        maxGridSize={{ columns: 4, rows: 4 }}
+        showGridControls
+        showFilmstrip
+        showViewControls
+        showFps
         onAnnotationsChange={(annotations) => {
           console.log('Annotations:', annotations.length);
         }}

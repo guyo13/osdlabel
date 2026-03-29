@@ -9,9 +9,14 @@ initFabricModule();
 
 const images: ImageSource[] = [
   {
-    id: createImageId('demo'),
+    id: createImageId('sample-1'),
     dziUrl: 'https://openseadragon.github.io/example-images/highsmith/highsmith.dzi',
-    label: 'Demo Image',
+    label: 'Highsmith',
+  },
+  {
+    id: createImageId('sample-2'),
+    dziUrl: 'https://openseadragon.github.io/example-images/duomo/duomo.dzi',
+    label: 'Duomo',
   },
 ];
 
@@ -25,6 +30,7 @@ const contexts: AnnotationContext[] = [
       { type: 'line' },
       { type: 'point' },
       { type: 'path' },
+      { type: 'freeHandPath' },
     ],
   },
 ];
@@ -34,7 +40,7 @@ export default function MinimalViewerDemo() {
     <div
       class="osdlabel-container"
       style={{
-        height: '420px',
+        height: '500px',
         width: '100%',
         border: '1px solid #333',
         'border-radius': '6px',
@@ -42,7 +48,16 @@ export default function MinimalViewerDemo() {
         margin: '1rem 0',
       }}
     >
-      <Annotator images={images} contexts={contexts} />
+      <Annotator
+        images={images}
+        contexts={contexts}
+        filmstripPosition="left"
+        maxGridSize={{ columns: 4, rows: 4 }}
+        showGridControls
+        showFilmstrip
+        showViewControls
+        showFps
+      />
     </div>
   );
 }

@@ -86,7 +86,7 @@ const TableSelector: Component<{
             'padding-top': '4px', // Use padding instead of margin to include the gap in the hit area
             'pointer-events': 'auto', // Ensure pointer events work
             'min-width': '100px',
-            'z-index': 1000,
+            'z-index': 9999,
           }}
           onMouseLeave={() => {
             setHoverCols(null);

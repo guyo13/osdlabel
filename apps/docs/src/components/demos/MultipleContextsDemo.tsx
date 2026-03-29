@@ -52,6 +52,7 @@ const contexts: AnnotationContext[] = [
       { type: 'line' },
       { type: 'point' },
       { type: 'path' },
+      { type: 'freeHandPath' },
     ],
   },
 ];

@@ -1,4 +1,4 @@
-import { createEffect, type Component, type JSX } from 'solid-js';
+import { createEffect, Show, type Component, type JSX } from 'solid-js';
 import { AnnotatorProvider } from '../state/annotator-context.js';
 import type { AnnotatorProviderProps } from '../state/annotator-context.js';
 import { useAnnotator } from '../state/annotator-context.js';
@@ -35,6 +35,8 @@ export interface AnnotatorProps extends Omit<AnnotatorProviderProps, 'children'>
   readonly style?: JSX.CSSProperties | undefined;
   /** Whether to show the FPS counter (default: false) */
   readonly showFps?: boolean | undefined;
+  /** Other children of the provider. */
+  readonly providerChildren?: JSX.Element | undefined;
 }
 
 const AnnotatorInner: Component<Omit<AnnotatorProps, keyof AnnotatorProviderProps>> = (props) => {
@@ -137,6 +139,7 @@ const Annotator: Component<AnnotatorProps> = (props) => {
         style={props.style}
         showFps={props.showFps}
       />
+      <Show when={props.providerChildren}>{props.providerChildren}</Show>
     </AnnotatorProvider>
   );
 };

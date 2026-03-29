@@ -7,42 +7,16 @@ import { PackageManagers } from 'starlight-package-managers';
 
 ## Install the package
 
+The main `osdlabel` package includes the complete SolidJS UI and re-exports all core logic. For most projects, this is the only package you need to install.
+
 <PackageManagers pkg="osdlabel" pkgManagers={['npm', 'pnpm', 'yarn', 'bun', 'deno']} />
 
-## Peer dependencies
-
-osdlabel requires SolidJS as a peer dependency:
-
-<PackageManagers pkg="solid-js" pkgManagers={['npm', 'pnpm', 'yarn', 'bun', 'deno']} />
-
-The following dependencies are bundled with osdlabel and do not need to be installed separately:
-
-- `fabric` (v7.x) — Canvas abstraction for annotation drawing and editing
-- `openseadragon` (v5.x) — DZI/tiled image viewer
+*Note: `osdlabel` is built as a modular monorepo. If you are building a custom UI or using a different framework, you can install the underlying packages individually (e.g., `@osdlabel/annotation`, `@osdlabel/fabric-osd`). See [Packages & Architecture](/osdlabel/guides/packages-and-architecture/) for details.*
 
 ## Bundler setup
 
 osdlabel is an ESM-only package. It comes pre-compiled with SolidJS optimized JavaScript, so your bundler does not need to handle its JSX.
 
-If you are building your own SolidJS application (recommended), you will still need a setup that supports SolidJS.
-
-### Vite (recommended)
-
-<PackageManagers
-  pkg="vite vite-plugin-solid"
-  dev
-  pkgManagers={['npm', 'pnpm', 'yarn', 'bun', 'deno']}
-/>
-
-```ts
-// vite.config.ts
-import { defineConfig } from 'vite';
-import solidPlugin from 'vite-plugin-solid';
-
-export default defineConfig({
-  plugins: [solidPlugin()],
-});
-```
 
 ## TypeScript
 

@@ -1,10 +1,11 @@
-import { serialize, createImageId } from '@osdlabel/annotation';
-import { createAnnotationContextId } from '@osdlabel/annotation-context';
-import { AnnotatorProvider, useAnnotator } from 'osdlabel/state';
-import type { ImageSource } from '@osdlabel/annotation';
-import type { AnnotationContext } from '@osdlabel/annotation-context';
-import { initFabricModule } from 'osdlabel';
 import { createMemo, onMount } from 'solid-js';
+import { initFabricModule } from 'osdlabel';
+import { Annotator } from 'osdlabel/components';
+import { AnnotatorProvider, useAnnotator } from 'osdlabel/state';
+import { serialize, createImageId } from '@osdlabel/annotation';
+import type { ImageSource } from '@osdlabel/annotation';
+import { createAnnotationContextId } from '@osdlabel/annotation-context';
+import type { AnnotationContext } from '@osdlabel/annotation-context';
 
 initFabricModule();
 
@@ -20,12 +21,20 @@ const contexts: AnnotationContext[] = [
   {
     id: createAnnotationContextId('default'),
     label: 'Default',
-    tools: [{ type: 'rectangle' }, { type: 'circle' }],
+    tools: [
+      { type: 'rectangle' },
+      { type: 'circle' },
+      { type: 'line' },
+      { type: 'point' },
+      { type: 'path' },
+      { type: 'freeHandPath' },
+    ],
   },
 ];
 
-function SerializationPreview() {
+function SerializedJson() {
   const { annotationState } = useAnnotator();
+
   const json = createMemo(() => {
     const doc = serialize(annotationState, images);
     return JSON.stringify(doc, null, 2);
@@ -34,13 +43,13 @@ function SerializationPreview() {
   return (
     <div
       style={{
-        padding: '8px',
+        maxHeight: '450px',
         background: '#1e1e1e',
         color: '#00ff00',
+        overflow: 'auto',
+        padding: '8px',
         'font-family': 'monospace',
         'font-size': '11px',
-        'max-height': '200px',
-        'overflow-y': 'auto',
         'border-top': '1px solid #333',
       }}
     >
@@ -49,140 +58,31 @@ function SerializationPreview() {
   );
 }
 
-function AppContent() {
-  const { actions } = useAnnotator();
-
-  onMount(() => {
-    actions.setContexts(contexts);
-    actions.setActiveContext(contexts[0]!.id);
-    actions.assignImageToCell(0, images[0]!.id);
-  });
-
-  return (
-    <div
-      style={{
-        height: '420px',
-        display: 'flex',
-        'flex-direction': 'column',
-        border: '1px solid #333',
-        'border-radius': '6px',
-        overflow: 'hidden',
-      }}
-    >
-      <div style={{ flex: '1', 'min-height': '0' }}>
-        <AnnotatorProvider>
-          {/* Need to wrap in another provider or pass state down if we want to show it outside */}
-        </AnnotatorProvider>
-      </div>
-    </div>
-  );
-}
-
-function SerializationDemoContent() {
-  const { actions, annotationState } = useAnnotator();
-
-  onMount(() => {
-    actions.setContexts(contexts);
-    actions.setActiveContext(contexts[0]!.id);
-    actions.assignImageToCell(0, images[0]!.id);
-  });
-
-  const json = createMemo(() => {
-    const doc = serialize(annotationState, images);
-    return JSON.stringify(doc, null, 2);
-  });
-
-  return (
-    <div
-      style={{
-        height: '500px',
-        display: 'flex',
-        'flex-direction': 'column',
-        border: '1px solid #333',
-        'border-radius': '6px',
-        overflow: 'hidden',
-        margin: '1rem 0',
-      }}
-    >
-      <div style={{ flex: '1', 'min-height': '0', position: 'relative' }}>
-        {/* Use the library components directly to avoid nested provider issues */}
-        <div style={{ height: '100%', display: 'flex', 'flex-direction': 'column' }}>
-          <div style={{ flex: '1' }}>
-            <div style={{ width: '100%', height: '100%' }}>
-              {/* For simplicity in this demo, just a single cell */}
-              <div style={{ width: '100%', height: '100%', position: 'relative' }}>
-                {/* GridView with 1x1 */}
-                <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }}>
-                  <div style={{ display: 'flex', height: '100%' }}>
-                    <div style={{ flex: 1, position: 'relative' }}>
-                      <div style={{ height: '100%' }}>
-                        <div style={{ height: '100%' }}>
-                          <div style={{ height: '300px' }}>
-                            <div style={{ width: '100%', height: '100%', position: 'relative' }}>
-                              <div style={{ height: '100%' }}></div>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-import { GridView, Toolbar, StatusBar } from 'osdlabel/components';
-
 function RealSerializationDemo() {
-  const { actions, annotationState } = useAnnotator();
-
-  onMount(() => {
-    actions.setContexts(contexts);
-    actions.setActiveContext(contexts[0]!.id);
-    actions.assignImageToCell(0, images[0]!.id);
-  });
-
-  const json = createMemo(() => {
-    const doc = serialize(annotationState, images);
-    return JSON.stringify(doc, null, 2);
-  });
-
   return (
     <div
       class="osdlabel-container"
       style={{
         display: 'flex',
         'flex-direction': 'column',
-        height: '500px',
         border: '1px solid #333',
         'border-radius': '6px',
         overflow: 'hidden',
         margin: '1rem 0',
+        height: '1000px',
       }}
     >
-      <Toolbar />
-      <div style={{ flex: '1', 'min-height': '0', position: 'relative' }}>
-        <GridView columns={1} rows={1} maxColumns={1} maxRows={1} images={images} />
-      </div>
-      <div
-        style={{
-          height: '150px',
-          background: '#1e1e1e',
-          color: '#00ff00',
-          overflow: 'auto',
-          padding: '8px',
-          'font-family': 'monospace',
-          'font-size': '11px',
-          'border-top': '1px solid #333',
-        }}
-      >
-        <pre>{json()}</pre>
-      </div>
+      <Annotator
+        images={images}
+        contexts={contexts}
+        filmstripPosition="left"
+        maxGridSize={{ columns: 1, rows: 1 }}
+        showGridControls
+        showFilmstrip
+        showViewControls
+        showFps
+        providerChildren={<SerializedJson />}
+      />
     </div>
   );
 }

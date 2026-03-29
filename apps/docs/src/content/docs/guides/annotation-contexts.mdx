@@ -3,15 +3,17 @@ title: Annotation Contexts
 description: Configuring tool constraints and annotation scoping
 ---
 
-import ContextsDemoWrapper from '../../../components/demos/ContextsDemoWrapper.astro';
+import MultipleContextsDemoWrapper from '../../../components/demos/MultipleContextsDemoWrapper.astro';
 
 ## What is a context?
 
-An annotation context defines a labelling task — for example, "mark fractures" or "outline tumors." Each context specifies which drawing tools are available and optionally limits how many annotations of each type can be created.
+An annotation context defines a scope where annotations exist — for example, multiple annotation and labelling tasks. Each context specifies which drawing tools are available and optionally limits how many annotations of each type can be created.
+
+Annotation contexts are an extension of the core Annotation model, and are defined in the `@osdlabel/annotation-context` package.
 
 Only one context is active at a time.
 
-<ContextsDemoWrapper />
+<MultipleContextsDemoWrapper />
 
 ## Defining contexts
 
@@ -21,22 +23,37 @@ import type { AnnotationContext } from '@osdlabel/annotation-context';
 
 const contexts: AnnotationContext[] = [
   {
-    id: createAnnotationContextId('fracture'),
-    label: 'Fracture',
+    id: createAnnotationContextId('buildings'),
+    label: 'Buildings',
+    // Only annotate buildings in specific regions
+    imageIds: [createImageId('sample-1'), createImageId('sample-2')],
     tools: [
-      { type: 'line', maxCount: 3, countScope: 'per-image' },
-      { type: 'rectangle', maxCount: 2 },
+      // Up to 10 building outlines per image
+      { type: 'rectangle', maxCount: 10, countScope: 'per-image' },
+      // Up to 5 freehand boundaries total for irregular shapes
+      { type: 'path', maxCount: 5 },
     ],
   },
   {
-    id: createAnnotationContextId('general'),
-    label: 'General',
+    id: createAnnotationContextId('roads'),
+    label: 'Roads',
+    tools: [
+      // Trace road segments with lines
+      { type: 'line', maxCount: 20, countScope: 'per-image' },
+      // Mark intersections
+      { type: 'point', maxCount: 15 },
+    ],
+  },
+  {
+    id: createAnnotationContextId('landmarks'),
+    label: 'Landmarks',
     tools: [
       { type: 'rectangle' },
       { type: 'circle' },
       { type: 'line' },
       { type: 'point' },
       { type: 'path' },
+      { type: 'freeHandPath' },
     ],
   },
 ];
@@ -46,12 +63,12 @@ const contexts: AnnotationContext[] = [
 
 Each tool in a context can have:
 
-| Property       | Type                       | Default       | Description                                                        |
-| -------------- | -------------------------- | ------------- | ------------------------------------------------------------------ |
+| Property       | Type                       | Default       | Description                                                                          |
+| -------------- | -------------------------- | ------------- | ------------------------------------------------------------------------------------ |
 | `type`         | `ToolType`                 | (required)    | `'rectangle'` \| `'circle'` \| `'line'` \| `'point'` \| `'path'` \| `'freeHandPath'` |
-| `maxCount`     | `number`                   | unlimited     | Maximum number of annotations of this type                         |
-| `countScope`   | `CountScope`               | `'global'`    | Whether `maxCount` applies per-image or globally across all images |
-| `defaultStyle` | `Partial<AnnotationStyle>` | default style | Override the default stroke/fill for this tool                     |
+| `maxCount`     | `number`                   | unlimited     | Maximum number of annotations of this type                                           |
+| `countScope`   | `CountScope`               | `'global'`    | Whether `maxCount` applies per-image or globally across all images                   |
+| `defaultStyle` | `Partial<AnnotationStyle>` | default style | Override the default stroke/fill for this tool                                       |
 
 When a tool's `maxCount` is reached, it is automatically disabled in the toolbar and via keyboard shortcuts.
 
@@ -76,9 +93,9 @@ A context can be restricted to specific images using the `imageIds` property:
 
 ```tsx
 {
-  id: createAnnotationContextId('fracture'),
-  label: 'Fracture',
-  imageIds: [createImageId('xray-1'), createImageId('xray-2')],
+  id: createAnnotationContextId('context1'),
+  label: 'My context',
+  imageIds: [createImageId('img-1'), createImageId('img-2')],
   tools: [{ type: 'line', maxCount: 3 }],
 }
 ```
@@ -129,10 +146,7 @@ By default, only the active context's annotations are visible on the canvas. You
 <Annotator
   images={images}
   contexts={contexts}
-  displayedContextIds={[
-    createAnnotationContextId('fracture'),
-    createAnnotationContextId('general'),
-  ]}
+  displayedContextIds={[createAnnotationContextId('ctx1'), createAnnotationContextId('ctx2')]}
 />
 ```
 
@@ -141,8 +155,8 @@ By default, only the active context's annotations are visible on the canvas. You
 ```tsx
 const { actions } = useAnnotator();
 actions.setDisplayedContexts([
-  createAnnotationContextId('fracture'),
-  createAnnotationContextId('general'),
+  createAnnotationContextId('ctx1'),
+  createAnnotationContextId('ctx2'),
 ]);
 ```
 
