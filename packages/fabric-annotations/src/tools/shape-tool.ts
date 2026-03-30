@@ -9,7 +9,7 @@ import {
   generateId,
 } from '@osdlabel/annotation';
 import type { AnnotationContextId } from '@osdlabel/annotation-context';
-import { type FabricShapeOptions, getFabricOptions } from '../fabric-utils.js';
+import { getFabricOptions } from '../fabric-utils.js';
 
 /**
  * Base class for tools that create annotations via a click-and-drag interaction.
@@ -50,7 +50,10 @@ export abstract class ShapeTool<T extends FabricObject> extends BaseTool {
     this.overlay.canvas.requestRenderAll();
   }
 
-  protected abstract createPreview(imagePoint: Point, options: FabricShapeOptions): T;
+  protected abstract createPreview(
+    imagePoint: Point,
+    options: ReturnType<typeof getFabricOptions>,
+  ): T;
 
   onPointerMove(_event: PointerEvent, imagePoint: Point): void {
     if (!this.overlay || !this.preview || !this.startPoint) return;
