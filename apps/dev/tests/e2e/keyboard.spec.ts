@@ -182,7 +182,9 @@ test.describe('Keyboard Shortcuts', () => {
   test('OSD built-in keyboard shortcuts are suppressed', async ({ page }) => {
     // Switch to 'General' context to enable all tools
     await page.getByRole('combobox').selectOption({ label: 'General' });
+    // Wait for OSD canvas and FabricOverlay (which registers the canvas-key handler)
     await page.waitForSelector('.openseadragon-canvas');
+    await page.waitForSelector('canvas.upper-canvas');
 
     // Click the viewer to ensure OSD canvas has focus
     await page.locator('.openseadragon-canvas').first().click();

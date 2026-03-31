@@ -130,6 +130,9 @@ export class FabricOverlay {
   private readonly _onRotate = (): void => {
     this.sync();
   };
+  private readonly _onCanvasKey = (event: { preventDefaultAction: boolean }): void => {
+    event.preventDefaultAction = true;
+  };
 
   constructor(viewer: OpenSeadragon.Viewer, options?: OverlayOptions) {
     this._viewer = viewer;
@@ -195,6 +198,10 @@ export class FabricOverlay {
     viewer.addHandler(OSD_OPEN, this._onOpen);
     viewer.addHandler('flip', this._onFlip);
     viewer.addHandler('rotate', this._onRotate);
+
+    // Suppress all OSD built-in keyboard shortcuts (arrows, WASD, +/-, f, r, etc.)
+    // so they don't conflict with the host application's keyboard handling.
+    viewer.addHandler('canvas-key', this._onCanvasKey);
 
     // Initial sync if the viewer is already open
     if (viewer.isOpen()) {
@@ -337,6 +344,7 @@ export class FabricOverlay {
     this._viewer.removeHandler(OSD_OPEN, this._onOpen);
     this._viewer.removeHandler('flip', this._onFlip);
     this._viewer.removeHandler('rotate', this._onRotate);
+    this._viewer.removeHandler('canvas-key', this._onCanvasKey);
     this._fabricCanvas.dispose();
     this._canvasEl.remove();
   }
