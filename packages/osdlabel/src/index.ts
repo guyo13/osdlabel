@@ -9,13 +9,9 @@ export type {
   AnnotationStyle,
   BaseAnnotation,
   Annotation,
-  AnnotationDocument,
-  ImageAnnotations,
   ImageSource,
   AnnotationState,
   RawAnnotationData,
-  ExtensionValidator,
-  ExtensionValidatorFn,
   DeserializeResult,
 } from '@osdlabel/annotation';
 
@@ -25,9 +21,6 @@ export {
   DEFAULT_ANNOTATION_STYLE,
   DEFAULT_GRID_CONFIG,
   MAX_GRID_SIZE,
-  validateBaseAnnotation,
-  validateRawAnnotationData,
-  createAnnotationValidator,
   getAllAnnotationsFlat,
   SerializationError,
   toolTypeToGeometryType,

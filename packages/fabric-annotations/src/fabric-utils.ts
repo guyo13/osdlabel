@@ -16,7 +16,6 @@ import type {
   GeometryType,
   RawAnnotationData,
 } from '@osdlabel/annotation';
-import { sanitizeFabricData } from '@osdlabel/annotation';
 import type { FabricFields } from './types.js';
 
 export function getFabricOptions(style: AnnotationStyle, id: string) {
@@ -50,21 +49,13 @@ export function serializeFabricObject(obj: FabricObject): RawAnnotationData {
 
 /**
  * Deserialize a RawAnnotationData envelope back into a Fabric object.
- * Sanitizes the data through the property allowlist before passing to
- * util.enlivenObjects() to prevent untrusted data from reaching Fabric.
  */
 export async function deserializeFabricObject(
   raw: RawAnnotationData,
 ): Promise<FabricObject | null> {
   if (raw.format !== 'fabric') return null;
 
-  const sanitized = sanitizeFabricData(raw.data);
-  if (sanitized === null) {
-    console.warn('deserializeFabricObject: data failed sanitization, rejecting');
-    return null;
-  }
-
-  const objects = await util.enlivenObjects([sanitized]);
+  const objects = await util.enlivenObjects([raw.data]);
   if (objects.length === 0) return null;
 
   return objects[0] as FabricObject;

@@ -74,22 +74,6 @@ export interface BaseAnnotation {
  */
 export type Annotation<E extends object = Record<string, never>> = BaseAnnotation & E;
 
-// ── Serialization Types ──────────────────────────────────────────────────
-
-/** Top-level serialization envelope */
-export interface AnnotationDocument<E extends object = Record<string, never>> {
-  readonly version: '1.0.0';
-  readonly exportedAt: string;
-  readonly images: readonly ImageAnnotations<E>[];
-}
-
-/** Annotations for a single image */
-export interface ImageAnnotations<E extends object = Record<string, never>> {
-  readonly imageId: ImageId;
-  readonly sourceUrl: string;
-  readonly annotations: readonly Annotation<E>[];
-}
-
 // ── Image Source ──────────────────────────────────────────────────────────
 
 /** Image source descriptor */

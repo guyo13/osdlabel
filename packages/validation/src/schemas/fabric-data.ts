@@ -1,11 +1,8 @@
 /**
  * Valibot schema for RawAnnotationData validation.
- *
- * Mirrors the manual validation in @osdlabel/annotation/data-sanitizer.ts
- * and @osdlabel/annotation/serialization.ts validateRawAnnotationData().
  */
 import * as v from 'valibot';
-import { MAX_COORDINATE, MAX_STRING_LENGTH, MAX_POINTS_COUNT } from '@osdlabel/annotation';
+import { MAX_COORDINATE, MAX_STRING_LENGTH, MAX_POINTS_COUNT } from './constants.js';
 
 // ── Supported fabric types ──────────────────────────────────────────────
 
