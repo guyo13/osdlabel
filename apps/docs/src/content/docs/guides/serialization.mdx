@@ -42,7 +42,7 @@ osdlabel uses a flat JSON array format for persisting annotations:
 Use `serialize()` to create a flat array of annotations from the current state:
 
 ```tsx
-import { serialize } from '@osdlabel/annotation';
+import { serialize } from 'osdlabel';
 
 const { annotationState } = useAnnotator();
 
@@ -57,7 +57,7 @@ const json = JSON.stringify(doc, null, 2);
 Use `deserialize()` to parse an array and load it into the store:
 
 ```tsx
-import { deserialize } from '@osdlabel/annotation';
+import { deserialize } from 'osdlabel';
 
 const { actions } = useAnnotator();
 
@@ -108,7 +108,7 @@ The `onAnnotationsChange` callback fires whenever annotations are added, updated
 Use `getAllAnnotationsFlat()` to extract a flat array from the state at any time:
 
 ```tsx
-import { getAllAnnotationsFlat } from '@osdlabel/annotation';
+import { getAllAnnotationsFlat } from '@osdlabel/viewer-api';
 
 const { annotationState } = useAnnotator();
 const allAnnotations = getAllAnnotationsFlat(annotationState);
