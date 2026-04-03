@@ -508,21 +508,45 @@ export class FabricOverlay {
         this._forwardToFabric(POINTER_UP, originalEvent);
       },
 
+      pinchHandler: (event: OpenSeadragon.MouseTrackerEvent) => {
+        if (this._mode !== 'annotation') return;
+
+        // The MouseTrackerEvent type for pinch includes distance and center properties
+        const pinchEvt = event as unknown as OpenSeadragon.CanvasPinchEvent;
+        const evt = event as OpenSeadragon.MouseTrackerEvent & { preventDefault: boolean };
+        evt.preventDefault = true;
+
+        if (pinchEvt.lastDistance > 0 && pinchEvt.distance > 0) {
+          const zoomFactor = pinchEvt.distance / pinchEvt.lastDistance;
+
+          const viewerPos = this._viewer.viewport.pointFromPixel(
+            new OpenSeadragon.Point(pinchEvt.center.x, pinchEvt.center.y),
+            true, // current = true
+          );
+
+          this._viewer.viewport.zoomBy(zoomFactor, viewerPos);
+          this._viewer.viewport.applyConstraints();
+        }
+      },
+
       scrollHandler: (event: OpenSeadragon.MouseTrackerEvent) => {
         if (this._mode !== 'annotation') return;
 
         const domEvent = event.originalEvent as WheelEvent;
 
         // Always prevent page scrolling while in annotation mode
-        const scrollEvt = event as OpenSeadragon.MouseTrackerEvent & { preventDefault: boolean };
+        const scrollEvt = event as unknown as OpenSeadragon.CanvasScrollEvent;
         scrollEvt.preventDefault = true;
 
         if (domEvent.ctrlKey || domEvent.metaKey) {
           // Ctrl/Cmd+scroll → manually zoom OSD.
           // OSD's own scroll-zoom is disabled (setMouseNavEnabled(false)),
           // so we call viewport.zoomBy() directly.
-          const delta = -domEvent.deltaY;
-          const zoomFactor = Math.pow(1.2, delta > 0 ? 1 : -1);
+
+          // Use OSD's normalized scroll value to handle smooth touchpad pinch gracefully
+          // The scroll property is present on the event object at runtime but typing requires cast
+          const scroll = (event as any).scroll ?? 0;
+          const zoomFactor = Math.pow(1.2, scroll);
 
           // Zoom around the pointer position (in viewport coordinates)
           const viewerPos = this._viewer.viewport.pointFromPixel(
