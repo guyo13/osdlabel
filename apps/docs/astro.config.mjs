@@ -33,6 +33,7 @@ export default defineConfig({
             '../../packages/validation',
             '../../packages/fabric-annotations',
             '../../packages/fabric-osd',
+            '../../packages/osd-helper',
             '../../packages/osdlabel',
           ],
           tsconfig: '../../packages/annotation/tsconfig.json',
