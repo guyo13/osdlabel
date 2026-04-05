@@ -1,7 +1,6 @@
 // Annotation model (re-exported from @osdlabel/annotation)
 export type {
   AnnotationId,
-  ImageId,
   ToolType,
   GeometryType,
   Point,
@@ -14,20 +13,21 @@ export type {
 
 export {
   createAnnotationId,
-  createImageId,
   DEFAULT_ANNOTATION_STYLE,
   toolTypeToGeometryType,
 } from '@osdlabel/annotation';
 
 // Viewer API (re-exported from @osdlabel/viewer-api)
 export type {
+  ImageId,
+  ImageIdFields,
   UIState,
   KeyboardShortcutMap,
   CellTransform,
   AnnotationState,
   ImageSource,
 } from '@osdlabel/viewer-api';
-export { DEFAULT_CELL_TRANSFORM, getAllAnnotationsFlat } from '@osdlabel/viewer-api';
+export { createImageId, DEFAULT_CELL_TRANSFORM, getAllAnnotationsFlat } from '@osdlabel/viewer-api';
 
 // Annotation context (re-exported from @osdlabel/annotation-context)
 export type {

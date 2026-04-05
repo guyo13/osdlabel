@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { isContextScopedToImage, getCountableImageIds } from '../../src/context-scoping.js';
-import { createImageId } from '@osdlabel/annotation';
+import { createImageId } from '@osdlabel/viewer-api';
 import { createAnnotationContextId } from '../../src/types.js';
 import type { AnnotationContext } from '../../src/types.js';
 

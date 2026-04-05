@@ -1,6 +1,7 @@
 import { createStore } from 'solid-js/store';
 import { createMemo } from 'solid-js';
-import type { ToolType, ImageId } from '@osdlabel/annotation';
+import type { ToolType } from '@osdlabel/annotation';
+import type { ImageId } from '@osdlabel/viewer-api';
 import type { AnnotationState } from '@osdlabel/viewer-api';
 import type {
   AnnotationContextId,

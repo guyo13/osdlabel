@@ -18,7 +18,8 @@ import {
   serializeFabricObject,
 } from '@osdlabel/fabric-annotations';
 import { useAnnotator } from '../state/annotator-context.js';
-import type { AnnotationId, ImageId, Point, ToolType } from '@osdlabel/annotation';
+import type { AnnotationId, Point, ToolType } from '@osdlabel/annotation';
+import type { ImageId } from '@osdlabel/viewer-api';
 import { toolTypeToGeometryType } from '@osdlabel/annotation';
 interface FabricPointerEvent {
   readonly e: MouseEvent | PointerEvent | TouchEvent;

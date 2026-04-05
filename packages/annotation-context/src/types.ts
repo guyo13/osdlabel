@@ -1,4 +1,5 @@
-import type { ToolType, AnnotationStyle, ImageId } from '@osdlabel/annotation';
+import type { ToolType, AnnotationStyle } from '@osdlabel/annotation';
+import type { ImageId } from '@osdlabel/viewer-api';
 
 // ── Branded ID Type ─────────────────────────────────────────────────────
 

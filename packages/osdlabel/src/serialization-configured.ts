@@ -1,5 +1,5 @@
-import type { Annotation, AnnotationId, ImageId } from '@osdlabel/annotation';
-import { createImageId } from '@osdlabel/annotation';
+import type { Annotation, AnnotationId } from '@osdlabel/annotation';
+import type { ImageId } from '@osdlabel/viewer-api';
 import type { AnnotationState } from '@osdlabel/viewer-api';
 import { getAllAnnotationsFlat } from '@osdlabel/viewer-api';
 import { OsdAnnotationSchema } from '@osdlabel/validation';
@@ -37,11 +37,12 @@ export function deserialize(doc: unknown): DeserializeResult<OsdFields> {
 
   const byImage: Record<ImageId, Record<AnnotationId, Annotation<OsdFields>>> = {};
   for (const ann of annotations) {
-    const imageId = createImageId(ann.imageId);
-    if (!byImage[imageId]) {
-      byImage[imageId] = {};
+    const existing = byImage[ann.imageId];
+    if (existing) {
+      existing[ann.id] = ann;
+    } else {
+      byImage[ann.imageId] = { [ann.id]: ann };
     }
-    byImage[imageId][ann.id] = ann;
   }
 
   return { byImage };

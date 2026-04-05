@@ -1,11 +1,9 @@
 import type { Geometry } from './geometry';
-import type { ImageId } from './types';
 import type { ToolType } from './annotation-tool';
 
 /** Base annotation without extension fields */
 export interface BaseAnnotation {
   readonly id: AnnotationId;
-  readonly imageId: ImageId;
   readonly geometry: Geometry;
   readonly toolType: ToolType;
   readonly label?: string | undefined;
