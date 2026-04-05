@@ -1,7 +1,7 @@
 import type { Component } from 'solid-js';
 import { Show } from 'solid-js';
 import { useAnnotator } from '../state/annotator-context.js';
-import type { ImageId } from '@osdlabel/annotation';
+import type { ImageId } from '@osdlabel/viewer-api';
 import FpsCounter from './FpsCounter.js';
 
 export interface StatusBarProps {

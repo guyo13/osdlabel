@@ -10,7 +10,6 @@ import { FabricRawAnnotationDataSchema } from './fabric-data.js';
  */
 export const BaseAnnotationSchema = v.object({
   id: v.pipe(v.string(), v.minLength(1)),
-  imageId: v.pipe(v.string(), v.minLength(1)),
   geometry: GeometrySchema,
   toolType: ToolTypeSchema,
   label: v.optional(v.string()),
@@ -21,6 +20,7 @@ export const BaseAnnotationSchema = v.object({
 
 /** Schema for @see {@link import("osdlabel").OsdAnnotation} - validates fields added by the Annotator. */
 export const OsdFieldsSchema = v.object({
+  imageId: v.pipe(v.string(), v.minLength(1)),
   contextId: v.pipe(v.string(), v.minLength(1)),
   rawAnnotationData: FabricRawAnnotationDataSchema,
 });

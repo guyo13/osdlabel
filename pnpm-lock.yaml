@@ -105,6 +105,9 @@ importers:
       '@osdlabel/annotation-context':
         specifier: workspace:*
         version: link:../../packages/annotation-context
+      '@osdlabel/viewer-api':
+        specifier: workspace:*
+        version: link:../../packages/viewer-api
       astro:
         specifier: ^5.8.1
         version: 5.18.0(rollup@4.57.1)(typescript@5.9.3)(yaml@2.8.3)
@@ -154,6 +157,9 @@ importers:
       '@osdlabel/annotation':
         specifier: workspace:*
         version: link:../annotation
+      '@osdlabel/viewer-api':
+        specifier: workspace:*
+        version: link:../viewer-api
     devDependencies:
       typescript:
         specifier: 'catalog:'

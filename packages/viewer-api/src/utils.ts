@@ -1,5 +1,5 @@
-import type { Annotation, ImageId } from '@osdlabel/annotation';
-import type { AnnotationState } from './types.js';
+import type { Annotation } from '@osdlabel/annotation';
+import type { AnnotationState, ImageId } from './types.js';
 
 /**
  * Flatten all annotations from the store into a single array.

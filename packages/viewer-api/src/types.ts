@@ -1,4 +1,19 @@
-import type { Annotation, AnnotationId, ToolType, ImageId } from '@osdlabel/annotation';
+import type { Annotation, AnnotationId, ToolType } from '@osdlabel/annotation';
+
+// ── Image ID ─────────────────────────────────────────────────────────────
+
+declare const imageIdBrand: unique symbol;
+/** Unique image identifier */
+export type ImageId = string & { readonly __brand: typeof imageIdBrand };
+
+export function createImageId(value: string): ImageId {
+  return value as ImageId;
+}
+
+/** Extension field that records which image an annotation belongs to */
+export interface ImageIdFields {
+  readonly imageId: ImageId;
+}
 
 // ── Cell Transform ───────────────────────────────────────────────────────
 

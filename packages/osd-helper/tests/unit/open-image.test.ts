@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import type OpenSeadragon from 'openseadragon';
-import { createImageId } from '@osdlabel/annotation';
-import type { ImageSource } from '@osdlabel/annotation';
+import { createImageId } from '@osdlabel/viewer-api';
+import type { ImageSource } from '@osdlabel/viewer-api';
 import { openImage } from '../../src/open-image.js';
 
 function createMockViewer(): OpenSeadragon.Viewer {

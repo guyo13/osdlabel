@@ -3,6 +3,7 @@ import * as v from 'valibot';
 import {
   GeometrySchema,
   BaseAnnotationSchema,
+  OsdAnnotationSchema,
   FabricRawAnnotationDataSchema,
 } from '../../src/index.js';
 
@@ -70,7 +71,6 @@ describe('Validation Schemas', () => {
   describe('BaseAnnotationSchema', () => {
     const validBase = {
       id: 'ann-1',
-      imageId: 'img-1',
       geometry: { type: 'rectangle', origin: { x: 0, y: 0 }, width: 100, height: 50, rotation: 0 },
       toolType: 'rectangle',
       createdAt: '2024-01-01T00:00:00.000Z',
@@ -83,11 +83,31 @@ describe('Validation Schemas', () => {
 
     it('rejects missing or empty required fields', () => {
       expect(isValid(BaseAnnotationSchema, { ...validBase, id: '' })).toBe(false);
-      expect(isValid(BaseAnnotationSchema, { ...validBase, imageId: undefined })).toBe(false);
     });
 
     it('rejects invalid tool types', () => {
       expect(isValid(BaseAnnotationSchema, { ...validBase, toolType: 'unknown-tool' })).toBe(false);
+    });
+  });
+
+  describe('OsdAnnotationSchema', () => {
+    const validOsd = {
+      id: 'ann-1',
+      imageId: 'img-1',
+      contextId: 'ctx-1',
+      geometry: { type: 'rectangle', origin: { x: 0, y: 0 }, width: 100, height: 50, rotation: 0 },
+      toolType: 'rectangle',
+      createdAt: '2024-01-01T00:00:00.000Z',
+      updatedAt: '2024-01-01T00:00:00.000Z',
+      rawAnnotationData: { format: 'fabric', fabricVersion: '7.0.0', data: { type: 'rect', width: 100, height: 50, left: 0, top: 0 } },
+    };
+
+    it('accepts a valid OSD annotation', () => {
+      expect(isValid(OsdAnnotationSchema, validOsd)).toBe(true);
+    });
+
+    it('rejects missing imageId', () => {
+      expect(isValid(OsdAnnotationSchema, { ...validOsd, imageId: undefined })).toBe(false);
     });
   });
 

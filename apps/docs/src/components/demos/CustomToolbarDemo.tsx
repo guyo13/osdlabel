@@ -1,5 +1,5 @@
 import { GridView, StatusBar } from 'osdlabel/components';
-import { createImageId } from '@osdlabel/annotation';
+import { createImageId } from '@osdlabel/viewer-api';
 import { createAnnotationContextId } from '@osdlabel/annotation-context';
 import { useConstraints } from 'osdlabel/hooks';
 import { AnnotatorProvider, useAnnotator } from 'osdlabel/state';

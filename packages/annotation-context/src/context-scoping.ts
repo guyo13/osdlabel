@@ -1,4 +1,4 @@
-import type { ImageId } from '@osdlabel/annotation';
+import type { ImageId } from '@osdlabel/viewer-api';
 import type { AnnotationContext } from './types.js';
 
 /**

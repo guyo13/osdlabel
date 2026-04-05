@@ -1,6 +1,7 @@
 import { FabricObject } from 'fabric';
 import type { ToolOverlay } from '../types.js';
-import type { ToolType, Point, ImageId, AnnotationId, BaseAnnotation } from '@osdlabel/annotation';
+import type { ToolType, Point, AnnotationId, BaseAnnotation } from '@osdlabel/annotation';
+import type { ImageId } from '@osdlabel/viewer-api';
 import type { KeyboardShortcutMap } from '@osdlabel/viewer-api';
 import type { AnnotationContextId } from '@osdlabel/annotation-context';
 import type { ToolConstraint } from '@osdlabel/annotation-context';

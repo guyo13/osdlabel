@@ -1,6 +1,7 @@
 import { FabricObject } from 'fabric';
 import { BaseTool, type ToolCallbacks } from './base-tool.js';
-import type { AnnotationId, ImageId, Point } from '@osdlabel/annotation';
+import type { AnnotationId, Point } from '@osdlabel/annotation';
+import type { ImageId } from '@osdlabel/viewer-api';
 import type { KeyboardShortcutMap } from '@osdlabel/viewer-api';
 import type { ToolOverlay } from '../types.js';
 interface SelectionEvent {
