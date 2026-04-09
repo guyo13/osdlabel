@@ -22,7 +22,7 @@ All of these stores are provided to the component tree via the `AnnotatorProvide
 The primary hook for accessing all annotation state and actions. Must be used within an `AnnotatorProvider`.
 
 ```ts
-import { useAnnotator } from 'osdlabel/state';
+import { useAnnotator } from '@osdlabel/solid';
 
 function MyComponent() {
   const { annotationState, uiState, actions } = useAnnotator();
@@ -54,7 +54,7 @@ The `actions` object provides methods for:
 A convenience hook for checking tool availability based on the active context's constraints.
 
 ```ts
-import { useConstraints } from 'osdlabel/hooks';
+import { useConstraints } from '@osdlabel/solid';
 
 function MyToolbar() {
   const { isToolEnabled } = useConstraints();
@@ -73,5 +73,5 @@ function MyToolbar() {
 Sets up keyboard shortcut handling. This is called automatically by `AnnotatorProvider`, so you usually don't need to call it directly unless you are building a completely custom provider setup.
 
 ```ts
-import { useKeyboard } from 'osdlabel/hooks';
+import { useKeyboard } from '@osdlabel/solid';
 ```

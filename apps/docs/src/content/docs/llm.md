@@ -9,15 +9,23 @@ sidebar:
 
 ## Install the package
 
-The main `osdlabel` package includes the complete SolidJS UI and re-exports all core logic. For most projects, this is the only package you need to install.
+Choose the package that matches your framework:
 
-<PackageManagers pkg="osdlabel" pkgManagers={['npm', 'pnpm', 'yarn', 'bun', 'deno']} />
+### SolidJS
 
-_Note: `osdlabel` is built as a modular monorepo. If you are building a custom UI or using a different framework, you can install the underlying packages individually (e.g., `@osdlabel/annotation`, `@osdlabel/fabric-osd`). See [Packages & Architecture](/osdlabel/guides/packages-and-architecture/) for details._
+<PackageManagers pkg="@osdlabel/solid" pkgManagers={['npm', 'pnpm', 'yarn', 'bun', 'deno']} />
+
+### React
+
+<PackageManagers pkg="@osdlabel/react" pkgManagers={['npm', 'pnpm', 'yarn', 'bun', 'deno']} />
+
+Both framework packages re-export everything from the core `osdlabel` package, so you only need one install.
+
+_Note: If you are building a custom UI or using a different framework, you can install the underlying packages individually (e.g., `@osdlabel/annotation`, `@osdlabel/fabric-osd`, `osdlabel`). See [Packages & Architecture](/osdlabel/guides/packages-and-architecture/) for details._
 
 ## Bundler setup
 
-osdlabel is an ESM-only package. It comes pre-compiled with SolidJS optimized JavaScript, so your bundler does not need to handle its JSX.
+osdlabel is an ESM-only package. The `@osdlabel/solid` package comes pre-compiled with SolidJS optimized JavaScript, so your bundler does not need to handle its JSX. The `@osdlabel/react` package ships as standard ESM.
 
 ## TypeScript
 
@@ -226,9 +234,9 @@ SolidJS components run **once** to set up the view. Updates happen through signa
 
 # Packages & Architecture
 
-`osdlabel` is decomposed into a layered monorepo of 7 packages with clear dependency boundaries. This architecture ensures that core logic remains framework-agnostic while still providing a seamless, fully-integrated UI layer.
+`osdlabel` is decomposed into a layered monorepo with clear dependency boundaries. This architecture ensures that core logic remains framework-agnostic while providing fully-integrated UI layers for both SolidJS and React.
 
-## The 7 Packages
+## Packages
 
 ### `@osdlabel/annotation`
 
@@ -278,37 +286,43 @@ The overlay bridge connecting Fabric.js and OpenSeaDragon.
 
 ### `osdlabel`
 
-The final SolidJS annotator UI layer.
+Framework-agnostic shared logic layer.
 
-- Re-exports and composes all the above packages.
-- Contains the reactive state stores, hooks (`useAnnotator`, `useConstraints`), and components (`Annotator`, `ViewerCell`, `Toolbar`, etc.).
-- The `OsdAnnotation` type is composed here by intersecting `BaseAnnotation` with `ContextFields` and `FabricFields`.
+- Contains the `OsdAnnotation` composed type, serialization (`serialize`/`deserialize`), pure action reducers (`applyAnnotationAction`, `applyUIAction`, `applyContextAction`), constraint computation, keyboard mapping, and tool factory.
+- **No framework dependencies** — works with both SolidJS `produce()` and Immer `produce()`.
+
+### `@osdlabel/solid`
+
+SolidJS annotator UI layer.
+
+- Re-exports everything from `osdlabel` plus SolidJS-specific state stores (using `createStore` + `produce`), hooks (`useAnnotator`, `useConstraints`, `useKeyboard`), and components (`Annotator`, `ViewerCell`, `Toolbar`, etc.).
+- Depends on `osdlabel` + `solid-js`.
+
+### `@osdlabel/react`
+
+React annotator UI layer.
+
+- Re-exports everything from `osdlabel` plus React-specific state management (Immer-based reducers + React Context + `useReducer`), hooks, and components with full parity to the SolidJS package.
+- Depends on `osdlabel` + `react` + `immer`.
 
 ---
 
 ## Import structure
 
-For most applications, importing directly from the main `osdlabel` package is the quickest and easiest way to get started. `osdlabel` provides ESM-friendly sub-path exports.
+For most applications, importing from the framework-specific package (`@osdlabel/solid` or `@osdlabel/react`) is the quickest way to get started. Both re-export everything from `osdlabel`.
 
-### 1. Main barrel
-
-Recommended for quick starts. Re-exports the primary components and functions.
+### 1. Framework package (recommended)
 
 ```ts
+// SolidJS
+
+// React
 
 ```
 
-### 2. Sub-path barrels
+### 2. Direct package imports
 
-Preferred for better build performance and tree-shaking in production apps.
-
-```ts
-
-```
-
-### 3. Direct Package Imports
-
-For advanced usage, you can import types and core logic directly from the granular packages. This is particularly useful if you are building a custom UI layer instead of using the SolidJS components.
+For advanced usage or building a custom UI layer, import from the granular packages directly.
 
 ```ts
 

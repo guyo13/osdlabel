@@ -10,7 +10,7 @@ import MinimalViewerDemoWrapper from '../../../components/demos/MinimalViewerDem
 The `GridView` component displays images in an MxN grid. Each cell is an independent OpenSeaDragon viewer with its own Fabric.js overlay.
 
 ```tsx
-import { GridView } from 'osdlabel/components';
+import { GridView } from '@osdlabel/solid';
 
 <GridView
   columns={uiState.gridColumns}
@@ -29,7 +29,7 @@ Resize the grid using keyboard shortcuts or the `GridControls` component (which 
 - `-` — Remove a column (minimum 1)
 
 ```tsx
-import { GridControls } from 'osdlabel/components';
+import { GridControls } from '@osdlabel/solid';
 
 <GridControls maxColumns={4} maxRows={4} />;
 ```
@@ -62,7 +62,7 @@ The active cell is highlighted visually and receives all drawing/selection input
 The `Filmstrip` component shows thumbnails of all available images and allows drag-to-assign interaction:
 
 ```tsx
-import { Filmstrip } from 'osdlabel/components';
+import { Filmstrip } from '@osdlabel/solid';
 
 <Filmstrip images={images} position="left" />;
 ```
@@ -89,7 +89,7 @@ The `Annotator` component bundles the grid, filmstrip, toolbar, and status bar i
 <MinimalViewerDemoWrapper />
 
 ```tsx
-import { Annotator } from 'osdlabel/components';
+import { Annotator } from '@osdlabel/solid';
 
 <Annotator
   images={images}

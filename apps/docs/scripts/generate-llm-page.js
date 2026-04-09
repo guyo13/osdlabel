@@ -82,9 +82,9 @@ console.log(`Generated llm.md (${Math.round(llmMd.length / 1024)} KB)`);
 // Write the plain text version
 const llmsTxt = `# osdlabel
 
-> DZI image annotation library for SolidJS
+> DZI image annotation library for SolidJS and React
 
-osdlabel is a high-performance annotation library for Deep Zoom Images, built with SolidJS, Fabric.js v7, and OpenSeaDragon.
+osdlabel is a high-performance annotation library for Deep Zoom Images, built with Fabric.js v7 and OpenSeaDragon, with official UI bindings for SolidJS and React.
 
 ## Documentation
 

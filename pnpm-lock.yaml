@@ -157,6 +157,9 @@ importers:
       '@osdlabel/annotation-context':
         specifier: workspace:*
         version: link:../../packages/annotation-context
+      '@osdlabel/solid':
+        specifier: workspace:*
+        version: link:../../packages/solid
       '@osdlabel/viewer-api':
         specifier: workspace:*
         version: link:../../packages/viewer-api

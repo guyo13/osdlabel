@@ -11,11 +11,11 @@ Use `AnnotatorProvider` and `useAnnotator()` to build a fully custom annotation 
 
 ```tsx
 import { render } from 'solid-js/web';
-import { GridView, StatusBar } from 'osdlabel/components';
+import { GridView, StatusBar } from '@osdlabel/solid';
 import { createImageId } from '@osdlabel/viewer-api';
 import { createAnnotationContextId } from '@osdlabel/annotation-context';
-import { useConstraints } from 'osdlabel/hooks';
-import { AnnotatorProvider, useAnnotator } from 'osdlabel/state';
+import { useConstraints } from '@osdlabel/solid';
+import { AnnotatorProvider, useAnnotator } from '@osdlabel/solid';
 import type { ToolType } from '@osdlabel/annotation';
 import type { ImageSource } from '@osdlabel/viewer-api';
 import type { AnnotationContext } from '@osdlabel/annotation-context';
