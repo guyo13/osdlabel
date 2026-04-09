@@ -94,30 +94,37 @@ export type { OsdAnnotation, OsdFields } from './types.js';
 export { serialize, deserialize, SerializationError } from './serialization-configured.js';
 export type { DeserializeResult } from './serialization-configured.js';
 
-// State
+// Pure action types and reducers
 export {
-  createAnnotationStore,
-  createUIStore,
-  createContextStore,
-  createActions,
-  AnnotatorProvider,
-  useAnnotator,
-  createConstraintStatus,
-} from './state/index.js';
-export type { AnnotatorProviderProps } from './state/annotator-context.js';
+  applyAnnotationAction,
+  applyUIAction,
+  applyContextAction,
+  validateAddAnnotation,
+} from './actions.js';
+export type { AnnotationAction, UIAction, ContextAction } from './actions.js';
 
-// Components
-export { default as ViewerCell } from './components/ViewerCell.js';
-export { default as Toolbar } from './components/Toolbar.js';
-export { default as StatusBar } from './components/StatusBar.js';
-export { default as ContextSwitcher } from './components/ContextSwitcher.js';
-export { default as GridView } from './components/GridView.js';
-export { default as Filmstrip } from './components/Filmstrip.js';
-export { default as GridControls } from './components/GridControls.js';
-export { ViewControls } from './components/ViewControls.js';
-export { default as Annotator } from './components/Annotator.js';
-export type { AnnotatorProps } from './components/Annotator.js';
+// Initial state factories
+export {
+  createInitialAnnotationState,
+  createInitialUIState,
+  createInitialContextState,
+} from './initial-state.js';
 
-// Hooks
-export { useConstraints } from './hooks/useConstraints.js';
-export { useKeyboard, DEFAULT_KEYBOARD_SHORTCUTS } from './hooks/useKeyboard.js';
+// Pure constraint computation
+export { computeConstraintStatus, countAnnotationsForContextAndType } from './constraints.js';
+
+// Keyboard mapping
+export { DEFAULT_KEYBOARD_SHORTCUTS, MAX_GRID_SIZE, mapKeyEventToActions } from './keyboard.js';
+export type { KeyboardMappingState } from './keyboard.js';
+
+// Tool factory and helpers
+export {
+  createAnnotationTool,
+  buildToolCallbacks,
+  getScenePointFromEvent,
+  processObjectModified,
+  processToolAddAnnotation,
+  processToolUpdateAnnotation,
+} from './tool-factory.js';
+export type { ToolCallbackAccessors, ToolCallbackDispatchers } from './tool-factory.js';
+
