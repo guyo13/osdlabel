@@ -1,12 +1,14 @@
-import { GridView, StatusBar } from 'osdlabel/components';
-import { createImageId } from '@osdlabel/viewer-api';
-import { createAnnotationContextId } from '@osdlabel/annotation-context';
-import { useConstraints } from 'osdlabel/hooks';
-import { AnnotatorProvider, useAnnotator } from 'osdlabel/state';
-import type { ToolType } from '@osdlabel/annotation';
-import type { ImageSource } from '@osdlabel/viewer-api';
-import type { AnnotationContext } from '@osdlabel/annotation-context';
-import { initFabricModule } from 'osdlabel';
+import {
+  GridView,
+  StatusBar,
+  AnnotatorProvider,
+  useAnnotator,
+  useConstraints,
+  initFabricModule,
+  createImageId,
+  createAnnotationContextId,
+} from '@osdlabel/solid';
+import type { ToolType, ImageSource, AnnotationContext } from '@osdlabel/solid';
 import { onMount } from 'solid-js';
 
 initFabricModule();

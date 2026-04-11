@@ -53,7 +53,9 @@ The project is split into seven packages with clear dependency boundaries:
 - **`@osdlabel/validation`** (`packages/validation/`) — Valibot schema implementations (Standard Schema compatible). Contains: `GeometrySchema`, `PointSchema`, `ToolTypeSchema` (in `tool.ts`), `BaseAnnotationSchema`, `OsdFieldsSchema`, `OsdAnnotationSchema` (in `annotation.ts`), `FabricRawAnnotationDataSchema` (in `fabric-data.ts`). Depends on `@osdlabel/annotation` and `valibot`.
 - **`@osdlabel/fabric-annotations`** (`packages/fabric-annotations/`) — Fabric.js annotation tools and utilities, SolidJS-agnostic. Contains: all annotation tools (`BaseTool`, `ShapeTool`, `RectangleTool`, etc.), `ToolOverlay` interface, `FabricRawAnnotationData` (extends `RawAnnotationData<'fabric'>`), `FabricFields` extension interface, Fabric object serialization utilities (`serializeFabricObject`, `deserializeFabricObject`, `createFabricObjectFromRawData`, `getGeometryFromFabricObject`, `getFabricOptions`), `initFabricModule`. Depends on `@osdlabel/annotation`, `@osdlabel/annotation-context`, `@osdlabel/viewer-api` (for `KeyboardShortcutMap`), and `fabric`.
 - **`@osdlabel/fabric-osd`** (`packages/fabric-osd/`) — Fabric.js + OpenSeaDragon overlay bridge, SolidJS-agnostic. Contains: `FabricOverlay` (canvas overlay + viewport transform), `computeViewportTransform`. Depends on `@osdlabel/annotation`, `@osdlabel/viewer-api` (for `CellTransform`), `@osdlabel/fabric-annotations`, `@osdlabel/validation`, `fabric`, and `openseadragon`.
-- **`osdlabel`** (`packages/osdlabel/`) — SolidJS annotator UI. Contains: `OsdAnnotation` composed type alias (`Annotation<ImageIdFields & ContextFields & FabricFields>`), `serialize`/`deserialize`/`SerializationError`/`DeserializeResult` (serialization lives here, not in annotation), reactive state stores, hooks, and components. Depends on all above + `solid-js`.
+- **`osdlabel`** (`packages/osdlabel/`) — Framework-agnostic shared logic. Contains: `OsdAnnotation` composed type alias (`Annotation<ImageIdFields & ContextFields & FabricFields>`), `serialize`/`deserialize`/`SerializationError`/`DeserializeResult` (serialization lives here, not in annotation), pure action types and reducer functions (`applyAnnotationAction`, `applyUIAction`, `applyContextAction`), initial state factories, constraint computation (`computeConstraintStatus`), keyboard mapping (`mapKeyEventToActions`, `DEFAULT_KEYBOARD_SHORTCUTS`), and tool factory (`createAnnotationTool`, `buildToolCallbacks`). No framework dependencies.
+- **`@osdlabel/solid`** (`packages/solid/`) — SolidJS annotator UI. Contains: reactive state stores (using `createStore` + `produce`), hooks (`useAnnotationTool`, `useKeyboard`, `useConstraints`), and components (`Annotator`, `ViewerCell`, `GridView`, `Toolbar`, etc.). Depends on `osdlabel` + `solid-js`.
+- **`@osdlabel/react`** (`packages/react/`) — React annotator UI. Contains: Immer-based reducers, React Context + `useReducer` state management, hooks (`useAnnotationTool`, `useKeyboard`, `useConstraints`), and components (`Annotator`, `ViewerCell`, `GridView`, `Toolbar`, etc.). Depends on `osdlabel` + `react` + `immer`.
 
 The `Annotation` type is generic: `type Annotation<E extends object = Record<string, never>> = BaseAnnotation & E`. Extension interfaces (`ImageIdFields`, `ContextFields`, `FabricFields`) add fields via intersection. The composed type `OsdAnnotation = Annotation<OsdFields>` (where `OsdFields = ImageIdFields & ContextFields & FabricFields`) is used throughout `osdlabel`.
 
@@ -68,14 +70,16 @@ Key architectural rules:
 - **`@osdlabel/fabric-annotations` is SolidJS-agnostic and OSD-agnostic.** No imports from `solid-js` or `openseadragon`. Tools depend on the `ToolOverlay` interface, not `FabricOverlay` directly.
 - **`@osdlabel/fabric-osd` is SolidJS-agnostic.** No imports from `solid-js`. Pure overlay bridge between Fabric.js and OpenSeaDragon.
 - **Serialization (`serialize`/`deserialize`) lives in `osdlabel`, not in `@osdlabel/annotation`.** The annotation package has no serialization concerns. `serialize` calls `getAllAnnotationsFlat`; `deserialize` validates with Valibot and groups by imageId inline.
-- **State mutations go through named action functions.** Never modify the store directly from components. All mutations are in `packages/osdlabel/src/state/actions.ts`.
+- **`osdlabel` is framework-agnostic.** No imports from `solid-js`, `react`, or any UI framework. Pure business logic, types, serialization, and draft-mutating reducer functions that work with both SolidJS `produce()` and Immer `produce()`.
+- **`@osdlabel/solid` has no React imports. `@osdlabel/react` has no SolidJS imports.** Each framework package wraps the pure reducers from `osdlabel` with its own state management primitives.
+- **State mutations go through named action functions.** Never modify the store directly from components. Pure reducers live in `packages/osdlabel/src/actions.ts`; framework-specific action dispatchers live in `@osdlabel/solid` and `@osdlabel/react`.
 - **One active cell at a time.** Only one grid cell can be in annotation mode at a time. All other cells display existing annotations in read-only mode.
-- **Constraint enforcement is reactive.** Use Solid's `createMemo` to derive whether each tool is enabled/disabled from the current annotation counts and the active context's limits. The toolbar reads this derived state. Do not imperatively enable/disable tools.
+- **Constraint enforcement is reactive.** In SolidJS, use `createMemo`; in React, use `useMemo`. Both derive whether each tool is enabled/disabled from the current annotation counts and the active context's limits. The toolbar reads this derived state. Do not imperatively enable/disable tools.
 - **All packages use lockstep versioning.** Run `pnpm run check-versions` to validate. CI enforces this.
 
 ### Testing
 
-- Run `pnpm test` (Vitest) after implementing any core logic. Tests run across all 7 packages.
+- Run `pnpm test` (Vitest) after implementing any core logic. Tests run across all packages.
 - Run `pnpm test:e2e` (Playwright) after implementing any UI interaction. For parallel worktree runs, use `PORT=5174 pnpm test:e2e` to avoid port conflicts (default: 5173).
 - Write tests for the module you just built before moving to the next task.
 - **For canvas E2E tests:** Use Playwright's `page.mouse.move()`, `page.mouse.down()`, `page.mouse.up()` for precise drawing simulation. Use `page.screenshot()` with `expect(screenshot).toMatchSnapshot()` for visual regression.
@@ -98,8 +102,11 @@ This is a pnpm workspace monorepo with Turborepo for task orchestration:
 - `packages/validation/` — `@osdlabel/validation` (Valibot schemas, Standard Schema compatible)
 - `packages/fabric-annotations/` — `@osdlabel/fabric-annotations` (Fabric.js annotation tools & utilities)
 - `packages/fabric-osd/` — `@osdlabel/fabric-osd` (Fabric.js + OSD overlay bridge)
-- `packages/osdlabel/` — `osdlabel` (SolidJS annotator UI)
-- `apps/dev/` — the development app (`@osdlabel/dev`); source in `src/`, E2E tests in `tests/e2e/`
+- `packages/osdlabel/` — `osdlabel` (framework-agnostic shared logic)
+- `packages/solid/` — `@osdlabel/solid` (SolidJS annotator UI)
+- `packages/react/` — `@osdlabel/react` (React annotator UI)
+- `apps/dev/` — the SolidJS development app (`@osdlabel/dev`); source in `src/`, E2E tests in `tests/e2e/`
+- `apps/dev-react/` — the React development app (`@osdlabel/dev-react`); source in `src/`
 - `apps/docs/` — the documentation site (`@osdlabel/docs`); Astro + Starlight, deployed to GitHub Pages
 
 ### Library Entrypoints & Granularity
@@ -112,12 +119,16 @@ The library is split across multiple npm packages:
 4. **`@osdlabel/validation`** — Validation schemas. `import { BaseAnnotationSchema, OsdAnnotationSchema, OsdFieldsSchema, GeometrySchema, ToolTypeSchema, FabricRawAnnotationDataSchema } from '@osdlabel/validation'`
 5. **`@osdlabel/fabric-annotations`** — Fabric annotation tools & utilities. `import { initFabricModule, RectangleTool, type ToolOverlay, type FabricFields, type FabricRawAnnotationData } from '@osdlabel/fabric-annotations'`
 6. **`@osdlabel/fabric-osd`** — OSD overlay bridge. `import { FabricOverlay, computeViewportTransform } from '@osdlabel/fabric-osd'`
-7. **`osdlabel`** — SolidJS UI. Re-exports everything from the above packages plus its own state/hooks/components.
-   - Main barrel: `import { Annotator, serialize, deserialize, SerializationError, FabricOverlay, type OsdAnnotation } from 'osdlabel'`
-   - Sub-path barrels: `osdlabel/components`, `osdlabel/state`, `osdlabel/hooks`
-   - Granular imports: `import { Annotator } from 'osdlabel/components/Annotator'`
+7. **`osdlabel`** — Framework-agnostic shared logic. Types, serialization, pure reducers, constraints, keyboard mapping, tool factory.
+   - Main barrel: `import { serialize, deserialize, type OsdAnnotation, applyAnnotationAction, computeConstraintStatus } from 'osdlabel'`
+8. **`@osdlabel/solid`** — SolidJS UI. Re-exports everything from `osdlabel` plus SolidJS-specific state/hooks/components.
+   - Main barrel: `import { Annotator, useAnnotator, Toolbar } from '@osdlabel/solid'`
+   - Sub-path barrels: `@osdlabel/solid/components`, `@osdlabel/solid/state`, `@osdlabel/solid/hooks`
+9. **`@osdlabel/react`** — React UI. Re-exports everything from `osdlabel` plus React-specific state/hooks/components.
+   - Main barrel: `import { Annotator, useAnnotator, Toolbar } from '@osdlabel/react'`
+   - Sub-path barrels: `@osdlabel/react/components`, `@osdlabel/react/state`, `@osdlabel/react/hooks`
 
-The `osdlabel` package is built using **Vite in library mode** with `vite-plugin-solid`. The `@osdlabel/annotation`, `@osdlabel/viewer-api`, `@osdlabel/annotation-context`, `@osdlabel/validation`, `@osdlabel/fabric-annotations`, and `@osdlabel/fabric-osd` packages are built with plain `tsc`.
+The `@osdlabel/solid` package is built using **Vite in library mode** with `vite-plugin-solid`. The `osdlabel`, `@osdlabel/react`, and all other packages are built with plain `tsc`.
 
 ### Build Commands
 
@@ -170,14 +181,27 @@ pnpm typecheck    # tsc --noEmit
 pnpm test         # vitest run
 
 # packages/osdlabel/
+pnpm build        # tsc -p tsconfig.build.json
+pnpm typecheck    # tsc --noEmit
+pnpm test         # vitest run
+
+# packages/solid/
 pnpm build        # vite build + tsc --emitDeclarationOnly
 pnpm typecheck    # tsc --noEmit
 pnpm test         # vitest run
 pnpm test:watch   # vitest (watch mode)
 
+# packages/react/
+pnpm build        # tsc -p tsconfig.build.json
+pnpm typecheck    # tsc --noEmit
+pnpm test         # vitest run
+
 # apps/dev/
-pnpm dev          # vite
+pnpm dev          # vite (SolidJS, port 5173)
 pnpm test:e2e     # playwright test
+
+# apps/dev-react/
+pnpm dev          # vite (React, port 5174)
 
 # apps/docs/
 pnpm dev          # astro dev

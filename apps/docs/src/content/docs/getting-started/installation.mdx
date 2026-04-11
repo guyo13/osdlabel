@@ -7,15 +7,23 @@ import { PackageManagers } from 'starlight-package-managers';
 
 ## Install the package
 
-The main `osdlabel` package includes the complete SolidJS UI and re-exports all core logic. For most projects, this is the only package you need to install.
+Choose the package that matches your framework:
 
-<PackageManagers pkg="osdlabel" pkgManagers={['npm', 'pnpm', 'yarn', 'bun', 'deno']} />
+### SolidJS
 
-_Note: `osdlabel` is built as a modular monorepo. If you are building a custom UI or using a different framework, you can install the underlying packages individually (e.g., `@osdlabel/annotation`, `@osdlabel/fabric-osd`). See [Packages & Architecture](/osdlabel/guides/packages-and-architecture/) for details._
+<PackageManagers pkg="@osdlabel/solid" pkgManagers={['npm', 'pnpm', 'yarn', 'bun', 'deno']} />
+
+### React
+
+<PackageManagers pkg="@osdlabel/react" pkgManagers={['npm', 'pnpm', 'yarn', 'bun', 'deno']} />
+
+Both framework packages re-export everything from the core `osdlabel` package, so you only need one install.
+
+_Note: If you are building a custom UI or using a different framework, you can install the underlying packages individually (e.g., `@osdlabel/annotation`, `@osdlabel/fabric-osd`, `osdlabel`). See [Packages & Architecture](/osdlabel/guides/packages-and-architecture/) for details._
 
 ## Bundler setup
 
-osdlabel is an ESM-only package. It comes pre-compiled with SolidJS optimized JavaScript, so your bundler does not need to handle its JSX.
+osdlabel is an ESM-only package. The `@osdlabel/solid` package comes pre-compiled with SolidJS optimized JavaScript, so your bundler does not need to handle its JSX. The `@osdlabel/react` package ships as standard ESM.
 
 ## TypeScript
 

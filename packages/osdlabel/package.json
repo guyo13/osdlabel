@@ -1,7 +1,7 @@
 {
   "name": "osdlabel",
   "version": "0.0.1",
-  "description": "Web-based image annotation library with rich drawing controls, customizable annotation contexts, and built-in serialization. Uses OpenSeaDragon for deep zoom tiled images, Fabric.js for canvas rendering, and SolidJS for reactive UI.",
+  "description": "Framework-agnostic core for the osdlabel image annotation library — types, serialization, pure reducers, constraint computation, and keyboard mapping.",
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -10,21 +10,6 @@
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js",
       "default": "./dist/index.js"
-    },
-    "./components": {
-      "types": "./dist/components/index.d.ts",
-      "import": "./dist/components/index.js",
-      "default": "./dist/components/index.js"
-    },
-    "./hooks": {
-      "types": "./dist/hooks/index.d.ts",
-      "import": "./dist/hooks/index.js",
-      "default": "./dist/hooks/index.js"
-    },
-    "./state": {
-      "types": "./dist/state/index.d.ts",
-      "import": "./dist/state/index.js",
-      "default": "./dist/state/index.js"
     },
     "./*": {
       "types": "./dist/*.d.ts",
@@ -40,16 +25,14 @@
   "author": "Guy Or <guydude1@gmail.com>",
   "license": "BSD-3-Clause",
   "scripts": {
-    "build": "rm -rf dist && vite build && tsc -p tsconfig.build.json --emitDeclarationOnly",
+    "build": "tsc -p tsconfig.build.json",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
-    "test:watch": "vitest",
     "lint": "eslint src/ tests/"
   },
   "peerDependencies": {
     "fabric": "catalog:",
     "openseadragon": "catalog:",
-    "solid-js": "catalog:",
     "valibot": "catalog:"
   },
   "dependencies": {
@@ -57,7 +40,6 @@
     "@osdlabel/annotation-context": "workspace:*",
     "@osdlabel/fabric-annotations": "workspace:*",
     "@osdlabel/fabric-osd": "workspace:*",
-    "@osdlabel/osd-helper": "workspace:*",
     "@osdlabel/validation": "workspace:*",
     "@osdlabel/viewer-api": "workspace:*"
   },
@@ -67,8 +49,6 @@
     "@typescript-eslint/parser": "catalog:",
     "eslint": "catalog:",
     "typescript": "catalog:",
-    "vite": "catalog:",
-    "vite-plugin-solid": "catalog:",
     "vitest": "catalog:"
   }
 }

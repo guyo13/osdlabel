@@ -3,7 +3,7 @@ title: osdlabel
 description: Web-based image annotation library with rich controls, customization, and serialization
 template: splash
 hero:
-  tagline: Web-based image annotation library with rich drawing controls, customizable contexts, and built-in serialization. Powered by OpenSeaDragon for deep zoom tiled images, Fabric.js for canvas rendering, and SolidJS for reactive UI.
+  tagline: Web-based image annotation library with rich drawing controls, customizable contexts, and built-in serialization. Powered by OpenSeaDragon for deep zoom tiled images and Fabric.js for canvas rendering, with official bindings for SolidJS and React.
   actions:
     - text: Get Started
       link: /osdlabel/getting-started/installation/
@@ -52,7 +52,13 @@ import { PackageManagers } from 'starlight-package-managers';
 
 ## Quick Install
 
-<PackageManagers pkg="osdlabel" pkgManagers={['npm', 'pnpm', 'yarn', 'bun', 'deno']} />
+### SolidJS
+
+<PackageManagers pkg="@osdlabel/solid" pkgManagers={['npm', 'pnpm', 'yarn', 'bun', 'deno']} />
+
+### React
+
+<PackageManagers pkg="@osdlabel/react" pkgManagers={['npm', 'pnpm', 'yarn', 'bun', 'deno']} />
 
 ## License
 

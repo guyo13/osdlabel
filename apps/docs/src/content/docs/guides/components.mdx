@@ -1,9 +1,9 @@
 ---
 title: Components
-description: SolidJS UI components for building annotation interfaces
+description: UI components for building annotation interfaces
 ---
 
-osdlabel provides a set of SolidJS components that you can compose to build your annotation interface. All components must be used within an `AnnotatorProvider`.
+osdlabel provides a set of UI components that you can compose to build your annotation interface. All components must be used within an `AnnotatorProvider`. The examples below use SolidJS (`@osdlabel/solid`); the React equivalents (`@osdlabel/react`) have identical APIs.
 
 ## Main components
 
@@ -12,7 +12,7 @@ osdlabel provides a set of SolidJS components that you can compose to build your
 The `Annotator` component is an all-in-one solution that includes a toolbar, grid view, filmstrip, and status bar. It's the quickest way to get started if you want a complete, out-of-the-box layout.
 
 ```tsx
-import { Annotator } from 'osdlabel/components';
+import { Annotator } from '@osdlabel/solid';
 
 <Annotator
   images={images}
@@ -28,7 +28,7 @@ import { Annotator } from 'osdlabel/components';
 The `AnnotatorProvider` is the context provider that manages all state stores. Use this when you want to build a custom layout instead of using the default `Annotator`.
 
 ```tsx
-import { AnnotatorProvider } from 'osdlabel/state';
+import { AnnotatorProvider } from '@osdlabel/solid';
 
 <AnnotatorProvider onAnnotationsChange={(anns) => saveAnnotations(anns)}>
   <Toolbar />
@@ -44,7 +44,7 @@ import { AnnotatorProvider } from 'osdlabel/state';
 A single OpenSeaDragon viewer with a Fabric.js overlay. This is the core rendering component. Used internally by `GridView`, but can be used directly for custom layouts.
 
 ```tsx
-import { ViewerCell } from 'osdlabel/components';
+import { ViewerCell } from '@osdlabel/solid';
 ```
 
 ### GridView
@@ -52,7 +52,7 @@ import { ViewerCell } from 'osdlabel/components';
 A configurable MxN grid layout of `ViewerCell` components.
 
 ```tsx
-import { GridView } from 'osdlabel/components';
+import { GridView } from '@osdlabel/solid';
 
 <GridView columns={2} rows={2} maxColumns={4} maxRows={4} images={images} />;
 ```
@@ -64,7 +64,7 @@ import { GridView } from 'osdlabel/components';
 A tool selector that respects the active context's constraints and shows available tools with count indicators.
 
 ```tsx
-import { Toolbar } from 'osdlabel/components';
+import { Toolbar } from '@osdlabel/solid';
 ```
 
 ### Filmstrip
@@ -72,7 +72,7 @@ import { Toolbar } from 'osdlabel/components';
 A thumbnail sidebar for assigning images to grid cells. Clicking a thumbnail assigns that image to the active cell.
 
 ```tsx
-import { Filmstrip } from 'osdlabel/components';
+import { Filmstrip } from '@osdlabel/solid';
 
 <Filmstrip images={images} position="left" />;
 ```
@@ -82,7 +82,7 @@ import { Filmstrip } from 'osdlabel/components';
 Displays the active context, tool, and annotation count for the current image.
 
 ```tsx
-import { StatusBar } from 'osdlabel/components';
+import { StatusBar } from '@osdlabel/solid';
 
 <StatusBar imageId={activeImageId()} />;
 ```
@@ -92,7 +92,7 @@ import { StatusBar } from 'osdlabel/components';
 A dropdown for switching between available annotation contexts.
 
 ```tsx
-import { ContextSwitcher } from 'osdlabel/components';
+import { ContextSwitcher } from '@osdlabel/solid';
 
 <ContextSwitcher label="Task:" />;
 ```
@@ -102,7 +102,7 @@ import { ContextSwitcher } from 'osdlabel/components';
 UI controls for adjusting grid dimensions (columns and rows).
 
 ```tsx
-import { GridControls } from 'osdlabel/components';
+import { GridControls } from '@osdlabel/solid';
 
 <GridControls maxColumns={4} maxRows={4} />;
 ```

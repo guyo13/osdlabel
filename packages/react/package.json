@@ -1,0 +1,78 @@
+{
+  "name": "@osdlabel/react",
+  "version": "0.0.1",
+  "description": "React implementation of the osdlabel image annotation library — components, hooks, and state management using React Context and Immer.",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "default": "./dist/index.js"
+    },
+    "./components": {
+      "types": "./dist/components/index.d.ts",
+      "import": "./dist/components/index.js",
+      "default": "./dist/components/index.js"
+    },
+    "./hooks": {
+      "types": "./dist/hooks/index.d.ts",
+      "import": "./dist/hooks/index.js",
+      "default": "./dist/hooks/index.js"
+    },
+    "./state": {
+      "types": "./dist/state/index.d.ts",
+      "import": "./dist/state/index.js",
+      "default": "./dist/state/index.js"
+    },
+    "./*": {
+      "types": "./dist/*.d.ts",
+      "import": "./dist/*.js",
+      "default": "./dist/*.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "sideEffects": false,
+  "keywords": [],
+  "author": "Guy Or <guydude1@gmail.com>",
+  "license": "BSD-3-Clause",
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "lint": "eslint src/ tests/"
+  },
+  "peerDependencies": {
+    "fabric": "catalog:",
+    "openseadragon": "catalog:",
+    "react": "^18.0.0 || ^19.0.0",
+    "react-dom": "^18.0.0 || ^19.0.0"
+  },
+  "dependencies": {
+    "osdlabel": "workspace:*",
+    "immer": "catalog:",
+    "@osdlabel/annotation": "workspace:*",
+    "@osdlabel/annotation-context": "workspace:*",
+    "@osdlabel/fabric-annotations": "workspace:*",
+    "@osdlabel/fabric-osd": "workspace:*",
+    "@osdlabel/osd-helper": "workspace:*",
+    "@osdlabel/validation": "workspace:*",
+    "@osdlabel/viewer-api": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/openseadragon": "catalog:",
+    "@types/react": "catalog:",
+    "@types/react-dom": "catalog:",
+    "@typescript-eslint/eslint-plugin": "catalog:",
+    "@typescript-eslint/parser": "catalog:",
+    "eslint": "catalog:",
+    "react": "catalog:",
+    "react-dom": "catalog:",
+    "typescript": "catalog:",
+    "vitest": "catalog:"
+  }
+}

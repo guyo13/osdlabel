@@ -1,8 +1,8 @@
 # osdlabel
 
-> DZI image annotation library for SolidJS
+> DZI image annotation library for SolidJS and React
 
-osdlabel is a high-performance annotation library for Deep Zoom Images, built with SolidJS, Fabric.js v7, and OpenSeaDragon.
+osdlabel is a high-performance annotation library for Deep Zoom Images, built with Fabric.js v7 and OpenSeaDragon, with official UI bindings for SolidJS and React.
 
 ## Documentation
 
@@ -15,15 +15,23 @@ osdlabel is a high-performance annotation library for Deep Zoom Images, built wi
 
 ## Install the package
 
-The main `osdlabel` package includes the complete SolidJS UI and re-exports all core logic. For most projects, this is the only package you need to install.
+Choose the package that matches your framework:
 
-<PackageManagers pkg="osdlabel" pkgManagers={['npm', 'pnpm', 'yarn', 'bun', 'deno']} />
+### SolidJS
 
-_Note: `osdlabel` is built as a modular monorepo. If you are building a custom UI or using a different framework, you can install the underlying packages individually (e.g., `@osdlabel/annotation`, `@osdlabel/fabric-osd`). See [Packages & Architecture](/osdlabel/guides/packages-and-architecture/) for details._
+<PackageManagers pkg="@osdlabel/solid" pkgManagers={['npm', 'pnpm', 'yarn', 'bun', 'deno']} />
+
+### React
+
+<PackageManagers pkg="@osdlabel/react" pkgManagers={['npm', 'pnpm', 'yarn', 'bun', 'deno']} />
+
+Both framework packages re-export everything from the core `osdlabel` package, so you only need one install.
+
+_Note: If you are building a custom UI or using a different framework, you can install the underlying packages individually (e.g., `@osdlabel/annotation`, `@osdlabel/fabric-osd`, `osdlabel`). See [Packages & Architecture](/osdlabel/guides/packages-and-architecture/) for details._
 
 ## Bundler setup
 
-osdlabel is an ESM-only package. It comes pre-compiled with SolidJS optimized JavaScript, so your bundler does not need to handle its JSX.
+osdlabel is an ESM-only package. The `@osdlabel/solid` package comes pre-compiled with SolidJS optimized JavaScript, so your bundler does not need to handle its JSX. The `@osdlabel/react` package ships as standard ESM.
 
 ## TypeScript
 
@@ -37,7 +45,7 @@ See the [Quick Start](/osdlabel/getting-started/quick-start/) guide to create yo
 
 # Quick Start
 
-This guide walks you through setting up a minimal annotation interface with osdlabel.
+This guide walks you through setting up a minimal annotation interface with osdlabel. The examples use SolidJS (`@osdlabel/solid`); the React equivalents (`@osdlabel/react`) have identical APIs — just swap the import package and use `createRoot` instead of `render`.
 
 <MinimalViewerDemoWrapper />
 
@@ -146,11 +154,11 @@ Use `Ctrl`/`Cmd` + drag to pan, and `Ctrl`/`Cmd` + scroll to zoom while in annot
 
 ## Architecture overview
 
-`osdlabel` is built as a layered monorepo of 7 separate packages, ensuring that the core data model and generic utilities have **zero framework dependencies**. The architecture is composed of three main layers:
+`osdlabel` is built as a layered monorepo, ensuring that the core data model and generic utilities have **zero framework dependencies**. The architecture is composed of three main layers:
 
 1. **OpenSeaDragon** — Manages the DZI/tiled image viewer, handling pan, zoom, and tile loading
 2. **Fabric.js overlay** — A transparent Fabric.js canvas positioned on top of each OSD viewer, synchronized on every animation frame (via `@osdlabel/fabric-osd`)
-3. **SolidJS state & UI** — Reactive stores that drive the UI, tool selection, constraints, and annotation data (the main `osdlabel` package)
+3. **Framework UI layer** — State management, hooks, and components that drive the UI, tool selection, constraints, and annotation data. Official bindings are provided for both SolidJS (`@osdlabel/solid`) and React (`@osdlabel/react`)
 
 For full details on how the packages are split, see the [Packages & Architecture](/osdlabel/guides/packages-and-architecture/) guide.
 
@@ -210,31 +218,26 @@ The active cell is in annotation mode; all other cells are in navigation mode.
 
 ## State management
 
-osdlabel uses three SolidJS stores:
+osdlabel uses three state slices, managed by framework-agnostic pure reducers in the `osdlabel` core package:
 
-| Store               | Contents                                                                         |
+| State slice         | Contents                                                                         |
 | ------------------- | -------------------------------------------------------------------------------- |
 | **AnnotationState** | All annotations organized by image ID                                            |
 | **UIState**         | Active tool, active cell, grid dimensions, grid assignments, selected annotation |
 | **ContextState**    | Available contexts and the active context ID                                     |
 
-State is accessed via the `useAnnotator()` hook and mutated through named action functions. Components never modify stores directly.
+State is accessed via the `useAnnotator()` hook and mutated through named action functions. Components never modify state directly.
 
-## Reactivity model
-
-SolidJS components run **once** to set up the view. Updates happen through signals and effects, not re-renders. This is critical for 60fps overlay synchronization:
-
-- `createEffect` synchronizes imperative libraries (OSD, Fabric) with reactive state
-- `createMemo` derives constraint status from annotation counts and context limits
-- The toolbar reads derived constraint state reactively — no imperative enable/disable logic
+- **SolidJS** (`@osdlabel/solid`) — Uses `createStore` + `produce` for fine-grained reactive updates
+- **React** (`@osdlabel/react`) — Uses `useReducer` + Immer `produce` with React Context
 
 ---
 
 # Packages & Architecture
 
-`osdlabel` is decomposed into a layered monorepo of 7 packages with clear dependency boundaries. This architecture ensures that core logic remains framework-agnostic while still providing a seamless, fully-integrated UI layer.
+`osdlabel` is decomposed into a layered monorepo with clear dependency boundaries. This architecture ensures that core logic remains framework-agnostic while providing fully-integrated UI layers for both SolidJS and React.
 
-## The 7 Packages
+## Packages
 
 ### `@osdlabel/annotation`
 
@@ -284,37 +287,43 @@ The overlay bridge connecting Fabric.js and OpenSeaDragon.
 
 ### `osdlabel`
 
-The final SolidJS annotator UI layer.
+Framework-agnostic shared logic layer.
 
-- Re-exports and composes all the above packages.
-- Contains the reactive state stores, hooks (`useAnnotator`, `useConstraints`), and components (`Annotator`, `ViewerCell`, `Toolbar`, etc.).
-- The `OsdAnnotation` type is composed here by intersecting `BaseAnnotation` with `ContextFields` and `FabricFields`.
+- Contains the `OsdAnnotation` composed type, serialization (`serialize`/`deserialize`), pure action reducers (`applyAnnotationAction`, `applyUIAction`, `applyContextAction`), constraint computation, keyboard mapping, and tool factory.
+- **No framework dependencies** — works with both SolidJS `produce()` and Immer `produce()`.
+
+### `@osdlabel/solid`
+
+SolidJS annotator UI layer.
+
+- Re-exports everything from `osdlabel` plus SolidJS-specific state stores (using `createStore` + `produce`), hooks (`useAnnotator`, `useConstraints`, `useKeyboard`), and components (`Annotator`, `ViewerCell`, `Toolbar`, etc.).
+- Depends on `osdlabel` + `solid-js`.
+
+### `@osdlabel/react`
+
+React annotator UI layer.
+
+- Re-exports everything from `osdlabel` plus React-specific state management (Immer-based reducers + React Context + `useReducer`), hooks, and components with full parity to the SolidJS package.
+- Depends on `osdlabel` + `react` + `immer`.
 
 ---
 
 ## Import structure
 
-For most applications, importing directly from the main `osdlabel` package is the quickest and easiest way to get started. `osdlabel` provides ESM-friendly sub-path exports.
+For most applications, importing from the framework-specific package (`@osdlabel/solid` or `@osdlabel/react`) is the quickest way to get started. Both re-export everything from `osdlabel`.
 
-### 1. Main barrel
-
-Recommended for quick starts. Re-exports the primary components and functions.
+### 1. Framework package (recommended)
 
 ```ts
+// SolidJS
+
+// React
 
 ```
 
-### 2. Sub-path barrels
+### 2. Direct package imports
 
-Preferred for better build performance and tree-shaking in production apps.
-
-```ts
-
-```
-
-### 3. Direct Package Imports
-
-For advanced usage, you can import types and core logic directly from the granular packages. This is particularly useful if you are building a custom UI layer instead of using the SolidJS components.
+For advanced usage or building a custom UI layer, import from the granular packages directly.
 
 ```ts
 
@@ -324,7 +333,7 @@ For advanced usage, you can import types and core logic directly from the granul
 
 # Components
 
-osdlabel provides a set of SolidJS components that you can compose to build your annotation interface. All components must be used within an `AnnotatorProvider`.
+osdlabel provides a set of UI components that you can compose to build your annotation interface. All components must be used within an `AnnotatorProvider`. The examples below use SolidJS (`@osdlabel/solid`); the React equivalents (`@osdlabel/react`) have identical APIs.
 
 ## Main components
 
@@ -425,11 +434,11 @@ UI controls for adjusting grid dimensions (columns and rows).
 
 # State Management & Hooks
 
-osdlabel is built on SolidJS and uses a reactive state model. State is managed via context providers and accessed through custom hooks.
+osdlabel uses a reactive state model with framework-agnostic pure reducers. State is managed via context providers and accessed through custom hooks. The examples below use SolidJS (`@osdlabel/solid`); the React equivalents (`@osdlabel/react`) have identical APIs.
 
 ## State Architecture
 
-osdlabel uses three internal SolidJS stores:
+osdlabel uses three internal state slices:
 
 | Store               | Contents                                                                         |
 | ------------------- | -------------------------------------------------------------------------------- |
@@ -495,6 +504,195 @@ Sets up keyboard shortcut handling. This is called automatically by `AnnotatorPr
 ```ts
 
 ```
+
+---
+
+# Basic Controls
+
+## Drawing tools
+
+osdlabel provides six geometric annotation tools:
+
+<MinimalViewerDemoWrapper />
+
+| Tool               | Shortcut | Geometry                        | Drawing action                                         |
+| ------------------ | -------- | ------------------------------- | ------------------------------------------------------ |
+| **Rectangle**      | `r`      | Origin, width, height, rotation | Click and drag to define opposite corners              |
+| **Circle**         | `c`      | Center, radius                  | Click and drag from center outward                     |
+| **Line**           | `l`      | Start point, end point          | Click and drag between endpoints                       |
+| **Point**          | `p`      | Single position                 | Single click to place                                  |
+| **Path**           | `d`      | Array of points, open/closed    | Click to add vertices, `Enter` to finish, `c` to close |
+| **Free Hand Path** | `f`      | Array of sampled points         | Click and drag to draw; release to commit              |
+
+## Drawing workflow
+
+1. Select a drawing tool (toolbar click or keyboard shortcut)
+2. The active cell switches to **annotation mode** — OSD navigation is disabled
+3. Click/drag on the image to draw the annotation
+4. The annotation is created in **image-space** coordinates and stored in the annotation state
+5. The `onAnnotationsChange` callback fires with the updated annotation list
+
+## Selecting and editing
+
+Press `v` (or click the select tool) to enter selection mode:
+
+- **Click** an annotation to select it — shows resize handles and rotation control
+- **Drag** a selected annotation to move it
+- **Drag handles** to resize
+- **Drag rotation control** (circle above the annotation) to rotate
+- **Escape** deselects the current annotation
+- **Delete** / **Backspace** deletes the selected annotation
+
+## Pan and zoom in annotation mode
+
+While drawing or selecting, you can still navigate:
+
+- **Ctrl/Cmd + drag** — Pan the image
+- **Ctrl/Cmd + scroll** — Zoom in/out
+
+These modifier-based gestures pass through to OpenSeaDragon while keeping Fabric in control of regular mouse events.
+
+## Polyline tool workflow
+
+The polyline tool is multi-click (not drag-based):
+
+1. Press `d` to activate the polyline tool
+2. Click to place each vertex — a preview line follows the cursor
+3. Press `Enter` to finish as an open polyline
+4. Press `c` to close as a polygon
+5. Press `Escape` to cancel the polyline in progress
+
+Polylines require at least 2 points to be committed; polygons require at least 3.
+
+## Free hand path tool workflow
+
+The free hand path tool captures a continuous stroke as you drag:
+
+1. Press `f` to activate the free hand path tool
+2. Click and hold, then drag to draw — vertices are sampled automatically as you move
+3. **Release** the mouse button to commit the annotation
+4. By default the stroke is **closed** (a filled polygon); hold **Shift** while drawing to produce an **open** polyline instead
+5. Press `Escape` during a drag to cancel
+
+Closed polygons require at least 3 sampled points; open polylines require at least 2. If the stroke is too short the annotation is discarded automatically.
+
+## Programmatically selecting a tool
+
+Activate a tool through the toolbar UI or keyboard shortcuts. Tools are only available if enabled by the active [annotation context](/osdlabel/guides/annotation-contexts/).
+
+```tsx
+const { actions } = useAnnotator();
+
+// Programmatically set the active tool
+actions.setActiveTool('rectangle');
+
+// Switch to selection mode
+actions.setActiveTool('select');
+
+// Deactivate all tools (navigation mode)
+actions.setActiveTool(null);
+```
+
+---
+
+# Viewer Grid
+
+## Grid view
+
+The `GridView` component displays images in an MxN grid. Each cell is an independent OpenSeaDragon viewer with its own Fabric.js overlay.
+
+```tsx
+
+<GridView
+  columns={uiState.gridColumns}
+  rows={uiState.gridRows}
+  maxColumns={4}
+  maxRows={4}
+  images={images}
+/>;
+```
+
+## Grid dimensions
+
+Resize the grid using keyboard shortcuts or the `GridControls` component (which provides a visual "Table Selector" UI):
+
+- `=` / `+` — Add a column (up to `maxColumns`)
+- `-` — Remove a column (minimum 1)
+
+```tsx
+
+<GridControls maxColumns={4} maxRows={4} />;
+```
+
+#### Programmatic control:
+
+```tsx
+const { actions } = useAnnotator();
+actions.setGridDimensions(2, 2); // 2x2 grid
+```
+
+## Active cell
+
+Only one cell can be in annotation mode at a time. Click a cell to activate it, or use number keys `1`-`9` to select cells by position.
+
+```tsx
+const { actions, uiState } = useAnnotator();
+
+// Get the active cell index
+const activeCell = uiState.activeCellIndex;
+
+// Set the active cell programmatically
+actions.setActiveCell(0);
+```
+
+The active cell is highlighted visually and receives all drawing/selection input. Other cells display annotations in read-only mode (navigation only).
+
+## Filmstrip
+
+The `Filmstrip` component shows thumbnails of all available images and allows drag-to-assign interaction:
+
+```tsx
+
+<Filmstrip images={images} position="left" />;
+```
+
+The `position` prop accepts `'left'`, `'right'`, or `'bottom'`.
+
+Click an image in the filmstrip to assign it to the currently active grid cell. Images already assigned to cells are highlighted with a blue border.
+
+## Assigning images to cells
+
+```tsx
+const { actions } = useAnnotator();
+
+// Assign an image to cell 0
+actions.assignImageToCell(0, createImageId('my-image'));
+```
+
+Each cell can display one image at a time. Multiple cells can show the same image, but annotations are shared (stored by image ID, not by cell).
+
+## Using the all-in-one Annotator
+
+The `Annotator` component bundles the grid, filmstrip, toolbar, and status bar into a single layout:
+
+<MinimalViewerDemoWrapper />
+
+```tsx
+
+<Annotator
+  images={images}
+  contexts={contexts}
+  filmstripPosition="left"
+  maxGridSize={{ columns: 4, rows: 4 }}
+  showGridControls
+  showFilmstrip
+  showViewControls
+  showFps
+/>;
+```
+
+- Set `showFilmstrip={false}` to hide the filmstrip sidebar.
+- Set `showGridControls={true}` to show the grid dimension selector in the toolbar.
 
 ---
 

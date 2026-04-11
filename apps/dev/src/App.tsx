@@ -13,8 +13,8 @@ import {
   serialize,
   deserialize,
   initFabricModule,
-} from 'osdlabel';
-import type { AnnotationContextId, AnnotationContext, ImageSource } from 'osdlabel';
+} from '@osdlabel/solid';
+import type { AnnotationContextId, AnnotationContext, ImageSource } from '@osdlabel/solid';
 
 initFabricModule();
 
