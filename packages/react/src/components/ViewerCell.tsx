@@ -29,6 +29,7 @@ export default function ViewerCell({
   const { uiState, annotationState, contextState, testMode } = useAnnotator();
   const containerRef = useRef<HTMLDivElement>(null);
   const viewerRef = useRef<OpenSeadragon.Viewer | undefined>(undefined);
+  const overlayRef = useRef<FabricOverlay | undefined>(undefined);
   const [overlay, setOverlay] = useState<FabricOverlay>();
 
   // Initialize OSD viewer on mount
@@ -48,8 +49,9 @@ export default function ViewerCell({
     viewerRef.current = viewer;
 
     viewer.addHandler('open', () => {
-      if (!viewerRef.current) return;
+      if (!viewerRef.current || overlayRef.current) return;
       const ov = new FabricOverlay(viewerRef.current, { testMode });
+      overlayRef.current = ov;
       setOverlay(ov);
       onOverlayReady?.(ov);
     });
@@ -60,6 +62,8 @@ export default function ViewerCell({
     }
 
     return () => {
+      overlayRef.current?.destroy();
+      overlayRef.current = undefined;
       setOverlay(undefined);
       viewer.destroy();
       viewerRef.current = undefined;
