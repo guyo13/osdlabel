@@ -39,7 +39,7 @@ See the [Quick Start](/osdlabel/getting-started/quick-start/) guide to create yo
 
 # Quick Start
 
-This guide walks you through setting up a minimal annotation interface with osdlabel.
+This guide walks you through setting up a minimal annotation interface with osdlabel. The examples use SolidJS (`@osdlabel/solid`); the React equivalents (`@osdlabel/react`) have identical APIs — just swap the import package and use `createRoot` instead of `render`.
 
 <MinimalViewerDemoWrapper />
 
@@ -148,11 +148,11 @@ Use `Ctrl`/`Cmd` + drag to pan, and `Ctrl`/`Cmd` + scroll to zoom while in annot
 
 ## Architecture overview
 
-`osdlabel` is built as a layered monorepo of 7 separate packages, ensuring that the core data model and generic utilities have **zero framework dependencies**. The architecture is composed of three main layers:
+`osdlabel` is built as a layered monorepo, ensuring that the core data model and generic utilities have **zero framework dependencies**. The architecture is composed of three main layers:
 
 1. **OpenSeaDragon** — Manages the DZI/tiled image viewer, handling pan, zoom, and tile loading
 2. **Fabric.js overlay** — A transparent Fabric.js canvas positioned on top of each OSD viewer, synchronized on every animation frame (via `@osdlabel/fabric-osd`)
-3. **SolidJS state & UI** — Reactive stores that drive the UI, tool selection, constraints, and annotation data (the main `osdlabel` package)
+3. **Framework UI layer** — State management, hooks, and components that drive the UI, tool selection, constraints, and annotation data. Official bindings are provided for both SolidJS (`@osdlabel/solid`) and React (`@osdlabel/react`)
 
 For full details on how the packages are split, see the [Packages & Architecture](/osdlabel/guides/packages-and-architecture/) guide.
 
@@ -212,23 +212,18 @@ The active cell is in annotation mode; all other cells are in navigation mode.
 
 ## State management
 
-osdlabel uses three SolidJS stores:
+osdlabel uses three state slices, managed by framework-agnostic pure reducers in the `osdlabel` core package:
 
-| Store               | Contents                                                                         |
+| State slice         | Contents                                                                         |
 | ------------------- | -------------------------------------------------------------------------------- |
 | **AnnotationState** | All annotations organized by image ID                                            |
 | **UIState**         | Active tool, active cell, grid dimensions, grid assignments, selected annotation |
 | **ContextState**    | Available contexts and the active context ID                                     |
 
-State is accessed via the `useAnnotator()` hook and mutated through named action functions. Components never modify stores directly.
+State is accessed via the `useAnnotator()` hook and mutated through named action functions. Components never modify state directly.
 
-## Reactivity model
-
-SolidJS components run **once** to set up the view. Updates happen through signals and effects, not re-renders. This is critical for 60fps overlay synchronization:
-
-- `createEffect` synchronizes imperative libraries (OSD, Fabric) with reactive state
-- `createMemo` derives constraint status from annotation counts and context limits
-- The toolbar reads derived constraint state reactively — no imperative enable/disable logic
+- **SolidJS** (`@osdlabel/solid`) — Uses `createStore` + `produce` for fine-grained reactive updates
+- **React** (`@osdlabel/react`) — Uses `useReducer` + Immer `produce` with React Context
 
 ---
 
@@ -332,7 +327,7 @@ For advanced usage or building a custom UI layer, import from the granular packa
 
 # Components
 
-osdlabel provides a set of SolidJS components that you can compose to build your annotation interface. All components must be used within an `AnnotatorProvider`.
+osdlabel provides a set of UI components that you can compose to build your annotation interface. All components must be used within an `AnnotatorProvider`. The examples below use SolidJS (`@osdlabel/solid`); the React equivalents (`@osdlabel/react`) have identical APIs.
 
 ## Main components
 
@@ -433,11 +428,11 @@ UI controls for adjusting grid dimensions (columns and rows).
 
 # State Management & Hooks
 
-osdlabel is built on SolidJS and uses a reactive state model. State is managed via context providers and accessed through custom hooks.
+osdlabel uses a reactive state model with framework-agnostic pure reducers. State is managed via context providers and accessed through custom hooks. The examples below use SolidJS (`@osdlabel/solid`); the React equivalents (`@osdlabel/react`) have identical APIs.
 
 ## State Architecture
 
-osdlabel uses three internal SolidJS stores:
+osdlabel uses three internal state slices:
 
 | Store               | Contents                                                                         |
 | ------------------- | -------------------------------------------------------------------------------- |

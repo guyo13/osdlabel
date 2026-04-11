@@ -1,13 +1,13 @@
 ---
 title: State Management & Hooks
-description: Accessing and mutating the internal SolidJS stores
+description: Accessing and mutating annotation state via hooks
 ---
 
-osdlabel is built on SolidJS and uses a reactive state model. State is managed via context providers and accessed through custom hooks.
+osdlabel uses a reactive state model with framework-agnostic pure reducers. State is managed via context providers and accessed through custom hooks. The examples below use SolidJS (`@osdlabel/solid`); the React equivalents (`@osdlabel/react`) have identical APIs.
 
 ## State Architecture
 
-osdlabel uses three internal SolidJS stores:
+osdlabel uses three internal state slices:
 
 | Store               | Contents                                                                         |
 | ------------------- | -------------------------------------------------------------------------------- |
