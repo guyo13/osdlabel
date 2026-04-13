@@ -380,6 +380,9 @@ export default function DemoApp() {
             'max-width': '800px',
             margin: '0 auto',
             color: '#eee',
+            height: '100vh',
+            'overflow-y': 'auto',
+            'box-sizing': 'border-box',
           }}
         >
           <h1>Demo App Setup</h1>
