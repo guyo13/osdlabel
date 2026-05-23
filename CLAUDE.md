@@ -51,14 +51,15 @@ This is `osdlabel`, a DZI image annotation library built with SolidJS, Fabric.js
 
 ### Architecture
 
-The project is split into seven packages with clear dependency boundaries:
+The project is split into eight packages with clear dependency boundaries:
 
 - **`@osdlabel/annotation`** (`packages/annotation/`) — Pure annotation data model. Zero dependencies. Types are split into dedicated modules: `annotation.ts` (`BaseAnnotation`, `Annotation<E>`, `AnnotationStyle`, `AnnotationId`), `annotation-tool.ts` (`ToolType`), `geometry.ts` (geometry discriminated unions), `raw-annotation.ts` (generic `RawAnnotationData<TFormat, TData>`), `util.ts` (`createAnnotationId`, `toolTypeToGeometryType`), `id.ts`, `constants.ts`.
-- **`@osdlabel/viewer-api`** (`packages/viewer-api/`) — Viewer state types and utilities. Contains: `ImageId` branded type, `createImageId`, `ImageIdFields` extension interface, `ImageSource`, `AnnotationState<E>`, `getAllAnnotationsFlat`, `CellTransform`, `DEFAULT_CELL_TRANSFORM`, `UIState`, `KeyboardShortcutMap`. Depends on `@osdlabel/annotation`.
+- **`@osdlabel/viewer-api`** (`packages/viewer-api/`) — Viewer state types and utilities. Contains: `ImageId` branded type, `createImageId`, `ImageIdFields` extension interface, `ImageSource`, `PixelSpacing`, `AnnotationState<E>`, `getAllAnnotationsFlat`, `CellTransform`, `DEFAULT_CELL_TRANSFORM`, `UIState`, `KeyboardShortcutMap`. Depends on `@osdlabel/annotation`.
 - **`@osdlabel/annotation-context`** (`packages/annotation-context/`) — Annotation context, constraints, and scoping. Contains: `AnnotationContextId` branded type, `AnnotationContext`, `ToolConstraint`, `ConstraintStatus`, `ContextState`, `ContextFields` extension interface, context scoping functions (`isContextScopedToImage`, `getCountableImageIds`). Depends on `@osdlabel/annotation` and `@osdlabel/viewer-api` (for `ImageId`).
+- **`@osdlabel/decoration`** (`packages/decoration/`) — Declarative annotation decorations and geometry math. Zero framework deps. Contains: `Decoration` discriminated union (`TextDecoration`, `LineDecoration`), `DecorationProvider` contract + `composeProviders`, geometry math utilities (`area`, `perimeter`, `length`, `radius`, `distance`, `centroid`, `midpoint`, `boundingBox`), `Measurement` + unit conversion (`toPhysicalLength`, `toPhysicalArea`, `formatMeasurement`), and built-in providers (`createMeasurementProvider`, `createLabelProvider`). Depends on `@osdlabel/annotation` and `@osdlabel/viewer-api` (for `PixelSpacing`).
 - **`@osdlabel/validation`** (`packages/validation/`) — Valibot schema implementations (Standard Schema compatible). Contains: `GeometrySchema`, `PointSchema`, `ToolTypeSchema` (in `tool.ts`), `BaseAnnotationSchema`, `OsdFieldsSchema`, `OsdAnnotationSchema` (in `annotation.ts`), `FabricRawAnnotationDataSchema` (in `fabric-data.ts`). Depends on `@osdlabel/annotation` and `valibot`.
 - **`@osdlabel/fabric-annotations`** (`packages/fabric-annotations/`) — Fabric.js annotation tools and utilities, SolidJS-agnostic. Contains: all annotation tools (`BaseTool`, `ShapeTool`, `RectangleTool`, etc.), `ToolOverlay` interface, `FabricRawAnnotationData` (extends `RawAnnotationData<'fabric'>`), `FabricFields` extension interface, Fabric object serialization utilities (`serializeFabricObject`, `deserializeFabricObject`, `createFabricObjectFromRawData`, `getGeometryFromFabricObject`, `getFabricOptions`), `initFabricModule`. Depends on `@osdlabel/annotation`, `@osdlabel/annotation-context`, `@osdlabel/viewer-api` (for `KeyboardShortcutMap`), and `fabric`.
-- **`@osdlabel/fabric-osd`** (`packages/fabric-osd/`) — Fabric.js + OpenSeaDragon overlay bridge, SolidJS-agnostic. Contains: `FabricOverlay` (canvas overlay + viewport transform), `computeViewportTransform`. Depends on `@osdlabel/annotation`, `@osdlabel/viewer-api` (for `CellTransform`), `@osdlabel/fabric-annotations`, `@osdlabel/validation`, `fabric`, and `openseadragon`.
+- **`@osdlabel/fabric-osd`** (`packages/fabric-osd/`) — Fabric.js + OpenSeaDragon overlay bridge & decoration renderer, SolidJS-agnostic. Contains: `FabricOverlay` (canvas overlay + viewport transform; exposes `onSync` and `overlayElement` for companion layers), `computeViewportTransform`, and `DecorationLayer` (renders text decorations as DOM elements positioned via `imageToScreen` and connector-line decorations as non-interactive Fabric objects). Depends on `@osdlabel/annotation`, `@osdlabel/viewer-api` (for `CellTransform`), `@osdlabel/decoration`, `@osdlabel/fabric-annotations`, `@osdlabel/validation`, `fabric`, and `openseadragon`.
 - **`osdlabel`** (`packages/osdlabel/`) — Framework-agnostic shared logic. Contains: `OsdAnnotation` composed type alias (`Annotation<ImageIdFields & ContextFields & FabricFields>`), `serialize`/`deserialize`/`SerializationError`/`DeserializeResult` (serialization lives here, not in annotation), pure action types and reducer functions (`applyAnnotationAction`, `applyUIAction`, `applyContextAction`), initial state factories, constraint computation (`computeConstraintStatus`), keyboard mapping (`mapKeyEventToActions`, `DEFAULT_KEYBOARD_SHORTCUTS`), and tool factory (`createAnnotationTool`, `buildToolCallbacks`). No framework dependencies.
 - **`@osdlabel/solid`** (`packages/solid/`) — SolidJS annotator UI. Contains: reactive state stores (using `createStore` + `produce`), hooks (`useAnnotationTool`, `useKeyboard`, `useConstraints`), and components (`Annotator`, `ViewerCell`, `GridView`, `Toolbar`, etc.). Depends on `osdlabel` + `solid-js`.
 - **`@osdlabel/react`** (`packages/react/`) — React annotator UI. Contains: Immer-based reducers, React Context + `useReducer` state management, hooks (`useAnnotationTool`, `useKeyboard`, `useConstraints`), and components (`Annotator`, `ViewerCell`, `GridView`, `Toolbar`, etc.). Depends on `osdlabel` + `react` + `immer`.
@@ -81,6 +82,8 @@ Key architectural rules:
 - **State mutations go through named action functions.** Never modify the store directly from components. Pure reducers live in `packages/osdlabel/src/actions.ts`; framework-specific action dispatchers live in `@osdlabel/solid` and `@osdlabel/react`.
 - **One active cell at a time.** Only one grid cell can be in annotation mode at a time. All other cells display existing annotations in read-only mode.
 - **Constraint enforcement is reactive.** In SolidJS, use `createMemo`; in React, use `useMemo`. Both derive whether each tool is enabled/disabled from the current annotation counts and the active context's limits. The toolbar reads this derived state. Do not imperatively enable/disable tools.
+- **Decorations are derived, never serialized.** Text labels, computed measurements (area/perimeter/length/radius), and connector lines are produced by pure `DecorationProvider` functions over current annotation state + `PixelSpacing`. The result is fed to `DecorationLayer.setDecorations` in a reactive effect (SolidJS `createEffect` / React `useEffect`). Providers must produce stable `Decoration.id` values so the renderer can diff in place. Do not embed computed measurements in `serialize()` output — recompute them at render time.
+- **Hybrid decoration rendering: DOM text + Fabric lines.** Text decorations render as absolutely-positioned `<div>` elements inside a host layer that `DecorationLayer` appends to `FabricOverlay.overlayElement`; positions are recomputed on the `FabricOverlay.onSync` callback. Connector / measurement lines render as non-interactive Fabric `Line` objects on the overlay's canvas (carrying `_readOnly: true` and no `id`) — they follow pan/zoom/rotate/flip via the existing `viewportTransform` at zero per-frame cost.
 - **All packages use lockstep versioning.** Run `pnpm run check-versions` to validate. CI enforces this.
 
 ### Testing
@@ -103,11 +106,12 @@ Key architectural rules:
 This is a pnpm workspace monorepo with Turborepo for task orchestration:
 
 - `packages/annotation/` — `@osdlabel/annotation` (annotation data model)
-- `packages/viewer-api/` — `@osdlabel/viewer-api` (viewer state types)
+- `packages/viewer-api/` — `@osdlabel/viewer-api` (viewer state types; also owns `PixelSpacing`)
 - `packages/annotation-context/` — `@osdlabel/annotation-context` (context, constraints, scoping)
+- `packages/decoration/` — `@osdlabel/decoration` (declarative decorations, geometry math, built-in providers)
 - `packages/validation/` — `@osdlabel/validation` (Valibot schemas, Standard Schema compatible)
 - `packages/fabric-annotations/` — `@osdlabel/fabric-annotations` (Fabric.js annotation tools & utilities)
-- `packages/fabric-osd/` — `@osdlabel/fabric-osd` (Fabric.js + OSD overlay bridge)
+- `packages/fabric-osd/` — `@osdlabel/fabric-osd` (Fabric.js + OSD overlay bridge; also owns `DecorationLayer`)
 - `packages/osdlabel/` — `osdlabel` (framework-agnostic shared logic)
 - `packages/solid/` — `@osdlabel/solid` (SolidJS annotator UI)
 - `packages/react/` — `@osdlabel/react` (React annotator UI)
@@ -122,17 +126,18 @@ The library is split across multiple npm packages:
 1. **`@osdlabel/annotation`** — Pure data model. `import { type Annotation, type BaseAnnotation, type RawAnnotationData, createAnnotationId } from '@osdlabel/annotation'`
 2. **`@osdlabel/viewer-api`** — Viewer state types and utilities. `import { type ImageId, type ImageIdFields, type ImageSource, type AnnotationState, type UIState, type CellTransform, type KeyboardShortcutMap, createImageId, DEFAULT_CELL_TRANSFORM, getAllAnnotationsFlat } from '@osdlabel/viewer-api'`
 3. **`@osdlabel/annotation-context`** — Context & constraints. `import { type AnnotationContext, isContextScopedToImage, getCountableImageIds } from '@osdlabel/annotation-context'`
-4. **`@osdlabel/validation`** — Validation schemas. `import { BaseAnnotationSchema, OsdAnnotationSchema, OsdFieldsSchema, GeometrySchema, ToolTypeSchema, FabricRawAnnotationDataSchema } from '@osdlabel/validation'`
-5. **`@osdlabel/fabric-annotations`** — Fabric annotation tools & utilities. `import { initFabricModule, RectangleTool, type ToolOverlay, type FabricFields, type FabricRawAnnotationData } from '@osdlabel/fabric-annotations'`
-6. **`@osdlabel/fabric-osd`** — OSD overlay bridge. `import { FabricOverlay, computeViewportTransform } from '@osdlabel/fabric-osd'`
-7. **`osdlabel`** — Framework-agnostic shared logic. Types, serialization, pure reducers, constraints, keyboard mapping, tool factory.
-   - Main barrel: `import { serialize, deserialize, type OsdAnnotation, applyAnnotationAction, computeConstraintStatus } from 'osdlabel'`
-8. **`@osdlabel/solid`** — SolidJS UI. Re-exports everything from `osdlabel` plus SolidJS-specific state/hooks/components.
+4. **`@osdlabel/decoration`** — Declarative annotation decorations (text labels, computed measurements, connector lines), geometry math, and built-in providers. Zero framework deps. `import { createMeasurementProvider, createLabelProvider, type DecorationProvider, area, perimeter } from '@osdlabel/decoration'`
+5. **`@osdlabel/validation`** — Validation schemas. `import { BaseAnnotationSchema, OsdAnnotationSchema, OsdFieldsSchema, GeometrySchema, ToolTypeSchema, FabricRawAnnotationDataSchema } from '@osdlabel/validation'`
+6. **`@osdlabel/fabric-annotations`** — Fabric annotation tools & utilities. `import { initFabricModule, RectangleTool, type ToolOverlay, type FabricFields, type FabricRawAnnotationData } from '@osdlabel/fabric-annotations'`
+7. **`@osdlabel/fabric-osd`** — OSD overlay bridge & decoration renderer. `import { FabricOverlay, computeViewportTransform, DecorationLayer } from '@osdlabel/fabric-osd'`
+8. **`osdlabel`** — Framework-agnostic shared logic. Types, serialization, pure reducers, constraints, keyboard mapping, tool factory. Also re-exports the decoration API.
+   - Main barrel: `import { serialize, deserialize, type OsdAnnotation, applyAnnotationAction, computeConstraintStatus, createMeasurementProvider, type DecorationProvider } from 'osdlabel'`
+9. **`@osdlabel/solid`** — SolidJS UI. Re-exports everything from `osdlabel` plus SolidJS-specific state/hooks/components.
    - Main barrel: `import { Annotator, useAnnotator, Toolbar } from '@osdlabel/solid'`
    - Sub-path barrels: `@osdlabel/solid/components`, `@osdlabel/solid/state`, `@osdlabel/solid/hooks`
-9. **`@osdlabel/react`** — React UI. Re-exports everything from `osdlabel` plus React-specific state/hooks/components.
-   - Main barrel: `import { Annotator, useAnnotator, Toolbar } from '@osdlabel/react'`
-   - Sub-path barrels: `@osdlabel/react/components`, `@osdlabel/react/state`, `@osdlabel/react/hooks`
+10. **`@osdlabel/react`** — React UI. Re-exports everything from `osdlabel` plus React-specific state/hooks/components.
+    - Main barrel: `import { Annotator, useAnnotator, Toolbar } from '@osdlabel/react'`
+    - Sub-path barrels: `@osdlabel/react/components`, `@osdlabel/react/state`, `@osdlabel/react/hooks`
 
 The `@osdlabel/solid` package is built using **Vite in library mode** with `vite-plugin-solid`. The `osdlabel`, `@osdlabel/react`, and all other packages are built with plain `tsc`.
 
@@ -142,7 +147,7 @@ Run from the workspace root — Turbo fans out to the correct packages:
 
 ```bash
 pnpm dev            # Start Vite dev server (apps/dev) with HMR into library source
-pnpm build          # Build all packages (annotation → viewer-api → annotation-context → validation → fabric-annotations → fabric-osd → osdlabel)
+pnpm build          # Build all packages (annotation → viewer-api → annotation-context, decoration → validation → fabric-annotations → fabric-osd → osdlabel)
 pnpm typecheck      # Type-check all packages
 pnpm test           # Run Vitest unit tests across all packages
 pnpm test:e2e       # Run Playwright E2E tests in apps/dev/
@@ -167,6 +172,11 @@ pnpm typecheck    # tsc --noEmit
 pnpm test         # vitest run
 
 # packages/annotation-context/
+pnpm build        # tsc -p tsconfig.build.json
+pnpm typecheck    # tsc --noEmit
+pnpm test         # vitest run
+
+# packages/decoration/
 pnpm build        # tsc -p tsconfig.build.json
 pnpm typecheck    # tsc --noEmit
 pnpm test         # vitest run

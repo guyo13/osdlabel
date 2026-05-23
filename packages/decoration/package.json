@@ -1,7 +1,7 @@
 {
-  "name": "@osdlabel/fabric-osd",
+  "name": "@osdlabel/decoration",
   "version": "0.0.1",
-  "description": "Fabric.js and OpenSeaDragon integration layer for osdlabel — canvas overlay and viewport transform.",
+  "description": "Declarative annotation decorations (labels, measurements, connector lines) and calibrated geometry math for osdlabel.",
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -30,18 +30,9 @@
   },
   "dependencies": {
     "@osdlabel/annotation": "workspace:*",
-    "@osdlabel/decoration": "workspace:*",
-    "@osdlabel/fabric-annotations": "workspace:*",
-    "@osdlabel/validation": "workspace:*",
     "@osdlabel/viewer-api": "workspace:*"
   },
-  "peerDependencies": {
-    "fabric": "catalog:",
-    "openseadragon": "catalog:",
-    "valibot": "catalog:"
-  },
   "devDependencies": {
-    "@types/openseadragon": "catalog:",
     "typescript": "catalog:",
     "vitest": "catalog:"
   }

@@ -28,6 +28,7 @@ export type {
   ImageSource,
 } from '@osdlabel/viewer-api';
 export { createImageId, DEFAULT_CELL_TRANSFORM, getAllAnnotationsFlat } from '@osdlabel/viewer-api';
+export type { PixelSpacing } from '@osdlabel/viewer-api';
 
 // Annotation context (re-exported from @osdlabel/annotation-context)
 export type {
@@ -74,8 +75,42 @@ export type {
 } from '@osdlabel/fabric-annotations';
 
 // Fabric-OSD overlay (re-exported from @osdlabel/fabric-osd)
-export { FabricOverlay, computeViewportTransform } from '@osdlabel/fabric-osd';
+export { FabricOverlay, computeViewportTransform, DecorationLayer } from '@osdlabel/fabric-osd';
 export type { OverlayOptions, OverlayMode } from '@osdlabel/fabric-osd';
+
+// Decorations (re-exported from @osdlabel/decoration)
+export type {
+  Decoration,
+  DecorationType,
+  TextDecoration,
+  TextDecorationStyle,
+  TextPlacement,
+  LineDecoration,
+  LineDecorationStyle,
+  DecorationContext,
+  DecorationProvider,
+  Measurement,
+  SpacingAxis,
+  FormatMeasurementOptions,
+  MeasurementProviderOptions,
+  LabelProviderOptions,
+} from '@osdlabel/decoration';
+export {
+  composeProviders,
+  createMeasurementProvider,
+  createLabelProvider,
+  toPhysicalLength,
+  toPhysicalArea,
+  formatMeasurement,
+  area,
+  perimeter,
+  length,
+  radius,
+  distance,
+  centroid,
+  midpoint,
+  boundingBox,
+} from '@osdlabel/decoration';
 
 // Validation schemas (re-exported from @osdlabel/validation)
 export {

@@ -111,6 +111,9 @@ export class FabricOverlay {
    */
   private _panGestureActive = false;
 
+  /** Callbacks fired at the end of every `sync()`. */
+  private readonly _syncSubscribers = new Set<() => void>();
+
   // ── Bound OSD event handlers (for add/removeHandler) ─────────────
   private readonly _onAnimation = (): void => {
     this.sync();
@@ -229,6 +232,29 @@ export class FabricOverlay {
     return this._fabricCanvas;
   }
 
+  /**
+   * The OSD container element. Companion layers (e.g. decoration text in
+   * DOM) can append themselves here to be clipped/positioned together with
+   * the Fabric canvas.
+   */
+  get overlayElement(): HTMLElement {
+    return this._viewer.canvas;
+  }
+
+  /**
+   * Register a callback fired at the end of every `sync()` — i.e. on every
+   * OSD `animation`, `animation-finish`, `resize`, `open`, `flip`, `rotate`
+   * event. Used by companion layers to reposition screen-space content.
+   *
+   * Returns an unsubscribe function.
+   */
+  onSync(callback: () => void): () => void {
+    this._syncSubscribers.add(callback);
+    return () => {
+      this._syncSubscribers.delete(callback);
+    };
+  }
+
   /** Apply a view transform (rotation/flip) to the OpenSeadragon viewer */
   applyViewTransform(transform: CellTransform): void {
     let rotation = transform.rotation;
@@ -283,6 +309,9 @@ export class FabricOverlay {
     const vpt = computeViewportTransform(this._viewer);
     this._fabricCanvas.setViewportTransform(vpt);
     this._fabricCanvas.renderAll();
+    if (this._syncSubscribers.size > 0) {
+      for (const cb of this._syncSubscribers) cb();
+    }
   }
 
   /** Set the overlay interaction mode */
@@ -345,6 +374,7 @@ export class FabricOverlay {
 
   /** Clean up all event listeners and DOM elements */
   destroy(): void {
+    this._syncSubscribers.clear();
     this._overlayTracker.destroy();
     this._viewer.removeHandler(OSD_ANIMATION, this._onAnimation);
     this._viewer.removeHandler(OSD_ANIMATION_FINISH, this._onAnimationFinish);
