@@ -1,6 +1,6 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import OpenSeadragon from 'openseadragon';
-import { FabricOverlay } from '@osdlabel/fabric-osd';
+import { DecorationLayer, FabricOverlay } from '@osdlabel/fabric-osd';
 import { createFabricObjectFromRawData } from '@osdlabel/fabric-annotations';
 import type { OverlayMode } from '@osdlabel/fabric-osd';
 import type { AnnotationContextId } from '@osdlabel/annotation-context';
@@ -9,6 +9,8 @@ import type { ImageSource } from '@osdlabel/viewer-api';
 import { openImage } from '@osdlabel/osd-helper';
 import { useAnnotationTool } from '../hooks/useAnnotationTool.js';
 import { useAnnotator } from '../state/annotator-context.js';
+import type { Annotation } from '@osdlabel/annotation';
+import type { OsdFields } from 'osdlabel';
 
 export interface ViewerCellProps {
   readonly imageSource: ImageSource | undefined;
@@ -26,10 +28,18 @@ export default function ViewerCell({
   onActivate,
   onOverlayReady,
 }: ViewerCellProps) {
-  const { uiState, annotationState, contextState, testMode } = useAnnotator();
+  const {
+    uiState,
+    annotationState,
+    contextState,
+    testMode,
+    decorationProviders,
+    defaultPixelSpacing,
+  } = useAnnotator();
   const containerRef = useRef<HTMLDivElement>(null);
   const viewerRef = useRef<OpenSeadragon.Viewer | undefined>(undefined);
   const overlayRef = useRef<FabricOverlay | undefined>(undefined);
+  const decorationLayerRef = useRef<DecorationLayer | undefined>(undefined);
   const [overlay, setOverlay] = useState<FabricOverlay>();
 
   // Initialize OSD viewer on mount
@@ -52,6 +62,7 @@ export default function ViewerCell({
       if (!viewerRef.current || overlayRef.current) return;
       const ov = new FabricOverlay(viewerRef.current, { testMode });
       overlayRef.current = ov;
+      decorationLayerRef.current = new DecorationLayer(ov);
       setOverlay(ov);
       onOverlayReady?.(ov);
     });
@@ -62,6 +73,8 @@ export default function ViewerCell({
     }
 
     return () => {
+      decorationLayerRef.current?.destroy();
+      decorationLayerRef.current = undefined;
       overlayRef.current?.destroy();
       overlayRef.current = undefined;
       setOverlay(undefined);
@@ -94,22 +107,33 @@ export default function ViewerCell({
   // Annotation tool hook
   useAnnotationTool(overlay, imageSource?.id, isActive);
 
+  // Visible annotations for the current cell — shared by the annotation
+  // sync effect (Fabric objects) and the decoration sync effect.
+  const visibleAnnotations: readonly Annotation<OsdFields>[] = useMemo(() => {
+    const imageId = imageSource?.id;
+    if (!imageId) return [];
+    const activeContextId = contextState.activeContextId;
+    const displayedIds = contextState.displayedContextIds;
+    const visibleSet = new Set<AnnotationContextId>(displayedIds);
+    if (activeContextId) visibleSet.add(activeContextId);
+    const imageAnns = annotationState.byImage[imageId] || {};
+    return visibleSet.size > 0
+      ? Object.values(imageAnns).filter((a) => visibleSet.has(a.contextId))
+      : Object.values(imageAnns);
+  }, [
+    imageSource?.id,
+    annotationState,
+    contextState.activeContextId,
+    contextState.displayedContextIds,
+  ]);
+
   // Sync annotations to canvas
   useEffect(() => {
     if (!overlay || !imageSource?.id) return;
 
     const imageId = imageSource.id;
     const activeContextId = contextState.activeContextId;
-    const displayedIds = contextState.displayedContextIds;
-
-    const visibleSet = new Set<AnnotationContextId>(displayedIds);
-    if (activeContextId) visibleSet.add(activeContextId);
-
-    const imageAnns = annotationState.byImage[imageId] || {};
-    const matching =
-      visibleSet.size > 0
-        ? Object.values(imageAnns).filter((a) => visibleSet.has(a.contextId))
-        : Object.values(imageAnns);
+    const matching = visibleAnnotations;
 
     // Clear existing annotation objects
     const toRemove = overlay.canvas.getObjects().filter((obj) => obj.id);
@@ -148,6 +172,31 @@ export default function ViewerCell({
     contextState.activeContextId,
     contextState.displayedContextIds,
     isActive,
+    visibleAnnotations,
+  ]);
+
+  // Sync decorations to overlay (pure derivation of visible annotations +
+  // pixelSpacing + providers).
+  useEffect(() => {
+    const layer = decorationLayerRef.current;
+    if (!layer) return;
+    if (!decorationProviders || decorationProviders.length === 0) {
+      layer.setDecorations([]);
+      return;
+    }
+    const pixelSpacing = imageSource?.pixelSpacing ?? defaultPixelSpacing;
+    const ctx =
+      pixelSpacing !== undefined
+        ? { annotations: visibleAnnotations, pixelSpacing }
+        : { annotations: visibleAnnotations };
+    const decorations = decorationProviders.flatMap((p) => p(ctx));
+    layer.setDecorations(decorations);
+  }, [
+    overlay,
+    visibleAnnotations,
+    decorationProviders,
+    defaultPixelSpacing,
+    imageSource?.pixelSpacing,
   ]);
 
   return (

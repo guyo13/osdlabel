@@ -9,9 +9,16 @@ import {
 } from 'react';
 import { castDraft, produce } from 'immer';
 import type { AnnotationId } from '@osdlabel/annotation';
-import type { ImageId, AnnotationState, KeyboardShortcutMap, UIState } from '@osdlabel/viewer-api';
+import type {
+  ImageId,
+  AnnotationState,
+  KeyboardShortcutMap,
+  PixelSpacing,
+  UIState,
+} from '@osdlabel/viewer-api';
 import { getAllAnnotationsFlat } from '@osdlabel/viewer-api';
 import type { ConstraintStatus, ContextState } from '@osdlabel/annotation-context';
+import type { DecorationProvider } from '@osdlabel/decoration';
 import type { OsdAnnotation, OsdFields } from 'osdlabel';
 import {
   DEFAULT_KEYBOARD_SHORTCUTS,
@@ -38,6 +45,8 @@ interface AnnotatorContextValue {
   shortcuts: KeyboardShortcutMap;
   activeImageId: ImageId | undefined;
   testMode: boolean;
+  decorationProviders: readonly DecorationProvider<OsdFields>[];
+  defaultPixelSpacing: PixelSpacing | undefined;
 }
 
 const AnnotatorContext = createContext<AnnotatorContextValue | null>(null);
@@ -50,6 +59,15 @@ export interface AnnotatorProviderProps {
   readonly keyboardShortcuts?: Partial<KeyboardShortcutMap> | undefined;
   readonly shouldSkipKeyboardShortcutPredicate?: ((target: HTMLElement) => boolean) | undefined;
   readonly testMode?: boolean | undefined;
+  /**
+   * Decoration providers — pure functions that derive text/line decorations
+   * from the visible annotations and pixel-spacing. Composed in array order.
+   */
+  readonly decorationProviders?: readonly DecorationProvider<OsdFields>[] | undefined;
+  /**
+   * Fallback pixel spacing used when an `ImageSource` does not specify its own.
+   */
+  readonly defaultPixelSpacing?: PixelSpacing | undefined;
 }
 
 export function AnnotatorProvider({
@@ -60,6 +78,8 @@ export function AnnotatorProvider({
   keyboardShortcuts,
   shouldSkipKeyboardShortcutPredicate,
   testMode = false,
+  decorationProviders,
+  defaultPixelSpacing,
 }: AnnotatorProviderProps) {
   const [annotationState, dispatchAnnotation] = useReducer(annotationReducer, undefined, () => {
     const initial = createInitialAnnotationState();
@@ -145,6 +165,8 @@ export function AnnotatorProvider({
     shouldSkipKeyboardShortcutPredicate,
   );
 
+  const stableDecorationProviders = useMemo(() => decorationProviders ?? [], [decorationProviders]);
+
   const value = useMemo<AnnotatorContextValue>(
     () => ({
       annotationState,
@@ -156,6 +178,8 @@ export function AnnotatorProvider({
       shortcuts: mergedShortcuts,
       activeImageId,
       testMode,
+      decorationProviders: stableDecorationProviders,
+      defaultPixelSpacing,
     }),
     [
       annotationState,
@@ -167,6 +191,8 @@ export function AnnotatorProvider({
       mergedShortcuts,
       activeImageId,
       testMode,
+      stableDecorationProviders,
+      defaultPixelSpacing,
     ],
   );
 

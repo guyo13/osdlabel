@@ -226,6 +226,22 @@ importers:
         specifier: 'catalog:'
         version: 3.0.5(@types/debug@4.1.12)(jsdom@26.1.0(canvas@3.2.1))(yaml@2.8.3)
 
+  packages/decoration:
+    dependencies:
+      '@osdlabel/annotation':
+        specifier: workspace:*
+        version: link:../annotation
+      '@osdlabel/viewer-api':
+        specifier: workspace:*
+        version: link:../viewer-api
+    devDependencies:
+      typescript:
+        specifier: 'catalog:'
+        version: 5.9.3
+      vitest:
+        specifier: 'catalog:'
+        version: 3.0.5(@types/debug@4.1.12)(jsdom@26.1.0(canvas@3.2.1))(yaml@2.8.3)
+
   packages/fabric-annotations:
     dependencies:
       '@osdlabel/annotation':
@@ -253,6 +269,9 @@ importers:
       '@osdlabel/annotation':
         specifier: workspace:*
         version: link:../annotation
+      '@osdlabel/decoration':
+        specifier: workspace:*
+        version: link:../decoration
       '@osdlabel/fabric-annotations':
         specifier: workspace:*
         version: link:../fabric-annotations
@@ -312,6 +331,9 @@ importers:
       '@osdlabel/annotation-context':
         specifier: workspace:*
         version: link:../annotation-context
+      '@osdlabel/decoration':
+        specifier: workspace:*
+        version: link:../decoration
       '@osdlabel/fabric-annotations':
         specifier: workspace:*
         version: link:../fabric-annotations
@@ -361,6 +383,9 @@ importers:
       '@osdlabel/annotation-context':
         specifier: workspace:*
         version: link:../annotation-context
+      '@osdlabel/decoration':
+        specifier: workspace:*
+        version: link:../decoration
       '@osdlabel/fabric-annotations':
         specifier: workspace:*
         version: link:../fabric-annotations
@@ -428,6 +453,9 @@ importers:
       '@osdlabel/annotation-context':
         specifier: workspace:*
         version: link:../annotation-context
+      '@osdlabel/decoration':
+        specifier: workspace:*
+        version: link:../decoration
       '@osdlabel/fabric-annotations':
         specifier: workspace:*
         version: link:../fabric-annotations

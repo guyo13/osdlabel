@@ -126,6 +126,8 @@ const Annotator: Component<AnnotatorProps> = (props) => {
       keyboardShortcuts={props.keyboardShortcuts}
       shouldSkipKeyboardShortcutPredicate={props.shouldSkipKeyboardShortcutPredicate}
       testMode={props.testMode}
+      decorationProviders={props.decorationProviders}
+      defaultPixelSpacing={props.defaultPixelSpacing}
     >
       <AnnotatorSetup contexts={props.contexts} displayedContextIds={props.displayedContextIds} />
       <AnnotatorInner

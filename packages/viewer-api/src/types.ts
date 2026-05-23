@@ -60,12 +60,32 @@ export interface AnnotationState<E extends object = Record<string, never>> {
 
 // ── Image Source ─────────────────────────────────────────────────────────
 
+/**
+ * Physical pixel spacing for an image. Used to convert pixel measurements
+ * (lengths, areas) into physical units. Typical sources are DICOM
+ * `PixelSpacing` tags or vendor calibration metadata.
+ */
+export interface PixelSpacing {
+  /** Physical units per pixel along the horizontal axis. */
+  readonly x: number;
+  /** Physical units per pixel along the vertical axis. */
+  readonly y: number;
+  /** Display unit, e.g. `'mm'`, `'µm'`, `'cm'`. */
+  readonly unit: string;
+}
+
 /** Image source descriptor */
 export interface ImageSource {
   readonly id: ImageId;
   readonly tileSource: string;
   readonly thumbnailUrl?: string | undefined;
   readonly label?: string | undefined;
+  /**
+   * Physical pixel spacing for this image. If omitted, the consumer's
+   * `defaultPixelSpacing` (if any) is used; otherwise measurements are
+   * rendered in pixels.
+   */
+  readonly pixelSpacing?: PixelSpacing | undefined;
 }
 
 // ── Keyboard Shortcuts ───────────────────────────────────────────────────

@@ -55,6 +55,7 @@
     "osdlabel": "workspace:*",
     "@osdlabel/annotation": "workspace:*",
     "@osdlabel/annotation-context": "workspace:*",
+    "@osdlabel/decoration": "workspace:*",
     "@osdlabel/fabric-annotations": "workspace:*",
     "@osdlabel/fabric-osd": "workspace:*",
     "@osdlabel/osd-helper": "workspace:*",

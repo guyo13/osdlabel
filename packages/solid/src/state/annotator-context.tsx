@@ -1,10 +1,11 @@
 import { createContext, useContext, createEffect, on, type JSX, type Accessor } from 'solid-js';
 import { produce } from 'solid-js/store';
 import type { AnnotationId } from '@osdlabel/annotation';
-import type { ImageId } from '@osdlabel/viewer-api';
+import type { ImageId, PixelSpacing } from '@osdlabel/viewer-api';
 import type { AnnotationState, KeyboardShortcutMap, UIState } from '@osdlabel/viewer-api';
 import { getAllAnnotationsFlat } from '@osdlabel/viewer-api';
 import type { ConstraintStatus, ContextState } from '@osdlabel/annotation-context';
+import type { DecorationProvider } from '@osdlabel/decoration';
 import type { OsdAnnotation, OsdFields } from 'osdlabel';
 import { DEFAULT_KEYBOARD_SHORTCUTS } from 'osdlabel';
 import { createAnnotationStore } from './annotation-store.js';
@@ -27,6 +28,8 @@ interface AnnotatorContextValue {
   shortcuts: KeyboardShortcutMap;
   activeImageId: Accessor<ImageId | undefined>;
   testMode: boolean;
+  decorationProviders: readonly DecorationProvider<OsdFields>[];
+  defaultPixelSpacing: PixelSpacing | undefined;
 }
 
 const KeyboardHandler = (props: {
@@ -53,6 +56,15 @@ export interface AnnotatorProviderProps {
   readonly shouldSkipKeyboardShortcutPredicate?: ((target: HTMLElement) => boolean) | undefined;
   /** When true, exposes internal instances on DOM elements for E2E test access */
   readonly testMode?: boolean | undefined;
+  /**
+   * Decoration providers — pure functions that derive text/line decorations
+   * from the visible annotations and pixel-spacing. Composed in array order.
+   */
+  readonly decorationProviders?: readonly DecorationProvider<OsdFields>[] | undefined;
+  /**
+   * Fallback pixel spacing used when an `ImageSource` does not specify its own.
+   */
+  readonly defaultPixelSpacing?: PixelSpacing | undefined;
 }
 
 export function AnnotatorProvider(props: AnnotatorProviderProps) {
@@ -122,6 +134,8 @@ export function AnnotatorProvider(props: AnnotatorProviderProps) {
     shortcuts: mergedShortcuts,
     activeImageId,
     testMode: props.testMode ?? false,
+    decorationProviders: props.decorationProviders ?? [],
+    defaultPixelSpacing: props.defaultPixelSpacing,
   };
 
   return (

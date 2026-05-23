@@ -1,7 +1,7 @@
 import { onMount, onCleanup, createEffect, on, createSignal } from 'solid-js';
 import type { Component } from 'solid-js';
 import OpenSeadragon from 'openseadragon';
-import { FabricOverlay } from '@osdlabel/fabric-osd';
+import { DecorationLayer, FabricOverlay } from '@osdlabel/fabric-osd';
 import { createFabricObjectFromRawData } from '@osdlabel/fabric-annotations';
 import type { OverlayMode } from '@osdlabel/fabric-osd';
 import type { AnnotationContextId } from '@osdlabel/annotation-context';
@@ -10,6 +10,8 @@ import type { ImageSource } from '@osdlabel/viewer-api';
 import { openImage } from '@osdlabel/osd-helper';
 import { useAnnotationTool } from '../hooks/useAnnotationTool.js';
 import { useAnnotator } from '../state/annotator-context.js';
+import type { Annotation } from '@osdlabel/annotation';
+import type { OsdFields } from 'osdlabel';
 export interface ViewerCellProps {
   readonly imageSource: ImageSource | undefined;
   readonly isActive: boolean;
@@ -20,10 +22,18 @@ export interface ViewerCellProps {
 }
 
 const ViewerCell: Component<ViewerCellProps> = (props) => {
-  const { uiState, annotationState, contextState, testMode } = useAnnotator();
+  const {
+    uiState,
+    annotationState,
+    contextState,
+    testMode,
+    decorationProviders,
+    defaultPixelSpacing,
+  } = useAnnotator();
   let containerRef: HTMLDivElement | undefined;
   let viewer: OpenSeadragon.Viewer | undefined;
   const [overlay, setOverlay] = createSignal<FabricOverlay>();
+  const [decorationLayer, setDecorationLayer] = createSignal<DecorationLayer>();
 
   onMount(() => {
     if (!containerRef) return;
@@ -43,6 +53,7 @@ const ViewerCell: Component<ViewerCellProps> = (props) => {
       if (!viewer || overlay()) return;
       const ov = new FabricOverlay(viewer, { testMode });
       setOverlay(ov);
+      setDecorationLayer(new DecorationLayer(ov));
       props.onOverlayReady?.(ov);
     });
 
@@ -53,6 +64,8 @@ const ViewerCell: Component<ViewerCellProps> = (props) => {
   });
 
   onCleanup(() => {
+    decorationLayer()?.destroy();
+    setDecorationLayer(undefined);
     const ov = overlay();
     ov?.destroy();
     setOverlay(undefined);
@@ -94,27 +107,34 @@ const ViewerCell: Component<ViewerCellProps> = (props) => {
     () => props.isActive,
   );
 
+  // Compute visible annotations for the current cell — used by both the
+  // annotation sync effect (Fabric objects) and the decoration sync effect
+  // (text + line decorations).
+  const visibleAnnotations = (): readonly Annotation<OsdFields>[] => {
+    const imageId = props.imageSource?.id;
+    if (!imageId) return [];
+    const activeContextId = contextState.activeContextId;
+    const displayedIds = contextState.displayedContextIds;
+    const visibleSet = new Set<AnnotationContextId>(displayedIds);
+    if (activeContextId) visibleSet.add(activeContextId);
+    const imageAnns = annotationState.byImage[imageId] || {};
+    return visibleSet.size > 0
+      ? Object.values(imageAnns).filter((a) => visibleSet.has(a.contextId))
+      : Object.values(imageAnns);
+  };
+
   // Sync annotations from state to canvas (full clear-and-reload)
   createEffect(() => {
     const ov = overlay();
     const imageId = props.imageSource?.id;
     const activeContextId = contextState.activeContextId;
-    const displayedIds = contextState.displayedContextIds;
     // Track this as reactive dependencies so the effect re-runs
     void props.isActive;
+    void contextState.displayedContextIds;
 
     if (!ov || !imageId) return;
 
-    // Build set of all context IDs to display (active + explicitly displayed)
-    const visibleSet = new Set<AnnotationContextId>(displayedIds);
-    if (activeContextId) visibleSet.add(activeContextId);
-
-    // Filter annotations by imageId + visible contexts
-    const imageAnns = annotationState.byImage[imageId] || {};
-    const matching =
-      visibleSet.size > 0
-        ? Object.values(imageAnns).filter((a) => visibleSet.has(a.contextId))
-        : Object.values(imageAnns);
+    const matching = visibleAnnotations();
 
     // Clear all existing annotation objects from canvas
     const toRemove = ov.canvas.getObjects().filter((obj) => obj.id);
@@ -149,6 +169,27 @@ const ViewerCell: Component<ViewerCellProps> = (props) => {
       }
       ov.canvas.requestRenderAll();
     })();
+  });
+
+  // Sync decorations from state to canvas. Pure derivation: runs providers
+  // over visible annotations + the current image's pixelSpacing.
+  createEffect(() => {
+    const layer = decorationLayer();
+    if (!layer) return;
+    // Track dependencies
+    void annotationState.changeCounter;
+    void contextState.activeContextId;
+    void contextState.displayedContextIds;
+    const providers = decorationProviders;
+    if (!providers || providers.length === 0) {
+      layer.setDecorations([]);
+      return;
+    }
+    const annotations = visibleAnnotations();
+    const pixelSpacing = props.imageSource?.pixelSpacing ?? defaultPixelSpacing;
+    const ctx = pixelSpacing !== undefined ? { annotations, pixelSpacing } : { annotations };
+    const decorations = providers.flatMap((p) => p(ctx));
+    layer.setDecorations(decorations);
   });
 
   return (
