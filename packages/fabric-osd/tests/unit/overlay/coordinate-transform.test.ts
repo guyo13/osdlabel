@@ -1,5 +1,9 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { computeViewportTransform } from '../../../src/overlay/fabric-overlay.js';
+import {
+  computeViewportTransform,
+  imageToScreenFlipAware,
+  screenToImageFlipAware,
+} from '../../../src/overlay/fabric-overlay.js';
 import type OpenSeadragon from 'openseadragon';
 
 /**
@@ -286,4 +290,75 @@ describe('Flip matrix correctness', () => {
       expect(fy).toBeCloseTo(uy); // Y unchanged
     });
   }
+});
+
+describe('imageToScreenFlipAware / screenToImageFlipAware', () => {
+  it('matches OSD without flip', () => {
+    const viewer = createMockViewer({ scale: 2, offsetX: 30, offsetY: 20 });
+    const result = imageToScreenFlipAware(viewer, { x: 40, y: 60 });
+    const expected = viewer.viewport.imageToViewerElementCoordinates({
+      x: 40,
+      y: 60,
+    } as OpenSeadragon.Point);
+    expect(result.x).toBeCloseTo(expected.x);
+    expect(result.y).toBeCloseTo(expected.y);
+  });
+
+  it('agrees with the viewportTransform painted position under flip', () => {
+    // Regression: text decorations drifted at 2× pan speed under
+    // single-flip mode because imageToScreen returned the un-mirrored
+    // coord while Fabric painted at the mirrored coord.
+    const containerWidth = 800;
+    const viewer = createMockViewer({
+      scale: 2,
+      offsetX: 50,
+      offsetY: 30,
+      flip: true,
+      containerWidth,
+    });
+    const vpt = computeViewportTransform(viewer);
+    const imgX = 40;
+    const imgY = 60;
+
+    // Where Fabric paints the annotation
+    const paintedX = vpt[0] * imgX + vpt[2] * imgY + vpt[4];
+    const paintedY = vpt[1] * imgX + vpt[3] * imgY + vpt[5];
+
+    const overlayed = imageToScreenFlipAware(viewer, { x: imgX, y: imgY });
+    expect(overlayed.x).toBeCloseTo(paintedX);
+    expect(overlayed.y).toBeCloseTo(paintedY);
+  });
+
+  it('drift on horizontal pan is zero under flip (regression for text-decoration drift)', () => {
+    // Two viewers with the same flip + scale but different horizontal pans.
+    // The screen position of a fixed image point must change by exactly
+    // the negated delta (mirror geometry), and imageToScreenFlipAware
+    // must agree with that — pre-fix it shifted by +delta instead.
+    const containerWidth = 800;
+    const base = { scale: 2, offsetY: 0, flip: true, containerWidth };
+    const a = createMockViewer({ ...base, offsetX: 100 });
+    const b = createMockViewer({ ...base, offsetX: 160 });
+
+    const p = { x: 40, y: 60 };
+    const screenA = imageToScreenFlipAware(a, p);
+    const screenB = imageToScreenFlipAware(b, p);
+    // Painted position shifts by -(offsetB - offsetA) under flip
+    expect(screenB.x - screenA.x).toBeCloseTo(-60);
+  });
+
+  it('round-trips image → screen → image under flip', () => {
+    const viewer = createMockViewer({
+      scale: 1.5,
+      offsetX: 25,
+      offsetY: -10,
+      rotationDeg: 0,
+      flip: true,
+      containerWidth: 800,
+    });
+    const original = { x: 123, y: 456 };
+    const screen = imageToScreenFlipAware(viewer, original);
+    const back = screenToImageFlipAware(viewer, screen);
+    expect(back.x).toBeCloseTo(original.x, 6);
+    expect(back.y).toBeCloseTo(original.y, 6);
+  });
 });

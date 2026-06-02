@@ -75,6 +75,49 @@ export function computeViewportTransform(viewer: OpenSeadragon.Viewer): TMat2D {
 }
 
 /**
+ * Convert an image-space point to screen-space, composing the same
+ * horizontal-flip mirror that {@link computeViewportTransform} applies.
+ *
+ * OSD's `imageToViewerElementCoordinates` ignores flip (flip is applied
+ * by OSD's drawer at render time). Without this composition, callers
+ * that use the result as an absolute screen coordinate — e.g. the
+ * `DecorationLayer` placing text divs — drift relative to the painted
+ * image when only one of `flippedH` or `flippedV` is set (when both
+ * are set the cell-level flip cancels: see
+ * `FabricOverlay.applyViewTransform`).
+ *
+ * Exported for unit testing and for callers that want flip-aware
+ * coordinates without a {@link FabricOverlay} instance.
+ */
+export function imageToScreenFlipAware(viewer: OpenSeadragon.Viewer, imagePoint: Point): Point {
+  const viewport = viewer.viewport;
+  const osdPoint = viewport.imageToViewerElementCoordinates(
+    new OpenSeadragon.Point(imagePoint.x, imagePoint.y),
+  );
+  let x = osdPoint.x;
+  if (viewport.getFlip()) {
+    x = viewport.getContainerSize().x - x;
+  }
+  return { x, y: osdPoint.y };
+}
+
+/**
+ * Inverse of {@link imageToScreenFlipAware}: convert a screen-space point
+ * to image-space, undoing the horizontal-flip mirror first.
+ */
+export function screenToImageFlipAware(viewer: OpenSeadragon.Viewer, screenPoint: Point): Point {
+  const viewport = viewer.viewport;
+  let sx = screenPoint.x;
+  if (viewport.getFlip()) {
+    sx = viewport.getContainerSize().x - sx;
+  }
+  const osdPoint = viewport.viewerElementToImageCoordinates(
+    new OpenSeadragon.Point(sx, screenPoint.y),
+  );
+  return { x: osdPoint.x, y: osdPoint.y };
+}
+
+/**
  * A Fabric.js canvas overlay synchronized with an OpenSeaDragon viewer.
  *
  * Handles event routing between OSD and Fabric using an OSD MouseTracker
@@ -356,20 +399,14 @@ export class FabricOverlay {
     return this._mode;
   }
 
-  /** Convert a point from screen-space to image-space */
+  /** Convert a point from screen-space to image-space. Flip-aware. */
   screenToImage(screenPoint: Point): Point {
-    const osdPoint = this._viewer.viewport.viewerElementToImageCoordinates(
-      new OpenSeadragon.Point(screenPoint.x, screenPoint.y),
-    );
-    return { x: osdPoint.x, y: osdPoint.y };
+    return screenToImageFlipAware(this._viewer, screenPoint);
   }
 
-  /** Convert a point from image-space to screen-space */
+  /** Convert a point from image-space to screen-space. Flip-aware. */
   imageToScreen(imagePoint: Point): Point {
-    const osdPoint = this._viewer.viewport.imageToViewerElementCoordinates(
-      new OpenSeadragon.Point(imagePoint.x, imagePoint.y),
-    );
-    return { x: osdPoint.x, y: osdPoint.y };
+    return imageToScreenFlipAware(this._viewer, imagePoint);
   }
 
   /** Clean up all event listeners and DOM elements */
