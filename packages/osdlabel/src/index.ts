@@ -94,11 +94,14 @@ export type {
   FormatMeasurementOptions,
   MeasurementProviderOptions,
   LabelProviderOptions,
+  DistanceProviderOptions,
+  AnnotationPair,
 } from '@osdlabel/decoration';
 export {
   composeProviders,
   createMeasurementProvider,
   createLabelProvider,
+  createDistanceProvider,
   toPhysicalLength,
   toPhysicalArea,
   formatMeasurement,
@@ -161,3 +164,7 @@ export {
   processToolUpdateAnnotation,
 } from './tool-factory.js';
 export type { ToolCallbackAccessors, ToolCallbackDispatchers } from './tool-factory.js';
+
+// Live decoration update wiring
+export { enableLiveDecorationUpdates } from './live-decoration-updates.js';
+export type { LiveDecorationUpdateOptions } from './live-decoration-updates.js';

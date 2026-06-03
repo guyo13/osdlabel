@@ -11,6 +11,7 @@ import { useAnnotationTool } from '../hooks/useAnnotationTool.js';
 import { useAnnotator } from '../state/annotator-context.js';
 import type { Annotation } from '@osdlabel/annotation';
 import type { OsdFields } from 'osdlabel';
+import { enableLiveDecorationUpdates } from 'osdlabel';
 
 export interface ViewerCellProps {
   readonly imageSource: ImageSource | undefined;
@@ -196,6 +197,26 @@ export default function ViewerCell({
     defaultPixelSpacing,
     imageSource?.pixelSpacing,
   ]);
+
+  // Live-update decorations during Fabric drag. Accessors close over refs
+  // so each rAF tick observes the latest reactive state without resubscribing.
+  const visibleAnnotationsRef = useRef(visibleAnnotations);
+  visibleAnnotationsRef.current = visibleAnnotations;
+  const decorationProvidersRef = useRef(decorationProviders);
+  decorationProvidersRef.current = decorationProviders;
+  const pixelSpacingRef = useRef<typeof defaultPixelSpacing>(undefined);
+  pixelSpacingRef.current = imageSource?.pixelSpacing ?? defaultPixelSpacing;
+  useEffect(() => {
+    const layer = decorationLayerRef.current;
+    if (!overlay || !layer) return;
+    return enableLiveDecorationUpdates<OsdFields>({
+      overlay,
+      getVisibleAnnotations: () => visibleAnnotationsRef.current,
+      getPixelSpacing: () => pixelSpacingRef.current,
+      getProviders: () => decorationProvidersRef.current ?? [],
+      onDecorations: (decorations) => layer.setDecorations(decorations),
+    });
+  }, [overlay]);
 
   return (
     <div

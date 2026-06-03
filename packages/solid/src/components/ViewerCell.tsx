@@ -12,6 +12,7 @@ import { useAnnotationTool } from '../hooks/useAnnotationTool.js';
 import { useAnnotator } from '../state/annotator-context.js';
 import type { Annotation } from '@osdlabel/annotation';
 import type { OsdFields } from 'osdlabel';
+import { enableLiveDecorationUpdates } from 'osdlabel';
 export interface ViewerCellProps {
   readonly imageSource: ImageSource | undefined;
   readonly isActive: boolean;
@@ -190,6 +191,23 @@ const ViewerCell: Component<ViewerCellProps> = (props) => {
     const ctx = pixelSpacing !== undefined ? { annotations, pixelSpacing } : { annotations };
     const decorations = providers.flatMap((p) => p(ctx));
     layer.setDecorations(decorations);
+  });
+
+  // Live-update decorations during Fabric drag (object:moving/scaling/rotating).
+  // The accessors close over reactive state so each rAF tick sees the latest
+  // visible annotations, providers, and pixel spacing.
+  createEffect(() => {
+    const ov = overlay();
+    const layer = decorationLayer();
+    if (!ov || !layer) return;
+    const dispose = enableLiveDecorationUpdates<OsdFields>({
+      overlay: ov,
+      getVisibleAnnotations: visibleAnnotations,
+      getPixelSpacing: () => props.imageSource?.pixelSpacing ?? defaultPixelSpacing,
+      getProviders: () => decorationProviders ?? [],
+      onDecorations: (decorations) => layer.setDecorations(decorations),
+    });
+    onCleanup(dispose);
   });
 
   return (
