@@ -1,4 +1,4 @@
-import type { Annotation } from '@osdlabel/annotation';
+import type { Annotation, AnnotationId } from '@osdlabel/annotation';
 import type { PixelSpacing } from '@osdlabel/viewer-api';
 import type { Decoration } from './decoration.js';
 
@@ -12,6 +12,8 @@ export interface DecorationContext<E extends object = Record<string, never>> {
   readonly annotations: readonly Annotation<E>[];
   /** Calibration for the cell's image; `undefined` if no calibration is set. */
   readonly pixelSpacing?: PixelSpacing | undefined;
+  /** The currently selected annotation ID, if any. Used for selection emphasis. */
+  readonly selectedAnnotationId?: AnnotationId | null | undefined;
 }
 
 /**

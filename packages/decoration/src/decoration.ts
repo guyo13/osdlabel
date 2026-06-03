@@ -15,6 +15,8 @@ export interface TextDecorationStyle {
   readonly borderRadius?: string | undefined;
   /** Additional CSS class applied to the host element. */
   readonly className?: string | undefined;
+  /** CSS z-index to control stacking order of text labels. */
+  readonly zIndex?: number | undefined;
 }
 
 /** Styling applied to a line decoration (Fabric-rendered). */

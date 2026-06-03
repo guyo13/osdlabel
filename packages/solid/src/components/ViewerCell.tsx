@@ -188,7 +188,8 @@ const ViewerCell: Component<ViewerCellProps> = (props) => {
     }
     const annotations = visibleAnnotations();
     const pixelSpacing = props.imageSource?.pixelSpacing ?? defaultPixelSpacing;
-    const ctx = pixelSpacing !== undefined ? { annotations, pixelSpacing } : { annotations };
+    const selectedAnnotationId = uiState.selectedAnnotationId;
+    const ctx = { annotations, pixelSpacing, selectedAnnotationId };
     const decorations = providers.flatMap((p) => p(ctx));
     layer.setDecorations(decorations);
   });
@@ -204,6 +205,7 @@ const ViewerCell: Component<ViewerCellProps> = (props) => {
       overlay: ov,
       getVisibleAnnotations: visibleAnnotations,
       getPixelSpacing: () => props.imageSource?.pixelSpacing ?? defaultPixelSpacing,
+      getSelectedAnnotationId: () => uiState.selectedAnnotationId,
       getProviders: () => decorationProviders ?? [],
       onDecorations: (decorations) => layer.setDecorations(decorations),
     });

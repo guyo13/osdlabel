@@ -198,6 +198,11 @@ function applyTextStyle(el: HTMLDivElement, decoration: TextDecoration): void {
   if (el.className !== nextClassName) {
     el.className = nextClassName;
   }
+  if (style?.zIndex !== undefined) {
+    el.style.zIndex = String(style.zIndex);
+  } else {
+    el.style.zIndex = '';
+  }
 }
 
 function placementTranslate(placement: TextPlacement | undefined): {
