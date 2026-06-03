@@ -21,5 +21,14 @@ export {
   midpoint,
   boundingBox,
 } from './geometry-math.js';
-export { createMeasurementProvider, createLabelProvider } from './built-in-providers.js';
-export type { MeasurementProviderOptions, LabelProviderOptions } from './built-in-providers.js';
+export {
+  createMeasurementProvider,
+  createLabelProvider,
+  createDistanceProvider,
+} from './built-in-providers.js';
+export type {
+  MeasurementProviderOptions,
+  LabelProviderOptions,
+  DistanceProviderOptions,
+  AnnotationPair,
+} from './built-in-providers.js';

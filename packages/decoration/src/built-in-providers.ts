@@ -2,6 +2,8 @@ import type { Annotation, BaseAnnotation, Geometry, Point } from '@osdlabel/anno
 import type { PixelSpacing } from '@osdlabel/viewer-api';
 import type {
   Decoration,
+  LineDecoration,
+  LineDecorationStyle,
   TextDecoration,
   TextDecorationStyle,
   TextPlacement,
@@ -171,6 +173,85 @@ export function createLabelProvider<E extends object = Record<string, never>>(
         ...(options?.style !== undefined ? { style: options.style } : {}),
       };
       decorations.push(decoration);
+    }
+    return decorations;
+  };
+}
+
+// ── createDistanceProvider ─────────────────────────────────────────────────
+
+/** A pair of annotations the distance provider will render a connector for. */
+export interface AnnotationPair<E extends object = Record<string, never>> {
+  readonly a: Annotation<E>;
+  readonly b: Annotation<E>;
+  /**
+   * Optional explicit id for the pair, used for stable decoration ids across
+   * recomputations. Defaults to `${a.id}-${b.id}`.
+   */
+  readonly id?: string | undefined;
+}
+
+export interface DistanceProviderOptions<E extends object = Record<string, never>> {
+  /**
+   * Pure pairing function. Receives all visible annotations and returns the
+   * pairs to connect. The library does not invent pairing semantics — callers
+   * decide whether to pair consecutive points, look up explicit links via
+   * metadata, etc.
+   */
+  readonly pair: (annotations: readonly Annotation<E>[]) => readonly AnnotationPair<E>[];
+  /** If true (default), the connector line is dashed. */
+  readonly dashed?: boolean | undefined;
+  readonly lineStyle?: LineDecorationStyle | undefined;
+  readonly textStyle?: TextDecorationStyle | undefined;
+  readonly format?: FormatMeasurementOptions | undefined;
+  /** Custom formatter for the distance label; receives the value + unit. */
+  readonly formatLine?: ((measurement: Measurement) => string) | undefined;
+}
+
+/**
+ * A provider that emits a connector line + distance label for each
+ * caller-supplied pair of annotations. Each annotation's anchor is its
+ * geometric centroid (see {@link centroid}); distance is in image pixels
+ * unless `pixelSpacing` converts it to physical units.
+ */
+export function createDistanceProvider<E extends object = Record<string, never>>(
+  options: DistanceProviderOptions<E>,
+): DecorationProvider<E> {
+  const dashed = options.dashed ?? true;
+  return ({ annotations, pixelSpacing }) => {
+    const pairs = options.pair(annotations);
+    const decorations: Decoration[] = [];
+    for (const pair of pairs) {
+      const pA = geom.centroid(pair.a.geometry);
+      const pB = geom.centroid(pair.b.geometry);
+      const pxDistance = geom.distance(pA, pB);
+      const measurement = toPhysicalLength(pxDistance, pixelSpacing, 'mean');
+      const text = options.formatLine
+        ? options.formatLine(measurement)
+        : formatMeasurement(measurement, options.format);
+      const pairId = pair.id ?? `${pair.a.id}-${pair.b.id}`;
+      const relatedIds = [pair.a.id, pair.b.id] as const;
+
+      const line: LineDecoration = {
+        type: 'line',
+        id: `distance-line:${pairId}`,
+        relatedAnnotationIds: relatedIds,
+        start: pA,
+        end: pB,
+        dashed,
+        ...(options.lineStyle !== undefined ? { style: options.lineStyle } : {}),
+      };
+      const label: TextDecoration = {
+        type: 'text',
+        id: `distance-text:${pairId}`,
+        relatedAnnotationIds: relatedIds,
+        text,
+        anchor: geom.midpoint(pA, pB),
+        offset: { x: 0, y: -6 },
+        placement: 'bottom',
+        ...(options.textStyle !== undefined ? { style: options.textStyle } : {}),
+      };
+      decorations.push(line, label);
     }
     return decorations;
   };
