@@ -113,6 +113,7 @@ export {
   centroid,
   midpoint,
   boundingBox,
+  withSelectionEmphasis,
 } from '@osdlabel/decoration';
 
 // Validation schemas (re-exported from @osdlabel/validation)

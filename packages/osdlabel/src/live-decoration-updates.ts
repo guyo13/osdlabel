@@ -23,6 +23,8 @@ export interface LiveDecorationUpdateOptions<E extends object = Record<string, n
   readonly getProviders: () => readonly DecorationProvider<E>[];
   /** Called with the newly-computed decorations on each throttled tick. */
   readonly onDecorations: (decorations: readonly Decoration[]) => void;
+  /** Returns the currently selected annotation ID, if any. */
+  readonly getSelectedAnnotationId?: (() => AnnotationId | null | undefined) | undefined;
 }
 
 /**
@@ -45,7 +47,7 @@ export interface LiveDecorationUpdateOptions<E extends object = Record<string, n
 export function enableLiveDecorationUpdates<E extends object = Record<string, never>>(
   options: LiveDecorationUpdateOptions<E>,
 ): () => void {
-  const { overlay, getVisibleAnnotations, getPixelSpacing, getProviders, onDecorations } = options;
+  const { overlay, getVisibleAnnotations, getPixelSpacing, getProviders, onDecorations, getSelectedAnnotationId } = options;
   const canvas = overlay.canvas;
 
   let scheduled = false;
@@ -68,7 +70,8 @@ export function enableLiveDecorationUpdates<E extends object = Record<string, ne
 
     const annotations = applyLiveOverride(getVisibleAnnotations(), target);
     const pixelSpacing = getPixelSpacing();
-    const ctx = pixelSpacing !== undefined ? { annotations, pixelSpacing } : { annotations };
+    const selectedAnnotationId = getSelectedAnnotationId?.();
+    const ctx = { annotations, pixelSpacing, selectedAnnotationId };
     const decorations = providers.flatMap((p) => p(ctx));
     onDecorations(decorations);
   };

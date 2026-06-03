@@ -32,3 +32,4 @@ export type {
   DistanceProviderOptions,
   AnnotationPair,
 } from './built-in-providers.js';
+export * from './emphasis.js';

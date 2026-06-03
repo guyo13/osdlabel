@@ -16,6 +16,7 @@ import {
   createMeasurementProvider,
   createLabelProvider,
   createDistanceProvider,
+  withSelectionEmphasis,
 } from '@osdlabel/solid';
 import type { AnnotationContextId, AnnotationContext, ImageSource } from '@osdlabel/solid';
 
@@ -389,23 +390,35 @@ function App() {
       onAnnotationsChange={(anns) => console.log('Annotations changed:', anns.length, 'total')}
       onConstraintChange={(status) => console.log('Constraint status changed:', status)}
       testMode={true}
-      decorationProviders={[
-        createMeasurementProvider({ area: true, perimeter: true, length: true, radius: true }),
-        createDistanceProvider({
-          pair: (anns) => {
-            const points = anns.filter((a) => a.toolType === 'point');
-            const pairs = [];
-            for (let i = 0; i < points.length - 1; i += 2) {
-              pairs.push({ a: points[i]!, b: points[i + 1]! });
-            }
-            return pairs;
-          },
-          dashed: true,
-          formatLine: (m, fmt) => `Distance: ${fmt(m)}`,
-        }),
-        createLabelProvider(),
-      ]}
       defaultPixelSpacing={{ x: 1, y: 1, unit: 'px' }}
+      decorationProviders={[
+        withSelectionEmphasis(
+          createMeasurementProvider({ area: true, perimeter: true, length: true, radius: true }),
+          {
+            selectedTextStyle: { zIndex: 10, background: 'rgba(33, 150, 243, 0.9)', color: '#fff' },
+            selectedLineStyle: { stroke: '#2196f3', strokeWidth: 3 },
+          },
+        ),
+        withSelectionEmphasis(createLabelProvider(), {
+          selectedTextStyle: { zIndex: 10, background: 'rgba(33, 150, 243, 0.9)', color: '#fff' },
+        }),
+        withSelectionEmphasis(
+          createDistanceProvider({
+            pair: (annotations) => {
+              const points = annotations.filter((a) => a.geometry.type === 'point');
+              const pairs = [];
+              for (let i = 0; i < points.length - 1; i += 2) {
+                pairs.push({ a: points[i]!, b: points[i + 1]! });
+              }
+              return pairs;
+            },
+          }),
+          {
+            selectedLineStyle: { stroke: '#2196f3', strokeWidth: 3 },
+            selectedTextStyle: { zIndex: 10, background: 'rgba(33, 150, 243, 0.9)', color: '#fff' },
+          },
+        ),
+      ]}
     >
       <AppContent />
     </AnnotatorProvider>
