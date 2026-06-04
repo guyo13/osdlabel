@@ -65,10 +65,16 @@ export async function createFabricObjectFromRawData(
   const obj = await deserializeFabricObject(annotation.rawAnnotationData);
   if (!obj) return null;
 
-  obj.set({
+  const options: Record<string, any> = {
     selectable: true,
     evented: true,
-  });
+  };
+
+  if (annotation.toolType === 'point') {
+    options.hasControls = false;
+  }
+
+  obj.set(options);
 
   return obj;
 }
