@@ -28,32 +28,26 @@ export function withSelectionEmphasis<E extends object = Record<string, never>>(
     const selectedId = ctx.selectedAnnotationId;
     if (!selectedId) return decorations;
 
-    // Fast-path: check if any decoration relates to the selected ID before allocating
-    let needsUpdate = false;
-    for (const dec of decorations) {
-      if (dec.relatedAnnotationIds.includes(selectedId)) {
-        needsUpdate = true;
-        break;
-      }
-    }
-    if (!needsUpdate) return decorations;
+    const idx = decorations.findIndex((d) => d.relatedAnnotationIds.includes(selectedId));
+    if (idx === -1) return decorations;
 
-    return decorations.map((dec) => {
-      if (!dec.relatedAnnotationIds.includes(selectedId)) return dec;
+    const next = [...decorations];
+    for (let i = idx; i < next.length; i++) {
+      const dec = next[i]!;
+      if (!dec.relatedAnnotationIds.includes(selectedId)) continue;
 
       if (dec.type === 'text' && options.selectedTextStyle) {
-        return {
+        next[i] = {
           ...dec,
           style: { ...dec.style, ...options.selectedTextStyle },
         };
-      }
-      if (dec.type === 'line' && options.selectedLineStyle) {
-        return {
+      } else if (dec.type === 'line' && options.selectedLineStyle) {
+        next[i] = {
           ...dec,
           style: { ...dec.style, ...options.selectedLineStyle },
         };
       }
-      return dec;
-    });
+    }
+    return next;
   };
 }

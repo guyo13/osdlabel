@@ -195,7 +195,26 @@ describe('enableLiveDecorationUpdates', () => {
     rig.flushRAF();
     expect(providerSpacing).toEqual(spacing);
   });
-
+  it('passes selectedAnnotationId through to providers', () => {
+    const rig = createRig();
+    const selectedId = annId('test-selected');
+    const provider: DecorationProvider = ({ selectedAnnotationId }) => {
+      providerSelectedId = selectedAnnotationId;
+      return [];
+    };
+    let providerSelectedId: AnnotationId | null | undefined;
+    enableLiveDecorationUpdates({
+      overlay: rig.overlay,
+      getVisibleAnnotations: () => [],
+      getPixelSpacing: () => undefined,
+      getSelectedAnnotationId: () => selectedId,
+      getProviders: () => [provider],
+      onDecorations: vi.fn(),
+    });
+    rig.fire('object:moving', fakeFabricTarget('x', null as unknown as Annotation['geometry']));
+    rig.flushRAF();
+    expect(providerSelectedId).toBe(selectedId);
+  });
   it('skips providers and onDecorations entirely when none are registered', () => {
     // No-providers case is fast-exited at the event handler; the rAF queue
     // stays empty and onDecorations is never invoked. Host frameworks call

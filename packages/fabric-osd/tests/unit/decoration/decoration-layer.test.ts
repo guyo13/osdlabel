@@ -154,6 +154,37 @@ describe('DecorationLayer', () => {
     layer.destroy();
   });
 
+  it('applies zIndex from text style to el.style.zIndex', () => {
+    const { overlay, hostParent } = createMockOverlay();
+    const layer = new DecorationLayer(overlay);
+    layer.setDecorations([
+      {
+        type: 'text',
+        id: 'z-index-test',
+        relatedAnnotationIds: [annId('z-index-test')],
+        text: 'Z',
+        anchor: { x: 0, y: 0 },
+        style: { zIndex: 42 },
+      },
+    ]);
+    const el = hostParent.querySelector('[data-decoration-id="z-index-test"]') as HTMLElement;
+    expect(el.style.zIndex).toBe('42');
+    
+    // Update to remove zIndex
+    layer.setDecorations([
+      {
+        type: 'text',
+        id: 'z-index-test',
+        relatedAnnotationIds: [annId('z-index-test')],
+        text: 'Z',
+        anchor: { x: 0, y: 0 },
+      },
+    ]);
+    expect(el.style.zIndex).toBe('');
+    
+    layer.destroy();
+  });
+
   it('destroy removes the host element and unsubscribes', () => {
     const { overlay, hostParent, syncSubscribers } = createMockOverlay();
     const layer = new DecorationLayer(overlay);

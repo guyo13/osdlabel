@@ -70,7 +70,7 @@ export function enableLiveDecorationUpdates<E extends object = Record<string, ne
 
     const annotations = applyLiveOverride(getVisibleAnnotations(), target);
     const pixelSpacing = getPixelSpacing();
-    const selectedAnnotationId = getSelectedAnnotationId?.();
+    const selectedAnnotationId = getSelectedAnnotationId?.() ?? null;
     const ctx = { annotations, pixelSpacing, selectedAnnotationId };
     const decorations = providers.flatMap((p) => p(ctx));
     onDecorations(decorations);
