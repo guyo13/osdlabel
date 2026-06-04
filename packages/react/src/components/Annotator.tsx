@@ -74,7 +74,7 @@ function AnnotatorInner({
   maxGridSize,
   style,
   showFps,
-}: Omit<AnnotatorProps, keyof AnnotatorProviderProps>) {
+}: Omit<AnnotatorProps, keyof AnnotatorProviderProps | 'contexts'>) {
   const { uiState } = useAnnotator();
 
   const activeImageId = uiState.gridAssignments[uiState.activeCellIndex];
@@ -167,7 +167,6 @@ export default function Annotator({
       <AnnotatorSetup contexts={contexts} displayedContextIds={displayedContextIds} />
       <AnnotatorInner
         images={images}
-        contexts={contexts}
         showFilmstrip={showFilmstrip}
         showGridControls={showGridControls}
         showContextSwitcher={showContextSwitcher}

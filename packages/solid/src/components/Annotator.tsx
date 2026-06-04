@@ -39,7 +39,7 @@ export interface AnnotatorProps extends Omit<AnnotatorProviderProps, 'children'>
   readonly providerChildren?: JSX.Element | undefined;
 }
 
-const AnnotatorInner: Component<Omit<AnnotatorProps, keyof AnnotatorProviderProps>> = (props) => {
+const AnnotatorInner: Component<Omit<AnnotatorProps, keyof AnnotatorProviderProps | 'contexts'>> = (props) => {
   const { uiState } = useAnnotator();
 
   const activeImageId = () => {
@@ -132,7 +132,6 @@ const Annotator: Component<AnnotatorProps> = (props) => {
       <AnnotatorSetup contexts={props.contexts} displayedContextIds={props.displayedContextIds} />
       <AnnotatorInner
         images={props.images}
-        contexts={props.contexts}
         showFilmstrip={props.showFilmstrip}
         showGridControls={props.showGridControls}
         showContextSwitcher={props.showContextSwitcher}

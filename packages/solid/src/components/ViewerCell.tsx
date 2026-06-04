@@ -3,7 +3,6 @@ import type { Component } from 'solid-js';
 import OpenSeadragon from 'openseadragon';
 import { DecorationLayer, FabricOverlay } from '@osdlabel/fabric-osd';
 import { createFabricObjectFromRawData } from '@osdlabel/fabric-annotations';
-import type { OverlayMode } from '@osdlabel/fabric-osd';
 import type { AnnotationContextId } from '@osdlabel/annotation-context';
 import { DEFAULT_CELL_TRANSFORM } from '@osdlabel/viewer-api';
 import type { ImageSource } from '@osdlabel/viewer-api';
@@ -17,7 +16,6 @@ export interface ViewerCellProps {
   readonly imageSource: ImageSource | undefined;
   readonly isActive: boolean;
   readonly cellIndex: number;
-  readonly mode?: OverlayMode;
   readonly onActivate: () => void;
   readonly onOverlayReady?: (overlay: FabricOverlay) => void;
 }

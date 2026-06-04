@@ -1,8 +1,7 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 
 export default function FpsCounter() {
   const [fps, setFps] = useState(0);
-  const frameRef = useRef<number>(0);
 
   useEffect(() => {
     let frameId: number;
@@ -20,7 +19,6 @@ export default function FpsCounter() {
     };
 
     frameId = requestAnimationFrame(loop);
-    frameRef.current = frameId;
 
     return () => {
       cancelAnimationFrame(frameId);
