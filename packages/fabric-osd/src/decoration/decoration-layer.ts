@@ -198,10 +198,9 @@ function applyTextStyle(el: HTMLDivElement, decoration: TextDecoration): void {
   if (el.className !== nextClassName) {
     el.className = nextClassName;
   }
-  if (style?.zIndex !== undefined) {
-    el.style.zIndex = String(style.zIndex);
-  } else {
-    el.style.zIndex = '';
+  const nextZIndex = style?.zIndex !== undefined ? String(style.zIndex) : '';
+  if (el.style.zIndex !== nextZIndex) {
+    el.style.zIndex = nextZIndex;
   }
 }
 

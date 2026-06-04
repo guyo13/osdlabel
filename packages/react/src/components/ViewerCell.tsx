@@ -194,6 +194,7 @@ export default function ViewerCell({
     defaultPixelSpacing,
     imageSource?.pixelSpacing,
     uiState.selectedAnnotationId,
+    decorationProviders,
   ]);
 
   // Live-update decorations during Fabric drag. Accessors close over refs
