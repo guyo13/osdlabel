@@ -44,7 +44,7 @@ jobs:
         run: pnpm install
       
       - name: Get Playwright version
-        run: echo "PLAYWRIGHT_VERSION=$(pnpm ls @playwright/test --depth 0 --json | jq -r '.[0].devDependencies[\"@playwright/test\"].version')" >> $GITHUB_ENV
+        run: echo "PLAYWRIGHT_VERSION=$(pnpm ls @playwright/test --depth 0 --json | jq -r '[.[] | .devDependencies["@playwright/test"]?.version | select(. != null)][0]')" >> $GITHUB_ENV
         
       - name: Cache Playwright Browsers
         uses: actions/cache@v4
