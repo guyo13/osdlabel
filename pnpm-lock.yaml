@@ -16,10 +16,10 @@ catalogs:
       specifier: ^5.0.2
       version: 5.0.2
     '@types/react':
-      specifier: ^19.1.6
-      version: 19.2.14
+      specifier: ^19.2.16
+      version: 19.2.16
     '@types/react-dom':
-      specifier: ^19.1.6
+      specifier: ^19.2.3
       version: 19.2.3
     '@typescript-eslint/eslint-plugin':
       specifier: ^8.60.1
@@ -39,9 +39,6 @@ catalogs:
     immer:
       specifier: ^10.1.1
       version: 10.2.0
-    openseadragon:
-      specifier: 5.0.1
-      version: 5.0.1
     prettier:
       specifier: ^3.8.3
       version: 3.8.3
@@ -60,9 +57,6 @@ catalogs:
     typescript:
       specifier: ^5.9.3
       version: 5.9.3
-    valibot:
-      specifier: ^1.3.1
-      version: 1.4.1
     vite:
       specifier: 6.1.0
       version: 6.1.0
@@ -135,10 +129,10 @@ importers:
     devDependencies:
       '@types/react':
         specifier: 'catalog:'
-        version: 19.2.14
+        version: 19.2.16
       '@types/react-dom':
         specifier: 'catalog:'
-        version: 19.2.3(@types/react@19.2.14)
+        version: 19.2.3(@types/react@19.2.16)
       '@vitejs/plugin-react':
         specifier: 'catalog:'
         version: 4.7.0(vite@6.1.0(yaml@2.8.3))
@@ -425,10 +419,10 @@ importers:
         version: 5.0.2
       '@types/react':
         specifier: 'catalog:'
-        version: 19.2.14
+        version: 19.2.16
       '@types/react-dom':
         specifier: 'catalog:'
-        version: 19.2.3(@types/react@19.2.14)
+        version: 19.2.3(@types/react@19.2.16)
       '@typescript-eslint/eslint-plugin':
         specifier: 'catalog:'
         version: 8.60.1(@typescript-eslint/parser@8.60.1(eslint@10.4.1)(typescript@5.9.3))(eslint@10.4.1)(typescript@5.9.3)
@@ -1931,8 +1925,8 @@ packages:
     peerDependencies:
       '@types/react': ^19.2.0
 
-  '@types/react@19.2.14':
-    resolution: {integrity: sha512-ilcTH/UniCkMdtexkoCN0bI7pMcJDvmQFPvuPvmEaYA/NSfFTAgdUSLAoVjaRJm7+6PvcM+q1zYOwS4wTYMF9w==}
+  '@types/react@19.2.16':
+    resolution: {integrity: sha512-esJiCAnl0kfpNdE69f3So4WJUXy95dLZydX0KwK46riIHDzHM7O9Vtf9xCHW0PXIqvgqNrswl522kA/5yx+F4w==}
 
   '@types/sax@1.2.7':
     resolution: {integrity: sha512-rO73L89PJxeYM3s3pPPjiPgVVcymqU490g0YO5n5By0k2Erzj6tay/4lr1CHAAU4JyOWd1rpQ8bCf6cZfHU96A==}
@@ -5529,11 +5523,11 @@ snapshots:
 
   '@types/openseadragon@5.0.2': {}
 
-  '@types/react-dom@19.2.3(@types/react@19.2.14)':
+  '@types/react-dom@19.2.3(@types/react@19.2.16)':
     dependencies:
-      '@types/react': 19.2.14
+      '@types/react': 19.2.16
 
-  '@types/react@19.2.14':
+  '@types/react@19.2.16':
     dependencies:
       csstype: 3.2.3
 
