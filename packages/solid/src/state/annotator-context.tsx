@@ -5,7 +5,7 @@ import type { ImageId, PixelSpacing } from '@osdlabel/viewer-api';
 import type { AnnotationState, KeyboardShortcutMap, UIState } from '@osdlabel/viewer-api';
 import { getAllAnnotationsFlat } from '@osdlabel/viewer-api';
 import type { ConstraintStatus, ContextState } from '@osdlabel/annotation-context';
-import type { DecorationProvider } from '@osdlabel/decoration';
+import type { DecorationProvider, DomDecoration } from '@osdlabel/decoration';
 import type { OsdAnnotation, OsdFields } from 'osdlabel';
 import { DEFAULT_KEYBOARD_SHORTCUTS } from 'osdlabel';
 import { createAnnotationStore } from './annotation-store.js';
@@ -30,6 +30,7 @@ interface AnnotatorContextValue {
   testMode: boolean;
   decorationProviders: readonly DecorationProvider<OsdFields>[];
   defaultPixelSpacing: PixelSpacing | undefined;
+  renderDomDecoration: ((decoration: DomDecoration) => JSX.Element) | undefined;
 }
 
 const KeyboardHandler = (props: {
@@ -65,6 +66,12 @@ export interface AnnotatorProviderProps {
    * Fallback pixel spacing used when an `ImageSource` does not specify its own.
    */
   readonly defaultPixelSpacing?: PixelSpacing | undefined;
+  /**
+   * Renders the content for a DOM decoration into its positioned root element
+   * (via a Solid portal, so the tree shares this provider's context). Receives
+   * the `DomDecoration` and returns the element to mount.
+   */
+  readonly renderDomDecoration?: ((decoration: DomDecoration) => JSX.Element) | undefined;
 }
 
 export function AnnotatorProvider(props: AnnotatorProviderProps) {
@@ -136,6 +143,7 @@ export function AnnotatorProvider(props: AnnotatorProviderProps) {
     testMode: props.testMode ?? false,
     decorationProviders: props.decorationProviders ?? [],
     defaultPixelSpacing: props.defaultPixelSpacing,
+    renderDomDecoration: props.renderDomDecoration,
   };
 
   return (

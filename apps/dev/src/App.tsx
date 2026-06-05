@@ -17,8 +17,16 @@ import {
   createLabelProvider,
   createDistanceProvider,
   withSelectionEmphasis,
+  centroid,
 } from '@osdlabel/solid';
-import type { AnnotationContextId, AnnotationContext, ImageSource } from '@osdlabel/solid';
+import type {
+  AnnotationContextId,
+  AnnotationContext,
+  ImageSource,
+  DecorationProvider,
+  DomDecoration,
+  OsdFields,
+} from '@osdlabel/solid';
 
 initFabricModule();
 
@@ -384,9 +392,53 @@ function AppContent() {
   );
 }
 
+// Example DOM-decoration content payload. `content` is stable config; any
+// dynamic data should be read reactively inside the rendered component.
+interface BadgeContent {
+  readonly annotationId: string;
+  readonly label: string;
+}
+
+// A consumer-authored provider: one interactive DOM badge per annotation,
+// anchored above the annotation's centroid.
+const domBadgeProvider: DecorationProvider<OsdFields> = ({ annotations }) =>
+  annotations.map(
+    (ann): DomDecoration => ({
+      type: 'dom',
+      id: `badge:${ann.id}`,
+      relatedAnnotationIds: [ann.id],
+      anchor: centroid(ann.geometry),
+      offset: { x: 0, y: -28 },
+      placement: 'bottom',
+      content: { annotationId: ann.id, label: ann.label ?? ann.toolType } satisfies BadgeContent,
+    }),
+  );
+
 function App() {
   return (
     <AnnotatorProvider
+      renderDomDecoration={(decoration) => {
+        const content = decoration.content as BadgeContent;
+        return (
+          <button
+            type="button"
+            data-osdlabel-test="dom-badge"
+            style={{
+              background: '#9c27b0',
+              color: '#fff',
+              border: 'none',
+              'border-radius': '4px',
+              padding: '2px 8px',
+              'font-size': '12px',
+              cursor: 'pointer',
+              'box-shadow': '0 1px 3px rgba(0,0,0,0.4)',
+            }}
+            onClick={() => console.log('DOM decoration clicked for', content.annotationId)}
+          >
+            ★ {content.label}
+          </button>
+        );
+      }}
       onAnnotationsChange={(anns) => console.log('Annotations changed:', anns.length, 'total')}
       onConstraintChange={(status) => console.log('Constraint status changed:', status)}
       testMode={true}
@@ -418,6 +470,7 @@ function App() {
             selectedTextStyle: { zIndex: 10, background: 'rgba(33, 150, 243, 0.9)', color: '#fff' },
           },
         ),
+        domBadgeProvider,
       ]}
     >
       <AppContent />

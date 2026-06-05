@@ -27,6 +27,24 @@ export interface LineDecorationStyle {
   readonly opacity?: number | undefined;
 }
 
+/** Styling applied to a DOM decoration's root element. */
+export interface DomDecorationStyle {
+  /** Additional CSS class applied to the root element. */
+  readonly className?: string | undefined;
+  /** CSS z-index controlling stacking order among DOM decorations / text labels. */
+  readonly zIndex?: number | undefined;
+  /**
+   * Whether the root element captures pointer events. Defaults to `'auto'` so
+   * rich content (buttons, inputs, popovers) is interactive. Set `'none'` for
+   * purely-visual content that should let clicks fall through to the canvas.
+   */
+  readonly pointerEvents?: 'auto' | 'none' | undefined;
+  /** Optional fixed width in screen pixels; otherwise the root sizes to content. */
+  readonly width?: number | undefined;
+  /** Optional fixed height in screen pixels; otherwise the root sizes to content. */
+  readonly height?: number | undefined;
+}
+
 interface BaseDecoration {
   /**
    * Stable identifier used for diffing across recomputations. Providers must
@@ -81,13 +99,39 @@ export interface LineDecoration extends BaseDecoration {
 }
 
 /**
+ * A framework-rendered rich decoration.
+ *
+ * The renderer creates and positions a `<div>` root anchored to the image; a
+ * UI framework (React, Solid, …) renders an arbitrary component tree into that
+ * root via its native portal, so the tree shares the host app's context. The
+ * `content` payload is treated as stable configuration/identity — dynamic data
+ * should flow through the app's own reactivity inside the rendered component,
+ * not through `content` changing per frame.
+ */
+export interface DomDecoration extends BaseDecoration {
+  readonly type: 'dom';
+  /** Anchor point in image-space coordinates. */
+  readonly anchor: Point;
+  /**
+   * Optional screen-pixel offset added to the anchor's screen position before
+   * the root is placed.
+   */
+  readonly offset?: { readonly x: number; readonly y: number } | undefined;
+  /** How the root aligns to its anchor. Default: `'top-left'`. */
+  readonly placement?: TextPlacement | undefined;
+  /** Framework-agnostic configuration the render-prop interprets. */
+  readonly content: unknown;
+  readonly style?: DomDecorationStyle | undefined;
+}
+
+/**
  * Declarative description of something to render alongside annotations.
  *
  * Decorations are pure data: providers return them, the renderer turns them
  * into DOM/Fabric objects. Decorations are never serialized into annotation
  * data — they are always recomputed from current state.
  */
-export type Decoration = TextDecoration | LineDecoration;
+export type Decoration = TextDecoration | LineDecoration | DomDecoration;
 
 /** Discriminator values of `Decoration`. */
 export type DecorationType = Decoration['type'];

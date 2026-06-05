@@ -6,6 +6,8 @@ export type {
   TextPlacement,
   LineDecoration,
   LineDecorationStyle,
+  DomDecoration,
+  DomDecorationStyle,
 } from './decoration.js';
 export type { DecorationContext, DecorationProvider } from './provider.js';
 export { composeProviders } from './provider.js';

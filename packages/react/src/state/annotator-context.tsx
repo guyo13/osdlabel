@@ -18,7 +18,7 @@ import type {
 } from '@osdlabel/viewer-api';
 import { getAllAnnotationsFlat } from '@osdlabel/viewer-api';
 import type { ConstraintStatus, ContextState } from '@osdlabel/annotation-context';
-import type { DecorationProvider } from '@osdlabel/decoration';
+import type { DecorationProvider, DomDecoration } from '@osdlabel/decoration';
 import type { OsdAnnotation, OsdFields } from 'osdlabel';
 import {
   DEFAULT_KEYBOARD_SHORTCUTS,
@@ -47,6 +47,7 @@ interface AnnotatorContextValue {
   testMode: boolean;
   decorationProviders: readonly DecorationProvider<OsdFields>[];
   defaultPixelSpacing: PixelSpacing | undefined;
+  renderDomDecoration: ((decoration: DomDecoration) => ReactNode) | undefined;
 }
 
 const AnnotatorContext = createContext<AnnotatorContextValue | null>(null);
@@ -68,6 +69,12 @@ export interface AnnotatorProviderProps {
    * Fallback pixel spacing used when an `ImageSource` does not specify its own.
    */
   readonly defaultPixelSpacing?: PixelSpacing | undefined;
+  /**
+   * Renders the content for a DOM decoration into its positioned root element
+   * (via a React portal, so the tree shares this provider's context). Receives
+   * the `DomDecoration` and returns the React node to mount.
+   */
+  readonly renderDomDecoration?: ((decoration: DomDecoration) => ReactNode) | undefined;
 }
 
 export function AnnotatorProvider({
@@ -80,6 +87,7 @@ export function AnnotatorProvider({
   testMode = false,
   decorationProviders,
   defaultPixelSpacing,
+  renderDomDecoration,
 }: AnnotatorProviderProps) {
   const [annotationState, dispatchAnnotation] = useReducer(annotationReducer, undefined, () => {
     const initial = createInitialAnnotationState();
@@ -180,6 +188,7 @@ export function AnnotatorProvider({
       testMode,
       decorationProviders: stableDecorationProviders,
       defaultPixelSpacing,
+      renderDomDecoration,
     }),
     [
       annotationState,
@@ -193,6 +202,7 @@ export function AnnotatorProvider({
       testMode,
       stableDecorationProviders,
       defaultPixelSpacing,
+      renderDomDecoration,
     ],
   );
 

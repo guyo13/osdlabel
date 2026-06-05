@@ -1,6 +1,8 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import OpenSeadragon from 'openseadragon';
 import { DecorationLayer, FabricOverlay } from '@osdlabel/fabric-osd';
+import type { DomDecorationEntry } from '@osdlabel/fabric-osd';
 import { createFabricObjectFromRawData } from '@osdlabel/fabric-annotations';
 import type { OverlayMode } from '@osdlabel/fabric-osd';
 import type { AnnotationContextId } from '@osdlabel/annotation-context';
@@ -36,12 +38,14 @@ export default function ViewerCell({
     testMode,
     decorationProviders,
     defaultPixelSpacing,
+    renderDomDecoration,
   } = useAnnotator();
   const containerRef = useRef<HTMLDivElement>(null);
   const viewerRef = useRef<OpenSeadragon.Viewer | undefined>(undefined);
   const overlayRef = useRef<FabricOverlay | undefined>(undefined);
   const decorationLayerRef = useRef<DecorationLayer | undefined>(undefined);
   const [overlay, setOverlay] = useState<FabricOverlay>();
+  const [domEntries, setDomEntries] = useState<readonly DomDecorationEntry[]>([]);
 
   // Initialize OSD viewer on mount
   useEffect(() => {
@@ -220,17 +224,32 @@ export default function ViewerCell({
     });
   }, [overlay]);
 
+  // Track DOM-decoration roots created by the layer. The subscription fires on
+  // membership change only; content is rendered via portals into the stable
+  // div the layer owns and positions.
+  useEffect(() => {
+    const layer = decorationLayerRef.current;
+    if (!overlay || !layer) return;
+    return layer.onDomDecorations(setDomEntries);
+  }, [overlay]);
+
   return (
-    <div
-      ref={containerRef}
-      onClick={() => onActivate()}
-      style={{
-        width: '100%',
-        height: '100%',
-        position: 'relative',
-        boxSizing: 'border-box',
-        border: isActive ? '2px solid #2196F3' : '2px solid transparent',
-      }}
-    />
+    <>
+      <div
+        ref={containerRef}
+        onClick={() => onActivate()}
+        style={{
+          width: '100%',
+          height: '100%',
+          position: 'relative',
+          boxSizing: 'border-box',
+          border: isActive ? '2px solid #2196F3' : '2px solid transparent',
+        }}
+      />
+      {renderDomDecoration &&
+        domEntries.map((entry) =>
+          createPortal(renderDomDecoration(entry.decoration), entry.element, entry.id),
+        )}
+    </>
   );
 }

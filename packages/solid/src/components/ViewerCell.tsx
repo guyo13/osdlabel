@@ -1,7 +1,9 @@
-import { onMount, onCleanup, createEffect, on, createSignal } from 'solid-js';
+import { onMount, onCleanup, createEffect, on, createSignal, For } from 'solid-js';
+import { Portal } from 'solid-js/web';
 import type { Component } from 'solid-js';
 import OpenSeadragon from 'openseadragon';
 import { DecorationLayer, FabricOverlay } from '@osdlabel/fabric-osd';
+import type { DomDecorationEntry } from '@osdlabel/fabric-osd';
 import { createFabricObjectFromRawData } from '@osdlabel/fabric-annotations';
 import type { OverlayMode } from '@osdlabel/fabric-osd';
 import type { AnnotationContextId } from '@osdlabel/annotation-context';
@@ -30,11 +32,13 @@ const ViewerCell: Component<ViewerCellProps> = (props) => {
     testMode,
     decorationProviders,
     defaultPixelSpacing,
+    renderDomDecoration,
   } = useAnnotator();
   let containerRef: HTMLDivElement | undefined;
   let viewer: OpenSeadragon.Viewer | undefined;
   const [overlay, setOverlay] = createSignal<FabricOverlay>();
   const [decorationLayer, setDecorationLayer] = createSignal<DecorationLayer>();
+  const [domEntries, setDomEntries] = createSignal<readonly DomDecorationEntry[]>([]);
 
   onMount(() => {
     if (!containerRef) return;
@@ -212,18 +216,35 @@ const ViewerCell: Component<ViewerCellProps> = (props) => {
     onCleanup(dispose);
   });
 
+  // Track DOM-decoration roots created by the layer. The subscription fires on
+  // membership change only; content is rendered via portals into the stable
+  // div the layer owns and positions.
+  createEffect(() => {
+    const layer = decorationLayer();
+    if (!layer) return;
+    const unsubscribe = layer.onDomDecorations(setDomEntries);
+    onCleanup(unsubscribe);
+  });
+
   return (
-    <div
-      ref={containerRef}
-      onClick={() => props.onActivate()}
-      style={{
-        width: '100%',
-        height: '100%',
-        position: 'relative',
-        'box-sizing': 'border-box',
-        border: props.isActive ? '2px solid #2196F3' : '2px solid transparent',
-      }}
-    />
+    <>
+      <div
+        ref={containerRef}
+        onClick={() => props.onActivate()}
+        style={{
+          width: '100%',
+          height: '100%',
+          position: 'relative',
+          'box-sizing': 'border-box',
+          border: props.isActive ? '2px solid #2196F3' : '2px solid transparent',
+        }}
+      />
+      <For each={domEntries()}>
+        {(entry) => (
+          <Portal mount={entry.element}>{renderDomDecoration?.(entry.decoration)}</Portal>
+        )}
+      </For>
+    </>
   );
 };
 

@@ -1,11 +1,40 @@
 import { Line as FabricLine } from 'fabric';
 import type {
   Decoration,
+  DomDecoration,
   LineDecoration,
   TextDecoration,
   TextPlacement,
 } from '@osdlabel/decoration';
+import type { Point } from '@osdlabel/annotation';
 import type { FabricOverlay } from '../overlay/fabric-overlay.js';
+
+/**
+ * A live DOM-decoration root: the `<div>` the renderer created and positions,
+ * paired with the decoration it represents. Frameworks render their component
+ * tree into `element` (via a portal) keyed by `id`.
+ */
+export interface DomDecorationEntry {
+  readonly id: string;
+  readonly element: HTMLElement;
+  readonly decoration: DomDecoration;
+}
+
+/**
+ * Internal entry: same shape as {@link DomDecorationEntry} but with a mutable
+ * `decoration` so the layer can update it in place. Keeping the entry object's
+ * identity stable across recomputations is essential for SolidJS's `<For>`,
+ * which tracks rows by referential equality — allocating fresh entry objects
+ * each notification would tear down and remount every `<Portal>` (losing focus
+ * / input state in unrelated decorations) whenever any one is added or removed.
+ */
+interface MutableDomEntry {
+  readonly id: string;
+  readonly element: HTMLDivElement;
+  decoration: DomDecoration;
+}
+
+type DomDecorationsCallback = (entries: readonly DomDecorationEntry[]) => void;
 
 const DEFAULT_TEXT_COLOR = '#ffffff';
 const DEFAULT_FONT_SIZE_PX = 12;
@@ -37,6 +66,8 @@ export class DecorationLayer {
   private readonly _unsubscribeSync: () => void;
   private readonly _textEls = new Map<string, HTMLDivElement>();
   private readonly _lineObjects = new Map<string, FabricLine>();
+  private readonly _domEntries = new Map<string, MutableDomEntry>();
+  private readonly _domSubscribers = new Set<DomDecorationsCallback>();
   private _decorations: readonly Decoration[] = [];
   private _destroyed = false;
 
@@ -51,7 +82,7 @@ export class DecorationLayer {
     this._hostEl.dataset.osdlabel = 'decoration-layer';
     overlay.overlayElement.appendChild(this._hostEl);
 
-    this._unsubscribeSync = overlay.onSync(() => this._repositionText());
+    this._unsubscribeSync = overlay.onSync(() => this._reposition());
   }
 
   /** Replace the current decorations. Diffed by id for stable element reuse. */
@@ -59,9 +90,25 @@ export class DecorationLayer {
     if (this._destroyed) return;
     this._decorations = decorations;
     this._diffText(decorations);
+    this._diffDom(decorations);
     this._diffLines(decorations);
-    this._repositionText();
+    this._reposition();
     this._overlay.canvas.requestRenderAll();
+  }
+
+  /**
+   * Subscribe to DOM-decoration lifecycle. The callback fires immediately with
+   * the current entries and again only when the set of DOM decorations changes
+   * (an id is added or removed) — never per content change or per frame. The
+   * div's screen position is owned by this layer; the subscriber owns only the
+   * content rendered into `entry.element`. Returns an unsubscribe function.
+   */
+  onDomDecorations(callback: DomDecorationsCallback): () => void {
+    this._domSubscribers.add(callback);
+    callback(this._currentDomEntries());
+    return () => {
+      this._domSubscribers.delete(callback);
+    };
   }
 
   destroy(): void {
@@ -73,6 +120,12 @@ export class DecorationLayer {
     }
     this._lineObjects.clear();
     this._textEls.clear();
+    for (const entry of this._domEntries.values()) {
+      entry.element.remove();
+    }
+    this._domEntries.clear();
+    this._notifyDomSubscribers();
+    this._domSubscribers.clear();
     this._hostEl.remove();
   }
 
@@ -109,17 +162,87 @@ export class DecorationLayer {
     }
   }
 
-  private _repositionText(): void {
-    for (const d of this._decorations) {
-      if (d.type !== 'text') continue;
-      const el = this._textEls.get(d.id);
-      if (!el) continue;
-      const screen = this._overlay.imageToScreen(d.anchor);
-      const offsetX = d.offset?.x ?? 0;
-      const offsetY = d.offset?.y ?? 0;
-      const align = placementTranslate(d.placement);
-      el.style.transform = `translate3d(${screen.x + offsetX}px, ${screen.y + offsetY}px, 0) translate3d(${align.x}, ${align.y}, 0)`;
+  // ── DOM decorations (framework-rendered) ──────────────────────────────
+
+  private _diffDom(decorations: readonly Decoration[]): void {
+    const wanted = new Map<string, DomDecoration>();
+    for (const d of decorations) {
+      if (d.type === 'dom') wanted.set(d.id, d);
     }
+
+    let membershipChanged = false;
+
+    // Remove gone
+    for (const [id, entry] of this._domEntries) {
+      if (!wanted.has(id)) {
+        entry.element.remove();
+        this._domEntries.delete(id);
+        membershipChanged = true;
+      }
+    }
+
+    // Add new / update existing. On update we mutate the existing entry's
+    // `decoration` in place rather than replacing the entry, so its object
+    // identity stays stable for SolidJS's `<For>` (see MutableDomEntry).
+    for (const [id, decoration] of wanted) {
+      let entry = this._domEntries.get(id);
+      if (!entry) {
+        const el = document.createElement('div');
+        el.style.position = 'absolute';
+        el.style.top = '0';
+        el.style.left = '0';
+        el.style.willChange = 'transform';
+        el.dataset.osdlabel = 'decoration-dom';
+        el.dataset.decorationId = id;
+        this._hostEl.appendChild(el);
+        entry = { id, element: el, decoration };
+        this._domEntries.set(id, entry);
+        membershipChanged = true;
+      } else {
+        entry.decoration = decoration;
+      }
+      applyDomStyle(entry.element, decoration);
+    }
+
+    if (membershipChanged) this._notifyDomSubscribers();
+  }
+
+  private _currentDomEntries(): readonly DomDecorationEntry[] {
+    // New array, but the entry object references are stable across calls so
+    // SolidJS's `<For>` reuses existing rows and only mounts the new ones.
+    return Array.from(this._domEntries.values());
+  }
+
+  private _notifyDomSubscribers(): void {
+    const entries = this._currentDomEntries();
+    for (const cb of this._domSubscribers) cb(entries);
+  }
+
+  // ── Screen positioning (text + DOM share the same anchor model) ────────
+
+  private _reposition(): void {
+    for (const d of this._decorations) {
+      if (d.type === 'text') {
+        const el = this._textEls.get(d.id);
+        if (el) this._positionEl(el, d.anchor, d.offset, d.placement);
+      } else if (d.type === 'dom') {
+        const el = this._domEntries.get(d.id)?.element;
+        if (el) this._positionEl(el, d.anchor, d.offset, d.placement);
+      }
+    }
+  }
+
+  private _positionEl(
+    el: HTMLElement,
+    anchor: Point,
+    offset: { readonly x: number; readonly y: number } | undefined,
+    placement: TextPlacement | undefined,
+  ): void {
+    const screen = this._overlay.imageToScreen(anchor);
+    const offsetX = offset?.x ?? 0;
+    const offsetY = offset?.y ?? 0;
+    const align = placementTranslate(placement);
+    el.style.transform = `translate3d(${screen.x + offsetX}px, ${screen.y + offsetY}px, 0) translate3d(${align.x}, ${align.y}, 0)`;
   }
 
   // ── Line decorations (Fabric) ─────────────────────────────────────────
@@ -201,6 +324,30 @@ function applyTextStyle(el: HTMLDivElement, decoration: TextDecoration): void {
   const nextZIndex = style?.zIndex !== undefined ? String(style.zIndex) : '';
   if (el.style.zIndex !== nextZIndex) {
     el.style.zIndex = nextZIndex;
+  }
+}
+
+function applyDomStyle(el: HTMLDivElement, decoration: DomDecoration): void {
+  const style = decoration.style;
+  const nextPointerEvents = style?.pointerEvents ?? 'auto';
+  if (el.style.pointerEvents !== nextPointerEvents) {
+    el.style.pointerEvents = nextPointerEvents;
+  }
+  const nextClassName = style?.className ?? '';
+  if (el.className !== nextClassName) {
+    el.className = nextClassName;
+  }
+  const nextZIndex = style?.zIndex !== undefined ? String(style.zIndex) : '';
+  if (el.style.zIndex !== nextZIndex) {
+    el.style.zIndex = nextZIndex;
+  }
+  const nextWidth = style?.width !== undefined ? `${style.width}px` : '';
+  if (el.style.width !== nextWidth) {
+    el.style.width = nextWidth;
+  }
+  const nextHeight = style?.height !== undefined ? `${style.height}px` : '';
+  if (el.style.height !== nextHeight) {
+    el.style.height = nextHeight;
   }
 }
 
