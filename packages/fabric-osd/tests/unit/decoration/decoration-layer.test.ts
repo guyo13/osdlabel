@@ -2,7 +2,8 @@ import { describe, expect, it, vi, beforeEach } from 'vitest';
 import { DecorationLayer } from '../../../src/decoration/decoration-layer.js';
 import type { FabricOverlay } from '../../../src/overlay/fabric-overlay.js';
 import type { AnnotationId } from '@osdlabel/annotation';
-import type { Decoration } from '@osdlabel/decoration';
+import type { Decoration, DomDecoration } from '@osdlabel/decoration';
+import type { DomDecorationEntry } from '../../../src/decoration/decoration-layer.js';
 
 /**
  * A mock FabricOverlay sufficient for unit-testing the DecorationLayer's
@@ -49,6 +50,15 @@ const textDeco = (id: string, text = id): Decoration => ({
   relatedAnnotationIds: [annId(id)],
   text,
   anchor: { x: 10, y: 20 },
+});
+
+const domDeco = (id: string, overrides: Partial<DomDecoration> = {}): DomDecoration => ({
+  type: 'dom',
+  id,
+  relatedAnnotationIds: [annId(id)],
+  anchor: { x: 10, y: 20 },
+  content: { id },
+  ...overrides,
 });
 
 describe('DecorationLayer', () => {
@@ -192,5 +202,118 @@ describe('DecorationLayer', () => {
     layer.destroy();
     expect(hostParent.querySelector('[data-osdlabel="decoration-layer"]')).toBeNull();
     expect(syncSubscribers.size).toBe(0);
+  });
+
+  describe('DOM decorations', () => {
+    it('creates a positioned root div per dom decoration (no text content)', () => {
+      const { overlay, hostParent } = createMockOverlay();
+      const layer = new DecorationLayer(overlay);
+      layer.setDecorations([domDeco('a'), domDeco('b')]);
+      const els = hostParent.querySelectorAll('[data-osdlabel="decoration-dom"]');
+      expect(els).toHaveLength(2);
+      // The layer must never write content into the root — the framework owns it.
+      expect(Array.from(els).every((el) => el.textContent === '')).toBe(true);
+      layer.destroy();
+    });
+
+    it('defaults pointer-events to auto and honors an explicit none', () => {
+      const { overlay, hostParent } = createMockOverlay();
+      const layer = new DecorationLayer(overlay);
+      layer.setDecorations([
+        domDeco('interactive'),
+        domDeco('visual', { style: { pointerEvents: 'none' } }),
+      ]);
+      const interactive = hostParent.querySelector(
+        '[data-decoration-id="interactive"]',
+      ) as HTMLElement;
+      const visual = hostParent.querySelector('[data-decoration-id="visual"]') as HTMLElement;
+      expect(interactive.style.pointerEvents).toBe('auto');
+      expect(visual.style.pointerEvents).toBe('none');
+      layer.destroy();
+    });
+
+    it('reuses the root div by id across re-runs (stable for portals/focus)', () => {
+      const { overlay, hostParent } = createMockOverlay();
+      const layer = new DecorationLayer(overlay);
+      layer.setDecorations([domDeco('a'), domDeco('b')]);
+      const elA1 = hostParent.querySelector('[data-decoration-id="a"]');
+      layer.setDecorations([domDeco('a'), domDeco('c')]);
+      const elA2 = hostParent.querySelector('[data-decoration-id="a"]');
+      expect(elA2).toBe(elA1);
+      expect(hostParent.querySelector('[data-decoration-id="b"]')).toBeNull();
+      expect(hostParent.querySelector('[data-decoration-id="c"]')).not.toBeNull();
+      layer.destroy();
+    });
+
+    it('positions and repositions dom roots like text (imageToScreen + offset + onSync)', () => {
+      const { overlay, hostParent, syncSubscribers } = createMockOverlay();
+      const layer = new DecorationLayer(overlay);
+      layer.setDecorations([domDeco('x', { anchor: { x: 5, y: 7 }, offset: { x: 3, y: -1 } })]);
+      const el = hostParent.querySelector('[data-decoration-id="x"]') as HTMLElement;
+      // imageToScreen mock doubles → (10,14); plus offset → (13,13).
+      expect(el.style.transform).toContain('translate3d(13px, 13px, 0)');
+      (overlay.imageToScreen as ReturnType<typeof vi.fn>).mockImplementation(
+        (p: { x: number; y: number }) => ({ x: p.x * 3, y: p.y * 3 }),
+      );
+      for (const cb of syncSubscribers) cb();
+      // Now triples → (15,21); plus offset → (18,20).
+      expect(el.style.transform).toContain('translate3d(18px, 20px, 0)');
+      layer.destroy();
+    });
+
+    it('notifies subscribers on membership change only — immediately, on add/remove, not on re-emit', () => {
+      const { overlay } = createMockOverlay();
+      const layer = new DecorationLayer(overlay);
+      const calls: number[] = [];
+      const unsubscribe = layer.onDomDecorations((entries: readonly DomDecorationEntry[]) => {
+        calls.push(entries.length);
+      });
+      // Immediate callback with current (empty) state.
+      expect(calls).toEqual([0]);
+
+      // Add two → one membership change.
+      layer.setDecorations([domDeco('a'), domDeco('b')]);
+      expect(calls).toEqual([0, 2]);
+
+      // Re-emit the same id set with new objects → NO notification.
+      layer.setDecorations([domDeco('a'), domDeco('b')]);
+      expect(calls).toEqual([0, 2]);
+
+      // Remove one → membership change.
+      layer.setDecorations([domDeco('a')]);
+      expect(calls).toEqual([0, 2, 1]);
+
+      unsubscribe();
+      layer.setDecorations([domDeco('a'), domDeco('b')]);
+      expect(calls).toEqual([0, 2, 1]); // unsubscribed: no further calls
+      layer.destroy();
+    });
+
+    it('subscription entries expose the live element and decoration', () => {
+      const { overlay, hostParent } = createMockOverlay();
+      const layer = new DecorationLayer(overlay);
+      let latest: readonly DomDecorationEntry[] = [];
+      layer.onDomDecorations((entries) => {
+        latest = entries;
+      });
+      layer.setDecorations([domDeco('a', { content: { kind: 'badge' } })]);
+      expect(latest).toHaveLength(1);
+      expect(latest[0]!.id).toBe('a');
+      expect(latest[0]!.element).toBe(hostParent.querySelector('[data-decoration-id="a"]'));
+      expect(latest[0]!.decoration.content).toEqual({ kind: 'badge' });
+      layer.destroy();
+    });
+
+    it('destroy removes dom roots and notifies subscribers with an empty set', () => {
+      const { overlay, hostParent } = createMockOverlay();
+      const layer = new DecorationLayer(overlay);
+      const calls: number[] = [];
+      layer.onDomDecorations((entries) => calls.push(entries.length));
+      layer.setDecorations([domDeco('a')]);
+      expect(calls).toEqual([0, 1]);
+      layer.destroy();
+      expect(hostParent.querySelector('[data-osdlabel="decoration-dom"]')).toBeNull();
+      expect(calls).toEqual([0, 1, 0]);
+    });
   });
 });

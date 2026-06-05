@@ -12,10 +12,40 @@ import {
   serialize,
   deserialize,
   initFabricModule,
+  createLabelProvider,
+  centroid,
 } from '@osdlabel/react';
-import type { AnnotationContextId, AnnotationContext, ImageSource } from '@osdlabel/react';
+import type {
+  AnnotationContextId,
+  AnnotationContext,
+  ImageSource,
+  DecorationProvider,
+  DomDecoration,
+  OsdFields,
+} from '@osdlabel/react';
 
 initFabricModule();
+
+// Example DOM-decoration content payload (stable config).
+interface BadgeContent {
+  readonly annotationId: string;
+  readonly label: string;
+}
+
+// A consumer-authored provider: one interactive DOM badge per annotation,
+// anchored above the annotation's centroid.
+const domBadgeProvider: DecorationProvider<OsdFields> = ({ annotations }) =>
+  annotations.map(
+    (ann): DomDecoration => ({
+      type: 'dom',
+      id: `badge:${ann.id}`,
+      relatedAnnotationIds: [ann.id],
+      anchor: centroid(ann.geometry),
+      offset: { x: 0, y: -28 },
+      placement: 'bottom',
+      content: { annotationId: ann.id, label: ann.label ?? ann.toolType } satisfies BadgeContent,
+    }),
+  );
 
 const IMAGES: ImageSource[] = [
   {
@@ -384,6 +414,29 @@ export default function App() {
       onAnnotationsChange={(anns) => console.log('Annotations changed:', anns.length, 'total')}
       onConstraintChange={(status) => console.log('Constraint status changed:', status)}
       testMode={true}
+      decorationProviders={[createLabelProvider(), domBadgeProvider]}
+      renderDomDecoration={(decoration) => {
+        const content = decoration.content as BadgeContent;
+        return (
+          <button
+            type="button"
+            data-osdlabel-test="dom-badge"
+            style={{
+              background: '#9c27b0',
+              color: '#fff',
+              border: 'none',
+              borderRadius: '4px',
+              padding: '2px 8px',
+              fontSize: '12px',
+              cursor: 'pointer',
+              boxShadow: '0 1px 3px rgba(0,0,0,0.4)',
+            }}
+            onClick={() => console.log('DOM decoration clicked for', content.annotationId)}
+          >
+            ★ {content.label}
+          </button>
+        );
+      }}
     >
       <AppContent />
     </AnnotatorProvider>

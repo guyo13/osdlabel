@@ -76,7 +76,7 @@ export type {
 
 // Fabric-OSD overlay (re-exported from @osdlabel/fabric-osd)
 export { FabricOverlay, computeViewportTransform, DecorationLayer } from '@osdlabel/fabric-osd';
-export type { OverlayOptions, OverlayMode } from '@osdlabel/fabric-osd';
+export type { OverlayOptions, OverlayMode, DomDecorationEntry } from '@osdlabel/fabric-osd';
 
 // Decorations (re-exported from @osdlabel/decoration)
 export type {
@@ -87,6 +87,8 @@ export type {
   TextPlacement,
   LineDecoration,
   LineDecorationStyle,
+  DomDecoration,
+  DomDecorationStyle,
   DecorationContext,
   DecorationProvider,
   Measurement,
