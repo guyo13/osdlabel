@@ -304,6 +304,44 @@ describe('DecorationLayer', () => {
       layer.destroy();
     });
 
+    it('keeps entry object identity stable across membership changes (SolidJS <For>)', () => {
+      const { overlay } = createMockOverlay();
+      const layer = new DecorationLayer(overlay);
+      const notifications: (readonly DomDecorationEntry[])[] = [];
+      layer.onDomDecorations((entries) => notifications.push(entries));
+
+      layer.setDecorations([domDeco('a'), domDeco('b')]);
+      const firstA = notifications.at(-1)!.find((e) => e.id === 'a')!;
+      const firstB = notifications.at(-1)!.find((e) => e.id === 'b')!;
+
+      // Add 'c' (membership change) with brand-new decoration objects for a/b.
+      layer.setDecorations([domDeco('a'), domDeco('b'), domDeco('c')]);
+      const latest = notifications.at(-1)!;
+      // Surviving entries must be the SAME object references, so <For> reuses
+      // their rows instead of remounting every portal.
+      expect(latest.find((e) => e.id === 'a')).toBe(firstA);
+      expect(latest.find((e) => e.id === 'b')).toBe(firstB);
+      expect(latest.find((e) => e.id === 'c')).toBeDefined();
+      layer.destroy();
+    });
+
+    it('updates an entry decoration in place without changing its identity', () => {
+      const { overlay } = createMockOverlay();
+      const layer = new DecorationLayer(overlay);
+      let latest: readonly DomDecorationEntry[] = [];
+      layer.onDomDecorations((entries) => {
+        latest = entries;
+      });
+      layer.setDecorations([domDeco('a', { content: { v: 1 } }), domDeco('b')]);
+      const entryA = latest.find((e) => e.id === 'a')!;
+
+      // Re-emit with same id set but new content for 'a' → no notification, but
+      // the stable entry's decoration is updated in place.
+      layer.setDecorations([domDeco('a', { content: { v: 2 } }), domDeco('b')]);
+      expect(entryA.decoration.content).toEqual({ v: 2 });
+      layer.destroy();
+    });
+
     it('destroy removes dom roots and notifies subscribers with an empty set', () => {
       const { overlay, hostParent } = createMockOverlay();
       const layer = new DecorationLayer(overlay);

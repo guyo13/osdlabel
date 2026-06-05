@@ -20,6 +20,20 @@ export interface DomDecorationEntry {
   readonly decoration: DomDecoration;
 }
 
+/**
+ * Internal entry: same shape as {@link DomDecorationEntry} but with a mutable
+ * `decoration` so the layer can update it in place. Keeping the entry object's
+ * identity stable across recomputations is essential for SolidJS's `<For>`,
+ * which tracks rows by referential equality — allocating fresh entry objects
+ * each notification would tear down and remount every `<Portal>` (losing focus
+ * / input state in unrelated decorations) whenever any one is added or removed.
+ */
+interface MutableDomEntry {
+  readonly id: string;
+  readonly element: HTMLDivElement;
+  decoration: DomDecoration;
+}
+
 type DomDecorationsCallback = (entries: readonly DomDecorationEntry[]) => void;
 
 const DEFAULT_TEXT_COLOR = '#ffffff';
@@ -52,8 +66,7 @@ export class DecorationLayer {
   private readonly _unsubscribeSync: () => void;
   private readonly _textEls = new Map<string, HTMLDivElement>();
   private readonly _lineObjects = new Map<string, FabricLine>();
-  private readonly _domEls = new Map<string, HTMLDivElement>();
-  private readonly _domDecorations = new Map<string, DomDecoration>();
+  private readonly _domEntries = new Map<string, MutableDomEntry>();
   private readonly _domSubscribers = new Set<DomDecorationsCallback>();
   private _decorations: readonly Decoration[] = [];
   private _destroyed = false;
@@ -107,11 +120,10 @@ export class DecorationLayer {
     }
     this._lineObjects.clear();
     this._textEls.clear();
-    for (const el of this._domEls.values()) {
-      el.remove();
+    for (const entry of this._domEntries.values()) {
+      entry.element.remove();
     }
-    this._domEls.clear();
-    this._domDecorations.clear();
+    this._domEntries.clear();
     this._notifyDomSubscribers();
     this._domSubscribers.clear();
     this._hostEl.remove();
@@ -161,20 +173,21 @@ export class DecorationLayer {
     let membershipChanged = false;
 
     // Remove gone
-    for (const [id, el] of this._domEls) {
+    for (const [id, entry] of this._domEntries) {
       if (!wanted.has(id)) {
-        el.remove();
-        this._domEls.delete(id);
-        this._domDecorations.delete(id);
+        entry.element.remove();
+        this._domEntries.delete(id);
         membershipChanged = true;
       }
     }
 
-    // Add new / update existing
+    // Add new / update existing. On update we mutate the existing entry's
+    // `decoration` in place rather than replacing the entry, so its object
+    // identity stays stable for SolidJS's `<For>` (see MutableDomEntry).
     for (const [id, decoration] of wanted) {
-      let el = this._domEls.get(id);
-      if (!el) {
-        el = document.createElement('div');
+      let entry = this._domEntries.get(id);
+      if (!entry) {
+        const el = document.createElement('div');
         el.style.position = 'absolute';
         el.style.top = '0';
         el.style.left = '0';
@@ -182,23 +195,22 @@ export class DecorationLayer {
         el.dataset.osdlabel = 'decoration-dom';
         el.dataset.decorationId = id;
         this._hostEl.appendChild(el);
-        this._domEls.set(id, el);
+        entry = { id, element: el, decoration };
+        this._domEntries.set(id, entry);
         membershipChanged = true;
+      } else {
+        entry.decoration = decoration;
       }
-      applyDomStyle(el, decoration);
-      this._domDecorations.set(id, decoration);
+      applyDomStyle(entry.element, decoration);
     }
 
     if (membershipChanged) this._notifyDomSubscribers();
   }
 
   private _currentDomEntries(): readonly DomDecorationEntry[] {
-    const entries: DomDecorationEntry[] = [];
-    for (const [id, element] of this._domEls) {
-      const decoration = this._domDecorations.get(id);
-      if (decoration) entries.push({ id, element, decoration });
-    }
-    return entries;
+    // New array, but the entry object references are stable across calls so
+    // SolidJS's `<For>` reuses existing rows and only mounts the new ones.
+    return Array.from(this._domEntries.values());
   }
 
   private _notifyDomSubscribers(): void {
@@ -214,7 +226,7 @@ export class DecorationLayer {
         const el = this._textEls.get(d.id);
         if (el) this._positionEl(el, d.anchor, d.offset, d.placement);
       } else if (d.type === 'dom') {
-        const el = this._domEls.get(d.id);
+        const el = this._domEntries.get(d.id)?.element;
         if (el) this._positionEl(el, d.anchor, d.offset, d.placement);
       }
     }
