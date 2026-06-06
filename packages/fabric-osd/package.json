@@ -32,13 +32,11 @@
     "@osdlabel/annotation": "workspace:*",
     "@osdlabel/decoration": "workspace:*",
     "@osdlabel/fabric-annotations": "workspace:*",
-    "@osdlabel/validation": "workspace:*",
     "@osdlabel/viewer-api": "workspace:*"
   },
   "peerDependencies": {
     "fabric": "catalog:",
-    "openseadragon": "catalog:",
-    "valibot": "catalog:"
+    "openseadragon": "catalog:"
   },
   "devDependencies": {
     "@types/openseadragon": "catalog:",

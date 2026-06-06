@@ -281,9 +281,6 @@ importers:
       '@osdlabel/fabric-annotations':
         specifier: workspace:*
         version: link:../fabric-annotations
-      '@osdlabel/validation':
-        specifier: workspace:*
-        version: link:../validation
       '@osdlabel/viewer-api':
         specifier: workspace:*
         version: link:../viewer-api
@@ -293,9 +290,6 @@ importers:
       openseadragon:
         specifier: 'catalog:'
         version: 5.0.1
-      valibot:
-        specifier: 'catalog:'
-        version: 1.4.1(typescript@5.9.3)
     devDependencies:
       '@types/openseadragon':
         specifier: 'catalog:'
