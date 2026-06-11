@@ -1,5 +1,25 @@
 # osdlabel
 
+## 0.4.0
+
+### Minor Changes
+
+- 6fb9f49: Add `createAnnotationFromGeometry` for seeding annotations from external geometry without the manual Fabric round-trip. The `osdlabel` umbrella (and the `@osdlabel/react` / `@osdlabel/solid` re-exports) gains `createAnnotationFromGeometry(geometry, { imageId, contextId, toolType, style?, id?, label? })`, which builds a complete `OsdAnnotation` including the Fabric `rawAnnotationData` envelope and guarantees the `id` survives serialization. `@osdlabel/fabric-annotations` exposes the underlying `buildFabricObjectFromGeometry` (the inverse of `getGeometryFromFabricObject`).
+
+### Patch Changes
+
+- 6fb9f49: Widen the published `fabric` and `openseadragon` peer ranges from exact pins to caret ranges (`fabric: ^7.4.0`, `openseadragon: ^5.0.1`) to reduce install friction in monorepos and shared-install setups. The `fabric` floor stays at 7.4.0 to exclude the <7.4 CVE. Dev/workspace installs remain pinned to exact versions via the default pnpm catalog; the ranges are sourced from a new named `peers` catalog used only in `peerDependencies`.
+- Updated dependencies [6fb9f49]
+- Updated dependencies [6fb9f49]
+- Updated dependencies [6fb9f49]
+  - @osdlabel/fabric-annotations@0.4.0
+  - @osdlabel/fabric-osd@0.4.0
+  - @osdlabel/annotation@0.4.0
+  - @osdlabel/annotation-context@0.4.0
+  - @osdlabel/decoration@0.4.0
+  - @osdlabel/validation@0.4.0
+  - @osdlabel/viewer-api@0.4.0
+
 ## 0.3.0
 
 ### Minor Changes
