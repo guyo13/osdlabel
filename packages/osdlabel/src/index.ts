@@ -65,6 +65,7 @@ export {
   deserializeFabricObject,
   createFabricObjectFromRawData,
   getGeometryFromFabricObject,
+  buildFabricObjectFromGeometry,
 } from '@osdlabel/fabric-annotations';
 export type {
   ToolOverlay,

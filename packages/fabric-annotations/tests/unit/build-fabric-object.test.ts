@@ -38,6 +38,24 @@ describe('buildFabricObjectFromGeometry', () => {
     expect(back.rotation).toBeCloseTo(0);
   });
 
+  it('round-trips a rotated rectangle', () => {
+    const geometry: Geometry = {
+      type: 'rectangle',
+      origin: { x: 10, y: 20 },
+      width: 100,
+      height: 50,
+      rotation: 30,
+    };
+    const back = roundTrip(geometry);
+    expect(back.type).toBe('rectangle');
+    if (back.type !== 'rectangle') return;
+    expect(back.origin.x).toBeCloseTo(10);
+    expect(back.origin.y).toBeCloseTo(20);
+    expect(back.width).toBeCloseTo(100);
+    expect(back.height).toBeCloseTo(50);
+    expect(back.rotation).toBeCloseTo(30);
+  });
+
   it('round-trips circle geometry', () => {
     const geometry: Geometry = {
       type: 'circle',

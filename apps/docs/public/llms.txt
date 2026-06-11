@@ -925,7 +925,7 @@ osdlabel uses a flat JSON array format for persisting annotations:
     },
     "rawAnnotationData": {
       "format": "fabric",
-      "fabricVersion": "7.2.0",
+      "fabricVersion": "7.4.0",
       "data": { ... }
     },
     "createdAt": "2026-03-06T12:00:00.000Z",
@@ -994,14 +994,14 @@ It accepts any `Geometry` (`rectangle`, `circle`, `line`, `point`, `polyline`, `
 
 `toolType` is recorded independently of `geometry.type`. For most shapes they match (`'rectangle'` ↔ `rectangle`, `'circle'` ↔ `circle`, …). The exception is freehand:
 
-| `toolType`       | Resulting `geometry.type`                          |
-| ---------------- | -------------------------------------------------- |
-| `rectangle`      | `rectangle`                                        |
-| `circle`         | `circle`                                           |
-| `line`           | `line`                                             |
-| `point`          | `point`                                            |
-| `polyline`       | `polyline`                                          |
-| `freeHandPath`   | `polygon` (closed path) or `polyline` (open path)  |
+| `toolType`     | Resulting `geometry.type`                         |
+| -------------- | ------------------------------------------------- |
+| `rectangle`    | `rectangle`                                       |
+| `circle`       | `circle`                                          |
+| `line`         | `line`                                            |
+| `point`        | `point`                                           |
+| `polyline`     | `polyline`                                        |
+| `freeHandPath` | `polygon` (closed path) or `polyline` (open path) |
 
 The static `toolTypeToGeometryType('freeHandPath')` helper returns `polyline`, but the freehand **tool** produces a closed `polygon` by default at runtime (open `polyline` only when Shift is held). When importing a freehand contour, set `geometry.type` to whichever matches your data and pass `toolType: 'freeHandPath'`.
 
@@ -1023,6 +1023,8 @@ initFabricModule(); // registers the `id` custom property so it serializes — c
 // then: serializeFabricObject(obj) for rawAnnotationData, and
 // getGeometryFromFabricObject(obj, 'polygon') for the geometry.
 ```
+
+If your geometry _is_ one of the six built-in types and you only need a Fabric object (not the full annotation), `buildFabricObjectFromGeometry(geometry, getFabricOptions(style, id))` — the inverse of `getGeometryFromFabricObject`, re-exported from the umbrella — saves you hand-rolling `new Polygon(...)` / `new Rect(...)`. `createAnnotationFromGeometry` uses it internally.
 
 Calling `initFabricModule()` is what makes the annotation `id` survive `toObject()`; miss it and the `id` silently drops from the envelope. (`createAnnotationFromGeometry` handles this for you.)
 
@@ -1492,7 +1494,9 @@ The decoration package also exports pure geometry utilities you can use to build
 
 ```ts
 function createLabelProvider<E extends object = Record<string, never>>(): DecorationProvider<E>;
-function createMeasurementProvider<E extends object = Record<string, never>>(): DecorationProvider<E>;
+function createMeasurementProvider<
+  E extends object = Record<string, never>,
+>(): DecorationProvider<E>;
 function createDistanceProvider<E extends object = Record<string, never>>(): DecorationProvider<E>;
 ```
 
@@ -1670,7 +1674,10 @@ function DeleteButton({ content }: { content: unknown }) {
 
 function DeleteButton(props: { content: unknown }) {
   const { actions } = useAnnotator();
-  const { annotationId, imageId } = props.content as { annotationId: AnnotationId; imageId: ImageId };
+  const { annotationId, imageId } = props.content as {
+    annotationId: AnnotationId;
+    imageId: ImageId;
+  };
   return (
     <button class="anno-delete" onClick={() => actions.deleteAnnotation(annotationId, imageId)}>
       ✕
@@ -1693,7 +1700,7 @@ If you emit `type: 'dom'` decorations but **don't** pass `renderDomDecoration`, 
 | Field                  | Type                       | Notes                                                                           |
 | ---------------------- | -------------------------- | ------------------------------------------------------------------------------- |
 | `id`                   | `string`                   | Stable across recomputations; also the portal key.                              |
-| `type`                 | `'dom'`                    | Discriminator.                                                                   |
+| `type`                 | `'dom'`                    | Discriminator.                                                                  |
 | `anchor`               | `Point`                    | **Image-space**. Transformed by `imageToScreen` every frame.                    |
 | `offset`               | `{ x: number; y: number }` | **Screen-space pixels** added to the anchor's screen position.                  |
 | `placement`            | `TextPlacement`            | How the host sits relative to its anchor (`'top-left'` default, `'center'`, …). |

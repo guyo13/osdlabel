@@ -1,13 +1,17 @@
 import { describe, expect, it } from 'vitest';
+import { FabricObject } from 'fabric';
 import { createImageId } from '@osdlabel/viewer-api';
+import type { AnnotationState } from '@osdlabel/viewer-api';
 import { createAnnotationContextId } from '@osdlabel/annotation-context';
 import {
   createFabricObjectFromRawData,
   getGeometryFromFabricObject,
   initFabricModule,
 } from '@osdlabel/fabric-annotations';
-import type { Geometry } from '@osdlabel/annotation';
+import { createAnnotationId, type Geometry } from '@osdlabel/annotation';
 import { createAnnotationFromGeometry } from '../../src/create-annotation.js';
+import { serialize, deserialize } from '../../src/serialization-configured.js';
+import type { OsdFields } from '../../src/types.js';
 
 initFabricModule();
 
@@ -49,11 +53,30 @@ describe('createAnnotationFromGeometry', () => {
   });
 
   it('honors an explicit id', () => {
+    const id = createAnnotationId('explicit-id-1');
     const ann = createAnnotationFromGeometry(
       { type: 'circle', center: { x: 5, y: 5 }, radius: 3 },
-      { imageId, contextId, toolType: 'circle', id: undefined },
+      { imageId, contextId, toolType: 'circle', id },
     );
-    expect(ann.id).toBeTruthy();
+    expect(ann.id).toBe(id);
+    expect((ann.rawAnnotationData.data as { id?: string }).id).toBe(id);
+  });
+
+  it('embeds the id even when initFabricModule has not registered it', () => {
+    // Simulate an app that never called initFabricModule(): strip the `id`
+    // custom property so toObject() would otherwise omit it.
+    const previous = FabricObject.customProperties;
+    FabricObject.customProperties = [];
+    try {
+      const ann = createAnnotationFromGeometry(
+        { type: 'point', position: { x: 7, y: 9 } },
+        { imageId, contextId, toolType: 'point' },
+      );
+      // Without the self-contained patch, this id would be missing.
+      expect((ann.rawAnnotationData.data as { id?: string }).id).toBe(ann.id);
+    } finally {
+      FabricObject.customProperties = previous;
+    }
   });
 
   it('round-trips through deserialize → getGeometryFromFabricObject', async () => {
@@ -83,5 +106,36 @@ describe('createAnnotationFromGeometry', () => {
       expect(p.x).toBeCloseTo(geometry.points[i]!.x);
       expect(p.y).toBeCloseTo(geometry.points[i]!.y);
     });
+  });
+
+  it('round-trips through the configured serialize → deserialize path', () => {
+    const geometry: Geometry = {
+      type: 'rectangle',
+      origin: { x: 30, y: 40 },
+      width: 80,
+      height: 60,
+      rotation: 0,
+    };
+    const ann = createAnnotationFromGeometry(geometry, {
+      imageId,
+      contextId,
+      toolType: 'rectangle',
+      label: 'seeded',
+    });
+
+    const state: AnnotationState<OsdFields> = {
+      byImage: { [imageId]: { [ann.id]: ann } },
+      changeCounter: 1,
+    };
+
+    // serialize → JSON → deserialize, exercising the Valibot OsdAnnotationSchema.
+    const doc = serialize(state);
+    const { byImage } = deserialize(JSON.parse(JSON.stringify(doc)) as unknown);
+    const restored = byImage[imageId]?.[ann.id];
+
+    expect(restored).toBeDefined();
+    expect(restored!.geometry).toEqual(geometry);
+    expect(restored!.label).toBe('seeded');
+    expect(restored!.rawAnnotationData.format).toBe('fabric');
   });
 });

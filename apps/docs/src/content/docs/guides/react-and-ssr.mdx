@@ -118,10 +118,14 @@ Put the annotator in its own Client Component and load it with `next/dynamic` + 
 'use client';
 
 import { Annotator, initFabricModule } from '@osdlabel/react';
+import type { ImageSource, AnnotationContext } from '@osdlabel/react';
 
 initFabricModule(); // runs only on the client because this module is never server-imported
 
-export default function AnnotatorClient(props: { images; contexts }) {
+export default function AnnotatorClient(props: {
+  images: ImageSource[];
+  contexts: AnnotationContext[];
+}) {
   return <Annotator images={props.images} contexts={props.contexts} />;
 }
 ```

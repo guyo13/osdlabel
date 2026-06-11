@@ -28,7 +28,7 @@ osdlabel uses a flat JSON array format for persisting annotations:
     },
     "rawAnnotationData": {
       "format": "fabric",
-      "fabricVersion": "7.2.0",
+      "fabricVersion": "7.4.0",
       "data": { ... }
     },
     "createdAt": "2026-03-06T12:00:00.000Z",
@@ -129,6 +129,8 @@ initFabricModule(); // registers the `id` custom property so it serializes — c
 // then: serializeFabricObject(obj) for rawAnnotationData, and
 // getGeometryFromFabricObject(obj, 'polygon') for the geometry.
 ```
+
+If your geometry _is_ one of the six built-in types and you only need a Fabric object (not the full annotation), `buildFabricObjectFromGeometry(geometry, getFabricOptions(style, id))` — the inverse of `getGeometryFromFabricObject`, re-exported from the umbrella — saves you hand-rolling `new Polygon(...)` / `new Rect(...)`. `createAnnotationFromGeometry` uses it internally.
 
 Calling `initFabricModule()` is what makes the annotation `id` survive `toObject()`; miss it and the `id` silently drops from the envelope. (`createAnnotationFromGeometry` handles this for you.)
 
