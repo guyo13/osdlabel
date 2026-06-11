@@ -73,6 +73,7 @@ export default defineConfig({
             { label: 'Annotation Contexts', slug: 'guides/annotation-contexts' },
             { label: 'Serialization', slug: 'guides/serialization' },
             { label: 'Components', slug: 'guides/components' },
+            { label: 'React & SSR', slug: 'guides/react-and-ssr' },
             { label: 'State & Hooks', slug: 'guides/state-and-hooks' },
             { label: 'Coordinate Systems', slug: 'guides/coordinate-systems' },
             { label: 'Decorations', slug: 'guides/decorations' },

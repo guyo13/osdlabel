@@ -3,7 +3,7 @@ title: Decorations
 description: Derived visual overlays — labels, measurements, and connectors — driven by pure providers
 ---
 
-**Decorations** are derived, read-only visuals that osdlabel renders on top of your annotations: per-annotation text labels, computed measurements (area, perimeter, length, radius), and connector lines between annotation pairs. They are not part of annotation state and are never serialized — they are recomputed from current state on every relevant change.
+**Decorations** are derived, read-only visuals that osdlabel renders on top of your annotations: per-annotation text labels, computed measurements (area, perimeter, length, radius), connector lines between annotation pairs, and [rich DOM overlays](#dom-decorations) rendered by your own UI framework. They are not part of annotation state and are never serialized — they are recomputed from current state on every relevant change.
 
 You drive them by passing one or more **providers** (pure functions) to `<Annotator>` via the `decorationProviders` prop. The library ships built-in providers for the common cases and lets you compose them or write your own.
 
@@ -27,14 +27,15 @@ interface DecorationContext<E> {
 
 The library calls your providers on every relevant change — annotation added/edited/deleted, selection changed, drag tick — and reconciles the result into the DOM and the Fabric canvas. Providers must be deterministic and side-effect-free; nothing they return is persisted.
 
-### Two render targets
+### Three render targets
 
 A `Decoration` is a discriminated union:
 
 - **`TextDecoration`** renders as an absolutely-positioned `<div>` in a host layer over the Fabric canvas. Text stays upright, crisp, and constant screen-size at any zoom / rotation / flip — there is no counter-transform math because the host layer is in screen-space, not image-space. Position is `imageToScreen(anchor) + offset` recomputed on every frame.
 - **`LineDecoration`** renders as a non-interactive Fabric `Line` on the overlay canvas, in image-space. It follows pan / zoom / rotate / flip via the existing viewport transform at zero per-frame cost. Stroke width is `strokeUniform` so dashed patterns look the same at all zooms.
+- **`DomDecoration`** renders an arbitrary component tree from _your_ UI framework — buttons, inputs, popovers, charts — into a positioned host element via the framework's native portal. Unlike `TextDecoration` (which the library renders for you as a styled `<div>`), a `DomDecoration` hands rendering back to you through the `renderDomDecoration` prop, so the tree lives inside your app's component context. See [DOM decorations](#dom-decorations) below.
 
-You don't choose the render target by hand — picking `type: 'text'` vs `type: 'line'` does it for you.
+You don't choose the render target by hand — the `type` field (`'text'` / `'line'` / `'dom'`) does it for you.
 
 ### Composition order
 
@@ -236,13 +237,44 @@ type DecorationProvider<E extends object = Record<string, never>> = (
 ) => readonly Decoration[];
 ```
 
-You return an array of `TextDecoration` and / or `LineDecoration` values. Three rules:
+You return an array of `TextDecoration`, `LineDecoration`, and / or `DomDecoration` values. Three rules:
 
 1. **Be pure.** No `setState`, no DOM, no network. The library may call your provider many times per second during a drag.
 2. **Use stable IDs.** Return the same `Decoration.id` across recomputations for the same logical decoration (e.g. `` `bbox:${ann.id}` ``). The renderer diffs by id — stable ids let it update DOM/Fabric in place instead of recreating nodes.
 3. **Set `relatedAnnotationIds`.** This drives lifecycle (so decorations are cleaned up when their annotations are deleted) and powers `withSelectionEmphasis`. For per-annotation decorations, it's `[ann.id]`; for relational decorations it's the participating annotation ids.
 
 The decoration package also exports pure geometry utilities you can use to build anchors and derived values: `area`, `perimeter`, `length`, `radius`, `distance`, `centroid`, `midpoint`, `boundingBox`. See [`@osdlabel/decoration`](/osdlabel/api/reference/osdlabel/) for full signatures.
+
+### Typing providers with extension fields
+
+`DecorationProvider<E>` is generic over your annotation's extension fields `E`, and so are the built-in factories:
+
+```ts
+function createLabelProvider<E extends object = Record<string, never>>(): DecorationProvider<E>;
+function createMeasurementProvider<
+  E extends object = Record<string, never>,
+>(): DecorationProvider<E>;
+function createDistanceProvider<E extends object = Record<string, never>>(): DecorationProvider<E>;
+```
+
+`E` **defaults to `Record<string, never>`** (no extension fields). That default is fine when a callback only touches built-in `Annotation` fields, but it will not infer your custom fields for you. **Pass the generic explicitly** whenever you read an extension field (e.g. `contextId`, or your own metadata) inside a callback, or when you assign into a `DecorationProvider<MyFields>[]`:
+
+```ts
+interface MyFields {
+  readonly contextId: AnnotationContextId;
+  readonly priority: number;
+}
+
+// ✅ pass <MyFields> so `pair` sees the extra fields
+const distances = createDistanceProvider<MyFields>({
+  pair: (annotations) =>
+    annotations
+      .filter((a) => a.priority > 0) // typed, no `String(...)` cast needed
+      .map((a, i, arr) => ({ a, b: arr[(i + 1) % arr.length]! })),
+});
+```
+
+Comparing a **branded id** (e.g. `contextId: AnnotationContextId`) against a plain string narrows cleanly with `String(...)`: `String(ann.contextId) === 'tumor'`. Prefer comparing branded-to-branded (`ann.contextId === createAnnotationContextId('tumor')`) where you have the factory in scope.
 
 ### Example: bounding-box dimensions
 
@@ -331,6 +363,120 @@ export const rectanglePath: DecorationProvider = ({ annotations }) => {
 | `relatedAnnotationIds` | `readonly AnnotationId[]` | Drives lifecycle and selection emphasis.                                 |
 
 A `LineDecoration` is rendered as a non-interactive Fabric `Line` on the overlay canvas. If you want users to be able to select / move / edit the line, draw a line **annotation** instead (annotations are state and serialize; decorations don't).
+
+## DOM decorations
+
+`TextDecoration` is great for plain labels, but sometimes you need a **rich, interactive overlay** anchored to an annotation — a delete button, an inline editor, a status badge, a small chart, a link into your app's routing. That's what `DomDecoration` is for: the library positions an empty host `<div>` over the image (tracking pan / zoom / rotate / flip every frame), and _your_ framework renders into it through a **portal**, so the rendered tree shares your app's context, theme, and event handlers.
+
+### The flow
+
+1. A provider returns a `Decoration` with `type: 'dom'`, an image-space `anchor`, and a framework-agnostic `content: unknown` payload (treated as stable configuration / identity).
+2. The library creates and positions the host element and emits an entry `{ id, element, decoration }`.
+3. You pass a `renderDomDecoration` render-prop to `<Annotator>` (or `<AnnotatorProvider>`); the framework portals its return value into the host element, keyed by the decoration `id`.
+
+`content` is _configuration_, not per-frame data. Dynamic values (a live count, a selection flag) should flow through your app's own reactivity inside the rendered component, not through `content` changing every frame — keeping `content` stable lets the renderer reuse DOM in place.
+
+### Provider side (framework-agnostic)
+
+```ts
+import type { DecorationProvider, DomDecoration } from '@osdlabel/solid'; // or '@osdlabel/react'
+import type { ImageId } from '@osdlabel/solid';
+import { boundingBox } from '@osdlabel/solid';
+
+// Typed with the imageId extension field so the payload can carry it
+// (see "Typing providers with extension fields" above).
+export const deleteButtons: DecorationProvider<{ imageId: ImageId }> = ({ annotations }) => {
+  const out: DomDecoration[] = [];
+  for (const ann of annotations) {
+    const { min, max } = boundingBox(ann.geometry);
+    out.push({
+      id: `delete-btn:${ann.id}`,
+      type: 'dom',
+      relatedAnnotationIds: [ann.id],
+      anchor: { x: max.x, y: min.y }, // top-right corner, image-space
+      offset: { x: 4, y: -4 }, // screen-space nudge
+      placement: 'left',
+      content: { annotationId: ann.id, imageId: ann.imageId }, // stable config the render-prop reads
+      style: { pointerEvents: 'auto', zIndex: 20 },
+    });
+  }
+  return out;
+};
+```
+
+### Render side
+
+The render-prop receives the full `DomDecoration` (read your payload off `decoration.content`) and returns a framework node.
+
+The render-prop runs inside the annotator's component tree, so the rendered component can call `useAnnotator()` to reach state and actions.
+
+**React** — returns a `ReactNode`, portalled via `createPortal`:
+
+```tsx
+import { Annotator, useAnnotator } from '@osdlabel/react';
+import type { AnnotationId, ImageId } from '@osdlabel/react';
+
+function DeleteButton({ content }: { content: unknown }) {
+  const { actions } = useAnnotator();
+  const { annotationId, imageId } = content as { annotationId: AnnotationId; imageId: ImageId };
+  return (
+    <button className="anno-delete" onClick={() => actions.deleteAnnotation(annotationId, imageId)}>
+      ✕
+    </button>
+  );
+}
+
+<Annotator
+  images={images}
+  contexts={contexts}
+  decorationProviders={[deleteButtons]}
+  renderDomDecoration={(decoration) => <DeleteButton content={decoration.content} />}
+/>;
+```
+
+**Solid** — returns a `JSX.Element`, portalled via `<Portal>`:
+
+```tsx
+import { Annotator, useAnnotator } from '@osdlabel/solid';
+import type { AnnotationId, ImageId } from '@osdlabel/solid';
+
+function DeleteButton(props: { content: unknown }) {
+  const { actions } = useAnnotator();
+  const { annotationId, imageId } = props.content as {
+    annotationId: AnnotationId;
+    imageId: ImageId;
+  };
+  return (
+    <button class="anno-delete" onClick={() => actions.deleteAnnotation(annotationId, imageId)}>
+      ✕
+    </button>
+  );
+}
+
+<Annotator
+  images={images}
+  contexts={contexts}
+  decorationProviders={[deleteButtons]}
+  renderDomDecoration={(decoration) => <DeleteButton content={decoration.content} />}
+/>;
+```
+
+If you emit `type: 'dom'` decorations but **don't** pass `renderDomDecoration`, the host elements are positioned but stay empty — the library never guesses how to render your `content`.
+
+### DomDecoration anatomy
+
+| Field                  | Type                       | Notes                                                                           |
+| ---------------------- | -------------------------- | ------------------------------------------------------------------------------- |
+| `id`                   | `string`                   | Stable across recomputations; also the portal key.                              |
+| `type`                 | `'dom'`                    | Discriminator.                                                                  |
+| `anchor`               | `Point`                    | **Image-space**. Transformed by `imageToScreen` every frame.                    |
+| `offset`               | `{ x: number; y: number }` | **Screen-space pixels** added to the anchor's screen position.                  |
+| `placement`            | `TextPlacement`            | How the host sits relative to its anchor (`'top-left'` default, `'center'`, …). |
+| `content`              | `unknown`                  | Stable config the render-prop interprets. Not per-frame data.                   |
+| `style`                | `DomDecorationStyle`       | See below.                                                                      |
+| `relatedAnnotationIds` | `readonly AnnotationId[]`  | Drives lifecycle and selection emphasis.                                        |
+
+**`DomDecorationStyle` fields:** `className`, `zIndex`, `width` / `height` (fixed screen-px, otherwise sizes to content), and `pointerEvents` — defaults to `'auto'` so content is interactive; set `'none'` for purely-visual overlays that should let clicks fall through to the canvas.
 
 ## Live updates during drag
 
