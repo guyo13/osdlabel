@@ -89,6 +89,10 @@ React annotator UI layer.
 
 For most applications, importing from the framework-specific package (`@osdlabel/solid` or `@osdlabel/react`) is the quickest way to get started. Both re-export everything from `osdlabel`.
 
+:::tip[Import rule]
+**Import every public type and value from the single umbrella package you're already using** (`@osdlabel/solid`, `@osdlabel/react`, or `osdlabel`). Commonly-needed types such as `ImageId`, `AnnotationId`, and `ImageSource` physically live in lower-level subpackages (`@osdlabel/viewer-api`, `@osdlabel/annotation`), so importing them from those paths only resolves when the subpackage is a **direct dependency** of your app. The umbrella re-exports them all — sticking to it avoids "cannot find module" errors and keeps your dependency list to one package. Reach for direct subpackage imports (below) only when you've added that subpackage as an explicit dependency for a custom UI layer.
+:::
+
 ### 1. Framework package (recommended)
 
 ```ts

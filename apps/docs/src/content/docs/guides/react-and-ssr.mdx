@@ -1,0 +1,170 @@
+---
+title: React & SSR
+description: Using @osdlabel/react, and mounting the annotator client-only under Next.js / Remix
+---
+
+Most guides on this site use `@osdlabel/solid` because the API is identical across bindings. This guide collects the parts that are **React-specific** or that bite when you render on a server: `Annotator` vs `AnnotatorProvider`, the `renderDomDecoration` prop, and how to mount client-only under SSR frameworks.
+
+## React parity
+
+`@osdlabel/react` mirrors `@osdlabel/solid` symbol-for-symbol — same `Annotator`, `AnnotatorProvider`, `useAnnotator`, the same `createImageId` / `createAnnotationContextId` factories, the same `serialize` / `deserialize` / `createAnnotationFromGeometry`. The package also re-exports everything from the framework-agnostic `osdlabel` core, so you import from one place:
+
+```tsx
+import {
+  Annotator,
+  AnnotatorProvider,
+  useAnnotator,
+  createImageId,
+  createAnnotationContextId,
+  initFabricModule,
+} from '@osdlabel/react';
+import type { ImageSource, AnnotationContext } from '@osdlabel/react';
+```
+
+> **Import rule:** import every public type and value from the umbrella package you're already using (`@osdlabel/react`, `@osdlabel/solid`, or `osdlabel`). Types like `ImageId`, `AnnotationId`, and `ImageSource` physically live in lower-level subpackages (`@osdlabel/viewer-api`, `@osdlabel/annotation`), and importing them from those paths only works if they're direct dependencies of your app. The umbrella re-exports them all. See [Packages & Architecture](/osdlabel/guides/packages-and-architecture/).
+
+## A complete React example
+
+The end-to-end shape (the React counterpart of the [Quick Start](/osdlabel/getting-started/quick-start/)):
+
+```tsx
+import { createRoot } from 'react-dom/client';
+import { Annotator } from '@osdlabel/react';
+import { createImageId, createAnnotationContextId } from '@osdlabel/react';
+import type { ImageSource, AnnotationContext } from '@osdlabel/react';
+
+const images: ImageSource[] = [
+  {
+    id: createImageId('sample-1'),
+    tileSource: 'https://openseadragon.github.io/example-images/highsmith/highsmith.dzi',
+    label: 'Highsmith',
+  },
+];
+
+const contexts: AnnotationContext[] = [
+  {
+    id: createAnnotationContextId('default'),
+    label: 'Default',
+    tools: [{ type: 'rectangle' }, { type: 'circle' }, { type: 'point' }],
+  },
+];
+
+function App() {
+  return (
+    <div style={{ width: '100vw', height: '100vh' }}>
+      <Annotator
+        images={images}
+        contexts={contexts}
+        showFilmstrip
+        showViewControls
+        onAnnotationsChange={(annotations) => {
+          // flat Annotation[] — persist directly (see Serialization guide)
+          console.log('Annotations:', annotations.length);
+        }}
+      />
+    </div>
+  );
+}
+
+createRoot(document.getElementById('app')!).render(<App />);
+```
+
+The only mechanical differences from the Solid examples: `createRoot(...).render(<App />)` instead of Solid's `render(() => <App />, el)`, and JSX `className` / `style={{ ... }}` conventions.
+
+## `Annotator` vs `AnnotatorProvider`
+
+Two ways to mount, same underlying state:
+
+- **`<Annotator>`** — the batteries-included layout: toolbar, grid, filmstrip, status bar, view controls. Reach for this first. It accepts every `AnnotatorProvider` prop (it extends them) plus layout flags like `showFilmstrip`.
+- **`<AnnotatorProvider>`** — just the state/context, no chrome. Wrap your own tree and compose individual components (`Toolbar`, `GridView`, `ViewerCell`, …) yourself, reading state via `useAnnotator()`. Use this when you need a custom layout.
+
+Both take `images`, `contexts`, `decorationProviders`, `onAnnotationsChange`, `renderDomDecoration`, etc. Picking one is purely about whether you want the default layout.
+
+## Rich DOM decorations
+
+The `renderDomDecoration` prop lets a provider emit interactive overlays (buttons, popovers, inline editors) anchored to annotations, rendered by React through `createPortal`. In React it returns a `ReactNode`:
+
+```tsx
+<Annotator
+  images={images}
+  contexts={contexts}
+  decorationProviders={[deleteButtons]}
+  renderDomDecoration={(decoration) => <DeleteButton content={decoration.content} />}
+/>
+```
+
+The full provider + render-prop flow (and the Solid equivalent) is in the [Decorations guide → DOM decorations](/osdlabel/guides/decorations/#dom-decorations).
+
+## Server-side rendering (Next.js, Remix, …)
+
+osdlabel is **ESM-only** and touches `window`, Fabric, and OpenSeadragon **at import time**. It cannot run during server rendering — importing it on the server throws (`window is not defined`). Mount it **client-only**.
+
+The rules:
+
+1. **Never import `@osdlabel/react` into a module that runs on the server.** Isolate it behind a dynamic, client-only boundary.
+2. Treat the annotator as a leaf you load lazily after hydration.
+
+(Fabric `id` registration is automatic — the `Annotator` handles it on mount, on the client, so there's no setup call to place carefully.)
+
+### Next.js (App Router)
+
+Put the annotator in its own Client Component and load it with `next/dynamic` + `ssr: false`:
+
+```tsx
+// AnnotatorClient.tsx
+'use client';
+
+import { Annotator } from '@osdlabel/react';
+import type { ImageSource, AnnotationContext } from '@osdlabel/react';
+
+export default function AnnotatorClient(props: {
+  images: ImageSource[];
+  contexts: AnnotationContext[];
+}) {
+  return <Annotator images={props.images} contexts={props.contexts} />;
+}
+```
+
+```tsx
+// page.tsx (Server Component)
+import dynamic from 'next/dynamic';
+
+const AnnotatorClient = dynamic(() => import('./AnnotatorClient'), { ssr: false });
+
+export default function Page() {
+  return <AnnotatorClient images={images} contexts={contexts} />;
+}
+```
+
+`ssr: false` guarantees the module is only evaluated in the browser, so the import-time `window` access never runs on the server.
+
+### Remix / React Router
+
+There is no `ssr: false` for a route, so gate rendering on the client with a mounted flag and a lazy import:
+
+```tsx
+import { lazy, Suspense, useEffect, useState } from 'react';
+
+const AnnotatorClient = lazy(() => import('./AnnotatorClient'));
+
+export default function Route() {
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
+  if (!mounted) return null; // skip on the server and the first (hydration) render
+  return (
+    <Suspense fallback={null}>
+      <AnnotatorClient images={images} contexts={contexts} />
+    </Suspense>
+  );
+}
+```
+
+Returning `null` until mounted keeps the server render and the first client render identical (no hydration mismatch), then swaps in the lazily-imported annotator once you're safely in the browser.
+
+## See also
+
+- [Quick Start](/osdlabel/getting-started/quick-start/) — the Solid walkthrough this mirrors
+- [Components](/osdlabel/guides/components/) — `Annotator` / `AnnotatorProvider` prop reference
+- [Decorations](/osdlabel/guides/decorations/#dom-decorations) — the `renderDomDecoration` flow
+- [Serialization](/osdlabel/guides/serialization/) — persisting and seeding annotations
+- [Packages & Architecture](/osdlabel/guides/packages-and-architecture/) — the import rule in full

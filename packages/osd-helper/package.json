@@ -33,7 +33,7 @@
     "@osdlabel/viewer-api": "workspace:*"
   },
   "peerDependencies": {
-    "openseadragon": "catalog:"
+    "openseadragon": "catalog:peers"
   },
   "devDependencies": {
     "@types/openseadragon": "catalog:",

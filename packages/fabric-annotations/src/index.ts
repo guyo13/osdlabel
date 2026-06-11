@@ -1,5 +1,6 @@
 export * from './fabric-module.js';
 export * from './fabric-utils.js';
+export { buildFabricObjectFromGeometry } from './build-fabric-object.js';
 export type { ToolOverlay, FabricFields } from './types.js';
 export type { AnnotationTool, ToolCallbacks, AddAnnotationParams } from './tools/base-tool.js';
 export { BaseTool } from './tools/base-tool.js';

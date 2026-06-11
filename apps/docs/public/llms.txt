@@ -97,8 +97,6 @@ The `Annotator` component provides a complete annotation interface with toolbar,
 
 ```tsx
 
-initFabricModule();
-
 function App() {
   return (
     <div style={{ width: '100vw', height: '100vh' }}>
@@ -121,6 +119,8 @@ function App() {
 
 render(() => <App />, document.getElementById('app')!);
 ```
+
+The `Annotator` registers the Fabric `id` custom property automatically when its viewer mounts, so there's no setup call to remember. (`initFabricModule()` is still exported and idempotent if you build Fabric objects yourself before any viewer exists — see [Serialization](/osdlabel/guides/serialization/).)
 
 ## 4. What you get
 
@@ -326,6 +326,10 @@ React annotator UI layer.
 ## Import structure
 
 For most applications, importing from the framework-specific package (`@osdlabel/solid` or `@osdlabel/react`) is the quickest way to get started. Both re-export everything from `osdlabel`.
+
+:::tip[Import rule]
+**Import every public type and value from the single umbrella package you're already using** (`@osdlabel/solid`, `@osdlabel/react`, or `osdlabel`). Commonly-needed types such as `ImageId`, `AnnotationId`, and `ImageSource` physically live in lower-level subpackages (`@osdlabel/viewer-api`, `@osdlabel/annotation`), so importing them from those paths only resolves when the subpackage is a **direct dependency** of your app. The umbrella re-exports them all — sticking to it avoids "cannot find module" errors and keeps your dependency list to one package. Reach for direct subpackage imports (below) only when you've added that subpackage as an explicit dependency for a custom UI layer.
+:::
 
 ### 1. Framework package (recommended)
 
@@ -921,7 +925,7 @@ osdlabel uses a flat JSON array format for persisting annotations:
     },
     "rawAnnotationData": {
       "format": "fabric",
-      "fabricVersion": "7.2.0",
+      "fabricVersion": "7.4.0",
       "data": { ... }
     },
     "createdAt": "2026-03-06T12:00:00.000Z",
@@ -959,6 +963,72 @@ actions.loadAnnotations(byImage);
 
 `deserialize()` validates the basic structure of the array and throws `SerializationError` on invalid input. For deep validation, the library integrates with Valibot in `@osdlabel/validation`.
 
+### Flat out, keyed in
+
+The two directions are intentionally **asymmetric**, and it trips people up:
+
+- **`serialize(state)` returns a flat `Annotation[]`** — and so does the `onAnnotationsChange` callback (see [below](#listening-to-changes)). That flat array **is** your persistable document; you can save the callback's argument directly without calling `serialize` yourself.
+- **`deserialize(doc)` returns a keyed `{ byImage }` map** — `Record<ImageId, Record<AnnotationId, Annotation>>` — which is the exact shape `loadAnnotations` expects for the store.
+
+So: persist the **flat** array, load it back through `deserialize` to get the **keyed** map. If you keep your own annotation list (e.g. a flat `Annotation[]` from `onAnnotationsChange`), you still pass it through `deserialize` to seed the store.
+
+## Seeding from external geometry
+
+Loading already-serialized osdlabel documents is just `deserialize` (above). The harder case is **importing annotations from another system** — you have raw geometry (a bounding box from a detector, a contour from a segmentation model, points from a CSV) but no Fabric `rawAnnotationData` envelope.
+
+Use `createAnnotationFromGeometry` — it builds the complete annotation (geometry **and** the Fabric envelope) in one call:
+
+```tsx
+
+const annotation = createAnnotationFromGeometry(
+  { type: 'rectangle', origin: { x: 120, y: 80 }, width: 200, height: 140, rotation: 0 },
+  { imageId, contextId, toolType: 'rectangle', label: 'lesion' },
+);
+
+actions.addAnnotation(annotation);
+```
+
+It accepts any `Geometry` (`rectangle`, `circle`, `line`, `point`, `polyline`, `polygon`), defaults the style to `DEFAULT_ANNOTATION_STYLE`, generates an `id` when you don't supply one, and guarantees the `id` survives serialization — so the result round-trips through `serialize` / `deserialize` like a hand-drawn annotation. To seed many at once, map over your source data and call `loadAnnotations` (or `addAnnotation` per item).
+
+### Choosing a `toolType`
+
+`toolType` is recorded independently of `geometry.type`. For most shapes they match (`'rectangle'` ↔ `rectangle`, `'circle'` ↔ `circle`, …). The exception is freehand:
+
+| `toolType`     | Resulting `geometry.type`                         |
+| -------------- | ------------------------------------------------- |
+| `rectangle`    | `rectangle`                                       |
+| `circle`       | `circle`                                          |
+| `line`         | `line`                                            |
+| `point`        | `point`                                           |
+| `polyline`     | `polyline`                                        |
+| `freeHandPath` | `polygon` (closed path) or `polyline` (open path) |
+
+The static `toolTypeToGeometryType('freeHandPath')` helper returns `polyline`, but the freehand **tool** produces a closed `polygon` by default at runtime (open `polyline` only when Shift is held). When importing a freehand contour, set `geometry.type` to whichever matches your data and pass `toolType: 'freeHandPath'`.
+
+Multi-point shapes import the same way: pass `{ type: 'polyline', points }` (open) or `{ type: 'polygon', points }` (closed), where `points` is an array of image-space `{ x, y }` coordinates. Annotations drawn with the built-in freehand tool are already plain `polygon` / `polyline` geometry, so there is nothing special to handle when importing them either.
+
+### Lower-level escape hatch
+
+If you already hold a **Fabric object** (of a supported class) rather than raw geometry, you can build the envelope directly instead of going through `createAnnotationFromGeometry`:
+
+```ts
+
+  getFabricOptions,
+  serializeFabricObject,
+  getGeometryFromFabricObject,
+  buildFabricObjectFromGeometry,
+} from '@osdlabel/solid';
+
+// From an existing Fabric object → annotation pieces:
+const rawAnnotationData = serializeFabricObject(obj); // envelope
+const geometry = getGeometryFromFabricObject(obj, 'polygon'); // image-space geometry
+
+// Or the inverse — geometry → Fabric object (what createAnnotationFromGeometry uses internally):
+const fabricObject = buildFabricObjectFromGeometry(geometry, getFabricOptions(style, id));
+```
+
+These read/produce the same five Fabric classes (`Rect` / `Circle` / `Line` / `Polyline` / `Polygon`). The annotation `id` is registered automatically when an `Annotator` mounts; if you build and serialize Fabric objects entirely outside any viewer, call `initFabricModule()` once first so the `id` survives `toObject()`. (`createAnnotationFromGeometry` guarantees this for you regardless.)
+
 ## Validation
 
 The library provides comprehensive Valibot schemas for annotation validation in the `@osdlabel/validation` package:
@@ -984,7 +1054,8 @@ The `onAnnotationsChange` callback fires whenever annotations are added, updated
 ```tsx
 <AnnotatorProvider
   onAnnotationsChange={(annotations) => {
-    // annotations: Annotation[] — flat list of all annotations
+    // annotations: Annotation[] — the same flat document serialize() would produce.
+    // No need to call serialize() yourself; persist this array directly.
     saveToBackend(annotations);
   }}
 >
@@ -1183,7 +1254,7 @@ Annotations are always stored in image-space pixels. The overlay's `viewportTran
 
 # Decorations
 
-**Decorations** are derived, read-only visuals that osdlabel renders on top of your annotations: per-annotation text labels, computed measurements (area, perimeter, length, radius), and connector lines between annotation pairs. They are not part of annotation state and are never serialized — they are recomputed from current state on every relevant change.
+**Decorations** are derived, read-only visuals that osdlabel renders on top of your annotations: per-annotation text labels, computed measurements (area, perimeter, length, radius), connector lines between annotation pairs, and [rich DOM overlays](#dom-decorations) rendered by your own UI framework. They are not part of annotation state and are never serialized — they are recomputed from current state on every relevant change.
 
 You drive them by passing one or more **providers** (pure functions) to `<Annotator>` via the `decorationProviders` prop. The library ships built-in providers for the common cases and lets you compose them or write your own.
 
@@ -1207,14 +1278,15 @@ interface DecorationContext<E> {
 
 The library calls your providers on every relevant change — annotation added/edited/deleted, selection changed, drag tick — and reconciles the result into the DOM and the Fabric canvas. Providers must be deterministic and side-effect-free; nothing they return is persisted.
 
-### Two render targets
+### Three render targets
 
 A `Decoration` is a discriminated union:
 
 - **`TextDecoration`** renders as an absolutely-positioned `<div>` in a host layer over the Fabric canvas. Text stays upright, crisp, and constant screen-size at any zoom / rotation / flip — there is no counter-transform math because the host layer is in screen-space, not image-space. Position is `imageToScreen(anchor) + offset` recomputed on every frame.
 - **`LineDecoration`** renders as a non-interactive Fabric `Line` on the overlay canvas, in image-space. It follows pan / zoom / rotate / flip via the existing viewport transform at zero per-frame cost. Stroke width is `strokeUniform` so dashed patterns look the same at all zooms.
+- **`DomDecoration`** renders an arbitrary component tree from _your_ UI framework — buttons, inputs, popovers, charts — into a positioned host element via the framework's native portal. Unlike `TextDecoration` (which the library renders for you as a styled `<div>`), a `DomDecoration` hands rendering back to you through the `renderDomDecoration` prop, so the tree lives inside your app's component context. See [DOM decorations](#dom-decorations) below.
 
-You don't choose the render target by hand — picking `type: 'text'` vs `type: 'line'` does it for you.
+You don't choose the render target by hand — the `type` field (`'text'` / `'line'` / `'dom'`) does it for you.
 
 ### Composition order
 
@@ -1409,13 +1481,44 @@ type DecorationProvider<E extends object = Record<string, never>> = (
 ) => readonly Decoration[];
 ```
 
-You return an array of `TextDecoration` and / or `LineDecoration` values. Three rules:
+You return an array of `TextDecoration`, `LineDecoration`, and / or `DomDecoration` values. Three rules:
 
 1. **Be pure.** No `setState`, no DOM, no network. The library may call your provider many times per second during a drag.
 2. **Use stable IDs.** Return the same `Decoration.id` across recomputations for the same logical decoration (e.g. `` `bbox:${ann.id}` ``). The renderer diffs by id — stable ids let it update DOM/Fabric in place instead of recreating nodes.
 3. **Set `relatedAnnotationIds`.** This drives lifecycle (so decorations are cleaned up when their annotations are deleted) and powers `withSelectionEmphasis`. For per-annotation decorations, it's `[ann.id]`; for relational decorations it's the participating annotation ids.
 
 The decoration package also exports pure geometry utilities you can use to build anchors and derived values: `area`, `perimeter`, `length`, `radius`, `distance`, `centroid`, `midpoint`, `boundingBox`. See [`@osdlabel/decoration`](/osdlabel/api/reference/osdlabel/) for full signatures.
+
+### Typing providers with extension fields
+
+`DecorationProvider<E>` is generic over your annotation's extension fields `E`, and so are the built-in factories:
+
+```ts
+function createLabelProvider<E extends object = Record<string, never>>(): DecorationProvider<E>;
+function createMeasurementProvider<
+  E extends object = Record<string, never>,
+>(): DecorationProvider<E>;
+function createDistanceProvider<E extends object = Record<string, never>>(): DecorationProvider<E>;
+```
+
+`E` **defaults to `Record<string, never>`** (no extension fields). That default is fine when a callback only touches built-in `Annotation` fields, but it will not infer your custom fields for you. **Pass the generic explicitly** whenever you read an extension field (e.g. `contextId`, or your own metadata) inside a callback, or when you assign into a `DecorationProvider<MyFields>[]`:
+
+```ts
+interface MyFields {
+  readonly contextId: AnnotationContextId;
+  readonly priority: number;
+}
+
+// ✅ pass <MyFields> so `pair` sees the extra fields
+const distances = createDistanceProvider<MyFields>({
+  pair: (annotations) =>
+    annotations
+      .filter((a) => a.priority > 0) // typed, no `String(...)` cast needed
+      .map((a, i, arr) => ({ a, b: arr[(i + 1) % arr.length]! })),
+});
+```
+
+Comparing a **branded id** (e.g. `contextId: AnnotationContextId`) against a plain string narrows cleanly with `String(...)`: `String(ann.contextId) === 'tumor'`. Prefer comparing branded-to-branded (`ann.contextId === createAnnotationContextId('tumor')`) where you have the factory in scope.
 
 ### Example: bounding-box dimensions
 
@@ -1500,6 +1603,113 @@ export const rectanglePath: DecorationProvider = ({ annotations }) => {
 | `relatedAnnotationIds` | `readonly AnnotationId[]` | Drives lifecycle and selection emphasis.                                 |
 
 A `LineDecoration` is rendered as a non-interactive Fabric `Line` on the overlay canvas. If you want users to be able to select / move / edit the line, draw a line **annotation** instead (annotations are state and serialize; decorations don't).
+
+## DOM decorations
+
+`TextDecoration` is great for plain labels, but sometimes you need a **rich, interactive overlay** anchored to an annotation — a delete button, an inline editor, a status badge, a small chart, a link into your app's routing. That's what `DomDecoration` is for: the library positions an empty host `<div>` over the image (tracking pan / zoom / rotate / flip every frame), and _your_ framework renders into it through a **portal**, so the rendered tree shares your app's context, theme, and event handlers.
+
+### The flow
+
+1. A provider returns a `Decoration` with `type: 'dom'`, an image-space `anchor`, and a framework-agnostic `content: unknown` payload (treated as stable configuration / identity).
+2. The library creates and positions the host element and emits an entry `{ id, element, decoration }`.
+3. You pass a `renderDomDecoration` render-prop to `<Annotator>` (or `<AnnotatorProvider>`); the framework portals its return value into the host element, keyed by the decoration `id`.
+
+`content` is _configuration_, not per-frame data. Dynamic values (a live count, a selection flag) should flow through your app's own reactivity inside the rendered component, not through `content` changing every frame — keeping `content` stable lets the renderer reuse DOM in place.
+
+### Provider side (framework-agnostic)
+
+```ts
+
+// Typed with the imageId extension field so the payload can carry it
+// (see "Typing providers with extension fields" above).
+export const deleteButtons: DecorationProvider<{ imageId: ImageId }> = ({ annotations }) => {
+  const out: DomDecoration[] = [];
+  for (const ann of annotations) {
+    const { min, max } = boundingBox(ann.geometry);
+    out.push({
+      id: `delete-btn:${ann.id}`,
+      type: 'dom',
+      relatedAnnotationIds: [ann.id],
+      anchor: { x: max.x, y: min.y }, // top-right corner, image-space
+      offset: { x: 4, y: -4 }, // screen-space nudge
+      placement: 'left',
+      content: { annotationId: ann.id, imageId: ann.imageId }, // stable config the render-prop reads
+      style: { pointerEvents: 'auto', zIndex: 20 },
+    });
+  }
+  return out;
+};
+```
+
+### Render side
+
+The render-prop receives the full `DomDecoration` (read your payload off `decoration.content`) and returns a framework node.
+
+The render-prop runs inside the annotator's component tree, so the rendered component can call `useAnnotator()` to reach state and actions.
+
+**React** — returns a `ReactNode`, portalled via `createPortal`:
+
+```tsx
+
+function DeleteButton({ content }: { content: unknown }) {
+  const { actions } = useAnnotator();
+  const { annotationId, imageId } = content as { annotationId: AnnotationId; imageId: ImageId };
+  return (
+    <button className="anno-delete" onClick={() => actions.deleteAnnotation(annotationId, imageId)}>
+      ✕
+    </button>
+  );
+}
+
+<Annotator
+  images={images}
+  contexts={contexts}
+  decorationProviders={[deleteButtons]}
+  renderDomDecoration={(decoration) => <DeleteButton content={decoration.content} />}
+/>;
+```
+
+**Solid** — returns a `JSX.Element`, portalled via `<Portal>`:
+
+```tsx
+
+function DeleteButton(props: { content: unknown }) {
+  const { actions } = useAnnotator();
+  const { annotationId, imageId } = props.content as {
+    annotationId: AnnotationId;
+    imageId: ImageId;
+  };
+  return (
+    <button class="anno-delete" onClick={() => actions.deleteAnnotation(annotationId, imageId)}>
+      ✕
+    </button>
+  );
+}
+
+<Annotator
+  images={images}
+  contexts={contexts}
+  decorationProviders={[deleteButtons]}
+  renderDomDecoration={(decoration) => <DeleteButton content={decoration.content} />}
+/>;
+```
+
+If you emit `type: 'dom'` decorations but **don't** pass `renderDomDecoration`, the host elements are positioned but stay empty — the library never guesses how to render your `content`.
+
+### DomDecoration anatomy
+
+| Field                  | Type                       | Notes                                                                           |
+| ---------------------- | -------------------------- | ------------------------------------------------------------------------------- |
+| `id`                   | `string`                   | Stable across recomputations; also the portal key.                              |
+| `type`                 | `'dom'`                    | Discriminator.                                                                  |
+| `anchor`               | `Point`                    | **Image-space**. Transformed by `imageToScreen` every frame.                    |
+| `offset`               | `{ x: number; y: number }` | **Screen-space pixels** added to the anchor's screen position.                  |
+| `placement`            | `TextPlacement`            | How the host sits relative to its anchor (`'top-left'` default, `'center'`, …). |
+| `content`              | `unknown`                  | Stable config the render-prop interprets. Not per-frame data.                   |
+| `style`                | `DomDecorationStyle`       | See below.                                                                      |
+| `relatedAnnotationIds` | `readonly AnnotationId[]`  | Drives lifecycle and selection emphasis.                                        |
+
+**`DomDecorationStyle` fields:** `className`, `zIndex`, `width` / `height` (fixed screen-px, otherwise sizes to content), and `pointerEvents` — defaults to `'auto'` so content is interactive; set `'none'` for purely-visual overlays that should let clicks fall through to the canvas.
 
 ## Live updates during drag
 

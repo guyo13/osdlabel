@@ -26,6 +26,15 @@ catalog:
   '@vitejs/plugin-react': ^6.0.2
   immer: ^10.1.1
 
+# Caret ranges used for PUBLISHED peerDependencies of fabric / openseadragon.
+# The default catalog above pins exact versions for reproducible dev installs;
+# these widen the consumer-facing peer range to reduce install friction in
+# monorepos. The fabric floor stays at 7.4.0 to exclude the <7.4 CVE.
+catalogs:
+  peers:
+    fabric: ^7.4.0
+    openseadragon: ^5.0.1
+
 overrides:
   human-id: 4.1.3
 

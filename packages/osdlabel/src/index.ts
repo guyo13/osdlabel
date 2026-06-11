@@ -65,6 +65,7 @@ export {
   deserializeFabricObject,
   createFabricObjectFromRawData,
   getGeometryFromFabricObject,
+  buildFabricObjectFromGeometry,
 } from '@osdlabel/fabric-annotations';
 export type {
   ToolOverlay,
@@ -142,6 +143,10 @@ export {
 
 // Own types
 export type { OsdAnnotation, OsdFields } from './types.js';
+
+// Annotation construction helpers
+export { createAnnotationFromGeometry } from './create-annotation.js';
+export type { CreateAnnotationFromGeometryOptions } from './create-annotation.js';
 
 // Pre-configured serialization (uses OSD validators)
 export { serialize, deserialize, SerializationError } from './serialization-configured.js';
