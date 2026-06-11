@@ -1005,28 +1005,45 @@ It accepts any `Geometry` (`rectangle`, `circle`, `line`, `point`, `polyline`, `
 
 The static `toolTypeToGeometryType('freeHandPath')` helper returns `polyline`, but the freehand **tool** produces a closed `polygon` by default at runtime (open `polyline` only when Shift is held). When importing a freehand contour, set `geometry.type` to whichever matches your data and pass `toolType: 'freeHandPath'`.
 
-### The manual round-trip (fallback)
+### Importing SVG paths and other shapes
 
-`createAnnotationFromGeometry` covers the six built-in geometry types. If you have geometry it can't express (e.g. an arbitrary SVG `Path` — `getGeometryFromFabricObject` only reads `Rect` / `Circle` / `Line` / `Polyline` / `Polygon`), down-convert it yourself — e.g. sample a path into polygon points — and build the envelope manually:
+Because `createAnnotationFromGeometry` accepts any of the six geometry types, importing almost always reduces to mapping your source into one of them — no manual Fabric work:
+
+- **Straight-segment SVG paths** (`M` / `L` commands) → read the vertices and pass `{ type: 'polyline', points }` (open) or `{ type: 'polygon', points }` (closed).
+- **Curved SVG paths** (`C` / `Q` / `A` commands) → the geometry model has no lossless curve type, so sample the curve into points and pass them as a polygon / polyline. (`getGeometryFromFabricObject` likewise does not read Fabric `Path` objects — sampling is the supported route for curves.)
 
 ```ts
 
-  initFabricModule,
+// points: { x: number; y: number }[] read or sampled from your SVG path's `d`
+const annotation = createAnnotationFromGeometry(
+  { type: 'polygon', points },
+  { imageId, contextId, toolType: 'freeHandPath' },
+);
+```
+
+Annotations drawn with the built-in freehand tool are already plain `polygon` (closed) or `polyline` (open) geometry — there is nothing special to handle when importing them.
+
+### Lower-level escape hatch
+
+If you already hold a **Fabric object** (of a supported class) rather than raw geometry, you can build the envelope directly instead of going through `createAnnotationFromGeometry`:
+
+```ts
+
   getFabricOptions,
   serializeFabricObject,
   getGeometryFromFabricObject,
+  buildFabricObjectFromGeometry,
 } from '@osdlabel/solid';
 
-initFabricModule(); // registers the `id` custom property so it serializes — call once
+// From an existing Fabric object → annotation pieces:
+const rawAnnotationData = serializeFabricObject(obj); // envelope
+const geometry = getGeometryFromFabricObject(obj, 'polygon'); // image-space geometry
 
-// build a Fabric object yourself (e.g. new Polygon(sampledPoints, options)),
-// then: serializeFabricObject(obj) for rawAnnotationData, and
-// getGeometryFromFabricObject(obj, 'polygon') for the geometry.
+// Or the inverse — geometry → Fabric object (what createAnnotationFromGeometry uses internally):
+const fabricObject = buildFabricObjectFromGeometry(geometry, getFabricOptions(style, id));
 ```
 
-If your geometry _is_ one of the six built-in types and you only need a Fabric object (not the full annotation), `buildFabricObjectFromGeometry(geometry, getFabricOptions(style, id))` — the inverse of `getGeometryFromFabricObject`, re-exported from the umbrella — saves you hand-rolling `new Polygon(...)` / `new Rect(...)`. `createAnnotationFromGeometry` uses it internally.
-
-Calling `initFabricModule()` is what makes the annotation `id` survive `toObject()`; miss it and the `id` silently drops from the envelope. (`createAnnotationFromGeometry` handles this for you.)
+These read/produce the same five Fabric classes (`Rect` / `Circle` / `Line` / `Polyline` / `Polygon`). The annotation `id` is registered automatically when an `Annotator` mounts; if you build and serialize Fabric objects entirely outside any viewer, call `initFabricModule()` once first so the `id` survives `toObject()`. (`createAnnotationFromGeometry` guarantees this for you regardless.)
 
 ## Validation
 
