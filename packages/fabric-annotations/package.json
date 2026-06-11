@@ -34,7 +34,7 @@
     "@osdlabel/viewer-api": "workspace:*"
   },
   "peerDependencies": {
-    "fabric": "catalog:"
+    "fabric": "catalog:peers"
   },
   "devDependencies": {
     "typescript": "catalog:",

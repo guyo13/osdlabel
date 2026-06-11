@@ -31,8 +31,8 @@
     "lint": "eslint src/ tests/"
   },
   "peerDependencies": {
-    "fabric": "catalog:",
-    "openseadragon": "catalog:",
+    "fabric": "catalog:peers",
+    "openseadragon": "catalog:peers",
     "valibot": "catalog:"
   },
   "dependencies": {
