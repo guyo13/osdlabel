@@ -17,13 +17,20 @@ export interface DragValueControlConfig {
   readonly min?: number;
   /** Upper clamp (inclusive). */
   readonly max?: number;
+  /**
+   * Quantize the emitted value to multiples of this step (the resolution of
+   * change). When omitted the value is continuous. Example: `0.025` snaps a
+   * drag to the nearest 0.025.
+   */
+  readonly step?: number;
 }
 
 /**
  * Build a {@link CustomControlHandler} that maps pointer-drag distance onto a
  * numeric value. The handler captures the start value and pointer position on
  * `pointerdown`, then on each `pointermove` sets
- * `startValue + delta(axis) * sensitivity`, clamped to `[min, max]`.
+ * `startValue + delta(axis) * sensitivity`, optionally quantized to `step`
+ * and clamped to `[min, max]`.
  *
  * Framework-agnostic and side-effect-free apart from the supplied
  * `getValue`/`setValue`, so it is reusable for any drag-driven viewer function
@@ -34,6 +41,7 @@ export function createDragValueControl(config: DragValueControlConfig): CustomCo
   const sensitivity = config.sensitivity ?? 1;
   const min = config.min ?? Number.NEGATIVE_INFINITY;
   const max = config.max ?? Number.POSITIVE_INFINITY;
+  const step = config.step;
 
   let dragging = false;
   let startScreen = 0;
@@ -63,8 +71,15 @@ export function createDragValueControl(config: DragValueControlConfig): CustomCo
       // value, matching the convention that "up" means "more".
       const rawDelta = coord(event) - startScreen;
       const delta = axis === 'y' ? -rawDelta : rawDelta;
-      const next = Math.min(Math.max(startValue + delta * sensitivity, min), max);
-      // Skip redundant writes — notably while clamped at min/max during a drag.
+      let next = startValue + delta * sensitivity;
+      // Quantize to the configured resolution before clamping so the value
+      // lands on a clean grid (e.g. multiples of 0.025).
+      if (step !== undefined && step > 0) {
+        next = Math.round(next / step) * step;
+      }
+      next = Math.min(Math.max(next, min), max);
+      // Skip redundant writes — notably while clamped at min/max or held within
+      // the same step during a drag.
       if (next === lastValue) return;
       lastValue = next;
       config.setValue(next);

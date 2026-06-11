@@ -98,6 +98,7 @@ export function useAnnotationTool(
           setValue: (value) => actions.setActiveImageExposure(value),
           axis: 'y',
           sensitivity: 0.01,
+          step: 0.025,
           min: -1,
           max: 1,
         }),

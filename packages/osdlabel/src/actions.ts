@@ -249,9 +249,12 @@ export function applyUIAction(draft: UIState, action: UIAction): void {
         ...DEFAULT_CELL_TRANSFORM,
       };
       const exposure = Math.max(Math.min(action.payload.value, 1), -1);
+      // Store faithfully — the caller (e.g. the drag control's `step`) owns the
+      // resolution of change. Round only to strip floating-point noise so the
+      // value stays clean for display and the `brightness()` filter.
       draft.cellTransforms[action.payload.cellIndex] = {
         ...current,
-        exposure: Math.round(exposure * 10) / 10,
+        exposure: Math.round(exposure * 1000) / 1000,
       };
       break;
     }

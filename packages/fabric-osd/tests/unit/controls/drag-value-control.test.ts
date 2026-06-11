@@ -141,6 +141,44 @@ describe('createDragValueControl', () => {
     expect(calls).toBe(1);
   });
 
+  it('quantizes the value to the configured step (resolution of change)', () => {
+    let value = 0;
+    const control = createDragValueControl({
+      getValue: () => value,
+      setValue: (v) => {
+        value = v;
+      },
+      sensitivity: 0.01,
+      step: 0.025,
+    });
+
+    control.onPointerDown?.(evt(0, 0));
+
+    control.onPointerMove?.(evt(7, 0)); // raw 0.07 → nearest 0.025 = 0.075
+    expect(value).toBeCloseTo(0.075);
+
+    control.onPointerMove?.(evt(1, 0)); // raw 0.01 → nearest 0.025 = 0.0 (snaps back)
+    expect(value).toBeCloseTo(0);
+
+    control.onPointerMove?.(evt(4, 0)); // raw 0.04 → nearest 0.025 = 0.05
+    expect(value).toBeCloseTo(0.05);
+  });
+
+  it('does not emit until the drag crosses a step boundary', () => {
+    const writes: number[] = [];
+    const control = createDragValueControl({
+      getValue: () => 0,
+      setValue: (v) => writes.push(v),
+      sensitivity: 0.01,
+      step: 0.025,
+    });
+
+    control.onPointerDown?.(evt(0, 0));
+    control.onPointerMove?.(evt(1, 0)); // raw 0.01 → 0 (== start, no write)
+    control.onPointerMove?.(evt(2, 0)); // raw 0.02 → 0.025? round(0.8)=1 → 0.025
+    expect(writes).toEqual([0.025]);
+  });
+
   it('treats upward drag as increasing on the y-axis', () => {
     let value = 0;
     const control = createDragValueControl({

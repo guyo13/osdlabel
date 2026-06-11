@@ -58,18 +58,19 @@ import { createDragValueControl } from 'osdlabel';
 const handler = createDragValueControl({
   getValue: () => currentExposure, // read at pointer-down
   setValue: (v) => setExposure(v), // called continuously during drag
-  axis: 'x', // 'x' (default) or 'y'
+  axis: 'y', // 'x' (default) or 'y'
   sensitivity: 0.01, // value-units per CSS pixel
+  step: 0.025, // resolution of change (omit for continuous)
   min: -1,
   max: 1,
 });
 ```
 
-It captures the starting value on `pointerdown`, then on each move sets `startValue + delta * sensitivity` clamped to `[min, max]`. It is framework-agnostic and side-effect-free apart from your `getValue`/`setValue`, and it is defensive about lost pointer captures: a move with no button held (e.g. a dropped `pointercancel`) disarms the drag so hovering can't keep mutating the value. Redundant writes are skipped, so holding at a clamp boundary doesn't spam `setValue`.
+It captures the starting value on `pointerdown`, then on each move sets `startValue + delta * sensitivity`, optionally quantized to `step` (the resolution of change) and clamped to `[min, max]`. It is framework-agnostic and side-effect-free apart from your `getValue`/`setValue`, and it is defensive about lost pointer captures: a move with no button held (e.g. a dropped `pointercancel`) disarms the drag so hovering can't keep mutating the value. Redundant writes are skipped, so holding at a clamp boundary doesn't spam `setValue`.
 
 ## How the bundled UI wires exposure
 
-The Solid and React `ViewControls` expose a drag-to-adjust-exposure toggle. Selecting it sets a UI field, `activeViewerControl`, which is **mutually exclusive** with the active annotation tool — picking a tool exits the control and vice versa. The single mode-authority effect in `useAnnotationTool` resolves the overlay mode by precedence (`customControl` > `annotation` > `navigation`) and registers a `createDragValueControl` handler that reads the active cell's exposure and dispatches `setActiveImageExposure` on drag.
+The Solid and React `ViewControls` expose a drag-to-adjust-exposure toggle. Selecting it sets a UI field, `activeViewerControl`, which is **mutually exclusive** with the active annotation tool — picking a tool exits the control and vice versa. The single mode-authority effect in `useAnnotationTool` resolves the overlay mode by precedence (`customControl` > `annotation` > `navigation`) and registers a `createDragValueControl` handler that reads the active cell's exposure and dispatches `setActiveImageExposure` on drag. The control drags along the y-axis (up = brighter) with a resolution of `0.025`; the `SET_EXPOSURE` reducer stores the value faithfully, so the control owns the resolution rather than the reducer snapping to a coarser grid.
 
 ## Behavior notes
 
