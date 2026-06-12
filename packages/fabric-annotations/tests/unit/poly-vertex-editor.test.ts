@@ -78,6 +78,21 @@ describe('PolyVertexEditor', () => {
     );
   });
 
+  it('detaches points from the source array and refreshes hit-test coords on enter', () => {
+    // The Fabric object's points come straight from the (immutable) framework
+    // store; editing must copy them into a detached array, and must refresh
+    // oCoords via setCoords so control hit-testing matches the new control keys.
+    const poly = makePolygon('poly-1');
+    const sourcePoints = poly.points;
+    const setCoordsSpy = vi.spyOn(poly, 'setCoords');
+
+    fire('mouse:down', downEvent(poly, 100, 100));
+    vi.advanceTimersByTime(500);
+
+    expect(poly.points).not.toBe(sourcePoints);
+    expect(setCoordsSpy).toHaveBeenCalled();
+  });
+
   it('cancels the long press when the pointer moves beyond tolerance', () => {
     const poly = makePolygon('poly-1');
     fire('mouse:down', downEvent(poly, 100, 100));

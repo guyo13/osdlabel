@@ -172,10 +172,7 @@ export class PolyVertexEditor {
     if (!this.canvas || poly === this.editingObject) return;
     this.editingObject = poly;
     this.editingId = poly.id ?? null;
-    poly.controls = buildEditControls(poly);
-    poly.set('dirty', true);
-    this.canvas.setActiveObject(poly);
-    this.canvas.requestRenderAll();
+    this.applyEditControls(poly);
   }
 
   private exitEditMode(): void {
@@ -184,6 +181,8 @@ export class PolyVertexEditor {
     this.editingId = null;
     if (!poly) return;
     poly.controls = controlsUtils.createObjectDefaultControls();
+    // Refresh oCoords so hit-testing matches the restored default control keys.
+    poly.setCoords();
     poly.set('dirty', true);
     this.canvas?.requestRenderAll();
   }
@@ -198,9 +197,28 @@ export class PolyVertexEditor {
     if (target === this.editingObject) return;
     if (target.id !== this.editingId || !(target instanceof Polyline)) return;
     this.editingObject = target;
-    target.controls = buildEditControls(target);
-    target.set('dirty', true);
-    this.canvas.setActiveObject(target);
+    this.applyEditControls(target);
+  }
+
+  /**
+   * Switches a poly into edit mode: detaches its points from the (immutable)
+   * source store, installs the vertex + insert controls, and refreshes the
+   * control hit-test coords.
+   */
+  private applyEditControls(poly: Polyline): void {
+    if (!this.canvas) return;
+    // The Fabric object's `points` array is deserialized straight from the
+    // framework store (Solid/Immer), so it is immutable. Fabric's vertex / insert
+    // / delete handlers mutate `points` in place, which would throw "Cannot mutate
+    // a Store directly". Copy to a plain, detached array first.
+    poly.points = poly.points.map((p) => new Point(p.x, p.y));
+    poly.setDimensions();
+    poly.controls = buildEditControls(poly);
+    // oCoords is computed from the control set; without this, control hit-testing
+    // (findControl) still iterates the previous default keys and crashes.
+    poly.setCoords();
+    poly.set('dirty', true);
+    this.canvas.setActiveObject(poly);
     this.canvas.requestRenderAll();
   }
 
@@ -218,6 +236,7 @@ export class PolyVertexEditor {
     poly.points.splice(index, 1);
     poly.setDimensions();
     poly.controls = buildEditControls(poly);
+    poly.setCoords();
     delete poly.__corner;
     poly.set('dirty', true);
     // Commit through the host's object:modified → state path.
@@ -299,6 +318,7 @@ function makeInsertMouseDownHandler(edge: number) {
     poly.points.splice(insertIndex, 0, new Point((a.x + b.x) / 2, (a.y + b.y) / 2));
     poly.setDimensions();
     poly.controls = buildEditControls(poly);
+    poly.setCoords();
 
     const key = `p${insertIndex}`;
     const vertexControl = poly.controls[key];
