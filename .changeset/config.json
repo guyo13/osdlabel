@@ -10,6 +10,7 @@
       "@osdlabel/decoration",
       "@osdlabel/fabric-annotations",
       "@osdlabel/fabric-osd",
+      "@osdlabel/geometry",
       "@osdlabel/osd-helper",
       "@osdlabel/react",
       "@osdlabel/solid",
