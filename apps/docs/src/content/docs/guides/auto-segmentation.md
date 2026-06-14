@@ -266,6 +266,74 @@ const imagePt = modelToImage(modelPt, t); // and back (exact inverse)
 `scale = inputSize / max(srcWidth, srcHeight)`; padding defaults to top-left
 (SAM-style, zero offset) with an optional `{ pad: 'center' }` mode.
 
+## Reference ONNX provider (`@osdlabel/segmentation-onnx`)
+
+`@osdlabel/segmentation-onnx` is a ready-made implementation of the
+**server-encode → client-decode** topology for Segment Anything (SAM / MobileSAM):
+the heavy image encoder runs on your server, and the tiny mask decoder runs in the
+browser via [ONNX Runtime Web](https://onnxruntime.ai/docs/tutorials/web/).
+
+```ts
+import { createOnnxSamProvider } from '@osdlabel/segmentation-onnx';
+
+const segmentationProvider = createOnnxSamProvider({
+  encoder: { endpoint: '/api/sam/embed' }, // your server returns the image embedding
+  decoder: {
+    modelUrl: '/models/sam_decoder.onnx', // the small SAM decoder, served statically
+    session: { executionProviders: ['webgpu', 'wasm'], wasmPaths: '/ort/' },
+    maskSpace: 'original', // official export upscales masks to orig_im_size
+  },
+});
+// then: <Annotator … segmentationProvider={segmentationProvider} />
+```
+
+Under the hood this composes a `RemoteEmbeddingEncoder` with an `OnnxSamDecoder`
+via `composeSegmentationProvider`. For finer control (a shared session, a custom
+runtime) construct the two halves yourself; the decoder only needs a
+`createSession: () => Promise<SamSession>`, so its logic is fully unit-tested with
+a fake session and **the package has no `onnxruntime-web` dependency** — you
+install ORT in your app and the decoder loads it lazily via dynamic `import()`.
+
+### Encoder wire contract
+
+`RemoteEmbeddingEncoder` POSTs JSON `{ imageId, tileSource }` to `endpoint` and,
+by default, expects this JSON back:
+
+```ts
+interface EmbeddingResponseBody {
+  dims: number[]; // [1, 256, 64, 64]
+  origWidth: number; // original image pixels (for prompt scaling + orig_im_size)
+  origHeight: number;
+  inputSize: number; // encoder input side (SAM: 1024)
+  embedding: string; // the float32 tensor, base64 (little-endian)
+}
+```
+
+Base64 JSON is simple for a reference but ~5.5 MB per image; production servers
+should return a binary `ArrayBuffer` body and supply a custom `parse` hook. The
+server is a black box: it owns the model and the full-resolution pixels (it can
+resolve them from `imageId` / `tileSource`), so the browser never needs full-res
+imagery.
+
+### Stage B — wiring real weights locally
+
+The package ships the logic; running real inference needs assets and a couple of
+browser requirements, which you set up locally:
+
+1. **Export a decoder** — e.g. with [samexporter](https://github.com/vietanhdev/samexporter)
+   produce `sam_decoder.onnx` (MobileSAM is a small, drop-in option that reuses the
+   SAM decoder interface). Serve it statically.
+2. **Serve the ORT WASM** — copy `onnxruntime-web/dist/*.wasm` to a path and point
+   `session.wasmPaths` at it (or use a CDN).
+3. **Cross-origin isolation** — the WASM threaded backend needs `SharedArrayBuffer`,
+   so serve with `Cross-Origin-Opener-Policy: same-origin` and
+   `Cross-Origin-Embedder-Policy: require-corp`. The **WebGPU** EP avoids the thread
+   requirement and is much faster when available.
+4. **An embedding endpoint** — run (or stub) a server that encodes an image to the
+   `EmbeddingResponseBody` above. Point `apps/dev` at `createOnnxSamProvider` to try
+   it; the dev app otherwise uses a deterministic mock provider so CI needs no
+   weights or network.
+
 ## Future work: holes / inner rings
 
 The current `maskToContours` emits only each component's **outer** boundary —

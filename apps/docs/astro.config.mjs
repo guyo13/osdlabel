@@ -37,6 +37,7 @@ export default defineConfig({
             '../../packages/decoration',
             '../../packages/geometry',
             '../../packages/segmentation',
+            '../../packages/segmentation-onnx',
             '../../packages/osdlabel',
             '../../packages/solid',
             '../../packages/react',
